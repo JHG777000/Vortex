@@ -12,7 +12,7 @@ RKLib is currently a work in progress so lack of documentation, a multitude of b
 
 RKLib’s goal is to provide a framework for performance and cross-platform support. Yet, it already has some caveats here:
 
--Should be fine on *Nix systems, but no native support for non-*Nix systems, like Windows.
+-Should be fine on *Nix systems, but no native support for non-*Nix systems, like Windows(This applies mainly to RKTasks, as it depends on posix stuff like pthreads).
 
 -No extensive testing has taken place, so whether it makes code actually run faster or not or even perhaps slower at least compared to alternatives, is still open. 
 
@@ -39,7 +39,7 @@ RKMath, a n-dimensional vector math library designed to take advantage of auto-v
 -Matrix math.
 
 —RKTasks—
-RKTasks, a thread pool library.
+RKTasks, a thread pool library. Uses pthreads as a backend.
 
 —Possible Future Features:
 
