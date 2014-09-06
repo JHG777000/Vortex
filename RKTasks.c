@@ -170,6 +170,8 @@ RKTasks_TaskGroup RKTasks_NewTaskGroup( void ) {
     
     NewGroup->NumOfTasks = 0 ;
     
+    NewGroup->NumOfDoneTasks = 0 ;
+    
     NewGroup->group_run_id = 0 ;
     
     NewGroup->init = 0 ;
