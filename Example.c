@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2014 Jacob Gordon. All rights reserved.
+ Copyright (c) 2016 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -27,7 +27,7 @@
 #include "RKMath.h"
 #include "RKTasks.h"
 
-RKTasks_CreateTask(TestTask, int value ; int value2 ; RKMath_NewVector(Vec,3); RKMath_NewVector(Vec2,3);, //Create a Task called TestTask
+RKTasks_CreateTask(TestTask, int value ; int value2 ; RKMath_NewVector(Vec,3); RKMath_NewVector(Vec2,3);) { //Create a Task called TestTask
                  
     if ( RKTArgs->value == 5 ) {
                      
@@ -43,7 +43,7 @@ RKTasks_CreateTask(TestTask, int value ; int value2 ; RKMath_NewVector(Vec,3); R
         
     }
                  
-) ;
+}
 
 int main(int argc, const char * argv[]) {
 

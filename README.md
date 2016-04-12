@@ -19,33 +19,29 @@ RKLib’s goal is to provide a framework for performance and cross-platform supp
 RKLib is currently composed of the following libraries:
 
 —RKMem—
-RKMem, provides some nice macros and a function to make it dealing with memory a little easier in C.
+RKMem, provides some nice macros and a function to make dealing with memory a little easier in C.
+
+A C List implementation.
+
+A C Dictionary type implementation.
 
 —Possible Future Features:
-
--A C List implementation.
 
 -Memory pools which track the amount of memory stored.
 
 —RKMath—
 RKMath, a n-dimensional vector math library designed to take advantage of auto-vectorization.
 
-—Possible Future Features:
+Xor based PRNG.
 
--Some more vector functions.
-
--Trig stuff.
+—Untested Features:
 
 -Matrix math.
 
 —RKTasks—
-RKTasks, a thread pool library. Uses pthreads as a backend.
+RKTasks, a thread pool library. Uses pthreads(for now) as a backend.
 
 —Possible Future Features:
-
-—Support for locking and unlocking internal data structures.
-
-—More advanced task list manipulation, allowing precision control of where a task is inserted, and the ability to remove tasks.
 
 —More advanced scheduling, possibly adding a priority system.
 

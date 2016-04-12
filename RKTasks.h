@@ -1,40 +1,34 @@
 /*
-/*
- Copyright (c) 2014 Jacob Gordon. All rights reserved.
+ Copyright (c) 2016 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
  1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
  
- 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the 
+ 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
  
- following disclaimer in the documentation and/or other materials provided with the distribution.
- 
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, 
- INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
- IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, 
- OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
- OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
- WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 //File: RKTasks.h
 //Header file for RKTasks.
 
-#ifndef RKLib_RKTasks_h
-#define RKLib_RKTasks_h
-#include <pthread.h>
+#ifndef RKTasks_h
+#define RKTasks_h
 
-typedef struct { pthread_t thread ; int alive ; } RKThread ;
+typedef struct RKThread_s RKThread ;
 
 typedef RKThread* RKThreads ;
 
-typedef pthread_mutex_t RKT_Lock ;
+typedef struct RKT_Lock_s RKT_Lock ;
 
 typedef struct RKTasks_Task_s RKTasks_Task_object ;
 
 typedef RKTasks_Task_object* RKTasks_Task ;
+
+typedef struct RKTasks_ThisTask_s RKTasks_ThisTask_object ;
+
+typedef RKTasks_ThisTask_object* RKTasks_ThisTask ;
 
 typedef struct RKTasks_TaskGroup_s RKTasks_TaskGroup_object ;
 
@@ -60,18 +54,20 @@ int RKTasks_CloseLock( RKT_Lock* lock ) ;
 
 int RKTasks_OpenLock( RKT_Lock* lock ) ;
 
-#define RKTasks_CreateTask(TaskName, Args, FuncSpace) typedef struct {Args} TaskName ## _argstruct ; \
+#define RKTasks_CreateTask(TaskName, Args) typedef struct {int refcount ; Args} TaskName ## _argstruct ; \
 typedef TaskName ## _argstruct* TaskName ## _argstruct_ptr ;\
-void TaskName( void *argument ) { \
+static void TaskName##_TaskFunc(TaskName ## _argstruct_ptr RKTArgs, RKTasks_ThisTask ThisTask) ;\
+static void TaskName( void *argument, RKTasks_ThisTask ThisTask ) { \
 TaskName ## _argstruct_ptr RKTArgs = (TaskName ## _argstruct_ptr) argument ; \
 \
-FuncSpace \
+TaskName##_TaskFunc(RKTArgs,ThisTask) ;\
 \
-}
+}\
+static void TaskName##_TaskFunc(TaskName ## _argstruct_ptr RKTArgs, RKTasks_ThisTask ThisTask)\
 
 #define RKTasks_Args( TaskName ) TaskName ## _argstruct_ptr TaskName ## _Args = NULL
 
-#define RKTasks_UseArgs( TaskName ) TaskName ## _Args = RKMem_CArray(1, TaskName ## _argstruct)
+#define RKTasks_UseArgs( TaskName ) TaskName ## _Args = RKMem_CArray(1, TaskName ## _argstruct);
 
 #define RKTasks_AddTask(TaskGroup, TaskFunc, TaskArgs) RKTasks_AddTask_Func(TaskGroup, TaskFunc, (void*)TaskArgs)
 
@@ -192,6 +188,24 @@ void RKTasks_StopThreadGroup( RKTasks_ThreadGroup ThreadGroup ) ;
 void RKTasks_UseTaskGroup( RKTasks_TaskGroup TaskGroup ) ;
 
 /*
+ RKTasks_GetNumOfThreads
+ 
+ Returns the total number of threads that have been created.
+ 
+ */
+
+int RKTasks_GetNumOfThreads( RKTasks_ThreadGroup ThreadGroup) ;
+
+/*
+ RKTasks_GetNumOfTasks
+ 
+ Returns the current number of tasks.
+ 
+ */
+
+int RKTasks_GetNumOfTasks( RKTasks_TaskGroup TaskGroup) ;
+
+/*
  RKTasks_AllTasksDone
  
  Returns 1, if all tasks of the given TaskGroup are done, if not
@@ -244,6 +258,36 @@ void RKTasks_KillAllThreads( RKTasks_ThreadGroup ThreadGroup ) ;
 
 int RKTasks_KillThreadWithTid( RKTasks_ThreadGroup ThreadGroup, int tid ) ;
 
+
+/*
+ RKTasks_DeactivateTask
+ 
+ Deactivate given Task, via its ThisTask object.
+ 
+ Task while unactive, will still be in memory and hold resources.
+ 
+ */
+
+void RKTasks_DeactivateTask( RKTasks_ThisTask ThisTask ) ;
+
+/*
+ RKTasks_GetTaskID
+ 
+ Returns the Task ID.
+ 
+ */
+
+int RKTasks_GetTaskID( RKTasks_ThisTask ThisTask ) ;
+
+/*
+ RKTasks_GetThreadID
+ 
+ Returns the Thread ID.
+ 
+ */
+
+int RKTasks_GetThreadID( RKTasks_ThisTask ThisTask ) ;
+
 /*
  RKTasks_AddTask_Func
  
@@ -253,8 +297,11 @@ int RKTasks_KillThreadWithTid( RKTasks_ThreadGroup ThreadGroup, int tid ) ;
  
  The macro RKTasks_AddTask is available which explicitly casts TaskArgs to (void*).
  
+ Returns a ThisTask object. ThisTask is also passed to the task itself.
+ 
  */
 
-void RKTasks_AddTask_Func(RKTasks_TaskGroup TaskGroup, void (*TaskFunc)(void *), void *TaskArgs ) ;
+RKTasks_ThisTask RKTasks_AddTask_Func(RKTasks_TaskGroup TaskGroup, void (*TaskFunc)(void *, struct RKTasks_ThisTask_s *), void *TaskArgs ) ;
 
-#endif
+#endif /* RKTasks_h */
+
