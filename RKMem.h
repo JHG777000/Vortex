@@ -104,6 +104,8 @@ void* RKStore_GetItem( RKStore Store, const char* label ) ;
 
 int RKStore_ItemExists( RKStore Store, const char* label ) ;
 
+int RKStore_AddItemToList( RKStore Store, void *item ) ;
+
 void RKStore_IterateStoreWith( RKMemIteratorFuncType Iterator, RKStore Store ) ;
 
 void RKStore_DestroyStore( RKStore Store ) ;

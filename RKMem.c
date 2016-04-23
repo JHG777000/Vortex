@@ -370,7 +370,7 @@ static int RKS_LookUpCharID( char c ) {
     
     if ( value <= 0 ) value = 0 ;
     
-    if ( value > RKS_MAX_LETTER_NUM + 1) value = 0 ;
+    if ( value > RKS_MAX_LETTER_NUM + 1 ) value = 0 ;
     
     return value ;
 }
@@ -560,6 +560,13 @@ int RKStore_ItemExists( RKStore Store, const char* label ) {
     if ( node != NULL ) return 1 ;
     
     return 0 ;
+}
+
+int RKStore_AddItemToList( RKStore Store, void *item ) {
+    
+    if ( RKS_AddItem(Store, item) == NULL ) return 0 ;
+    
+    return 1 ;
 }
 
 void RKStore_IterateStoreWith( RKMemIteratorFuncType Iterator, RKStore Store ) {
