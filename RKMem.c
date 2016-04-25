@@ -364,7 +364,7 @@ void RKList_IterateListWith( RKMemIteratorFuncType Iterator, RKList list ) {
     }
 }
 
-static int RKS_LookUpCharID( char c ) {
+static int RKS_GetCharID( char c ) {
     
     int value = (c - 32) + 1 ;
     
@@ -415,7 +415,7 @@ static RKList_node RKS_GetSetStoreNode( RKStore Store, const char* label, int si
     
     while ( i < size ) {
         
-        value = RKS_LookUpCharID(label[i]) ;
+        value = RKS_GetCharID(label[i]) ;
         
         if ( value != 0 ) {
             
