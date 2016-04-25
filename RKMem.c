@@ -348,7 +348,7 @@ void RKList_DeleteNodeWithIndex( RKList list, int index ) {
     RKList_DeleteNode(list, node) ;
 }
 
-void RKList_IterateListWith( RKMemIteratorFuncType Iterator, RKList list ) {
+void RKList_IterateListWith( RKMemIteratorFuncType iterator, RKList list ) {
     
     RKList_node node = list->first ;
     
@@ -358,7 +358,7 @@ void RKList_IterateListWith( RKMemIteratorFuncType Iterator, RKList list ) {
         
         data = RKList_GetData(node) ;
         
-        Iterator(data) ;
+        iterator(data) ;
         
         node = RKList_GetNextNode(node) ;
     }
@@ -398,20 +398,22 @@ static RKStore_letter* RKS_NewAlphabet( void ) {
     
 }
 
-static RKList_node RKS_GetSetStoreNode( RKStore Store, const char* label, int size, RKList_node node ) {
-    
-    RKStore_letter* current_alphabet = NULL ;
+static RKList_node RKS_GetSetNode( RKStore store, const char* label, RKList_node node ) {
     
     int i = 0 ;
     
     int value = 0 ;
     
-    if ( Store->dictionary == NULL ) {
+    int size = (int) strlen( label ) ;
+    
+    RKStore_letter* current_alphabet = NULL ;
+    
+    if ( store->dictionary == NULL ) {
         
-        Store->dictionary = RKS_NewAlphabet() ;
+        store->dictionary = RKS_NewAlphabet() ;
     }
     
-    current_alphabet = Store->dictionary ;
+    current_alphabet = store->dictionary ;
     
     while ( i < size ) {
         
@@ -449,45 +451,27 @@ static RKList_node RKS_GetSetStoreNode( RKStore Store, const char* label, int si
     return NULL ;
 }
 
-static RKList_node RKS_GetSetNode( RKStore Store, const char* string, int min, int max, RKList_node node ) {
-    
-    char* label = NULL ;
-    
-    label = &(((char*)string)[min]) ;
-    
-    return RKS_GetSetStoreNode(Store,label,max,node) ;
-}
-
-static RKList_node RKS_GetSetNodeWithString( RKStore Store, const char* string, RKList_node node ) {
-    
-    int strilen = 0 ;
-    
-    strilen = (int) strlen( string ) ;
-    
-    return RKS_GetSetNode(Store,string,0,strilen,node) ;
-}
-
 RKStore RKStore_NewStore( void ) {
     
-    RKStore Store = RKMem_NewMemOfType(struct RKStore_s) ;
+    RKStore store = RKMem_NewMemOfType(struct RKStore_s) ;
     
-    Store->dictionary = NULL ;
+    store->dictionary = NULL ;
     
-    Store->items = NULL ;
+    store->items = NULL ;
     
-    return Store ;
+    return store ;
 }
 
-static RKList_node RKS_AddItem( RKStore Store, void* item ) {
+static RKList_node RKS_AddItem( RKStore store, void* item ) {
     
-    if ( Store->items == NULL ) Store->items = RKList_NewList() ;
+    if ( store->items == NULL ) store->items = RKList_NewList() ;
     
-    return RKList_AddToList(Store->items, item) ;
+    return RKList_AddToList(store->items, item) ;
 }
 
-static int RKS_StoreItem( RKStore Store, void* item, const char* label ) {
+static int RKS_StoreItem( RKStore store, void* item, const char* label ) {
     
-    RKList_node node = RKS_GetSetNodeWithString(Store, label, NULL) ;
+    RKList_node node = RKS_GetSetNode(store, label, NULL) ;
     
     if ( node == NULL ) return 0 ;
     
@@ -496,27 +480,27 @@ static int RKS_StoreItem( RKStore Store, void* item, const char* label ) {
     return 1 ;
 }
 
-int RKStore_AddItem( RKStore Store, void* item, const char* label ) {
+int RKStore_AddItem( RKStore store, void* item, const char* label ) {
     
-    if ( !(RKStore_ItemExists(Store, label)) ) {
+    if ( !(RKStore_ItemExists(store, label)) ) {
     
-        RKList_node node = RKS_AddItem(Store, item) ;
+        RKList_node node = RKS_AddItem(store, item) ;
     
-        node = RKS_GetSetNodeWithString(Store, label, node) ;
+        node = RKS_GetSetNode(store, label, node) ;
         
         if ( node == NULL ) return 0 ;
         
     } else {
         
-        return RKS_StoreItem(Store, item, label) ;
+        return RKS_StoreItem(store, item, label) ;
     }
     
     return 1 ;
 }
 
-int RKStore_RemoveItem( RKStore Store, const char* label ) {
+int RKStore_RemoveItem( RKStore store, const char* label ) {
     
-    RKList_node node = RKS_GetSetNodeWithString(Store, label, NULL) ;
+    RKList_node node = RKS_GetSetNode(store, label, NULL) ;
     
     if ( node == NULL ) return 0 ;
     
@@ -525,9 +509,9 @@ int RKStore_RemoveItem( RKStore Store, const char* label ) {
     return 1 ;
 }
 
-void* RKStore_GetItem( RKStore Store, const char* label ) {
+void* RKStore_GetItem( RKStore store, const char* label ) {
     
-    RKList_node node = RKS_GetSetNodeWithString(Store, label, NULL) ;
+    RKList_node node = RKS_GetSetNode(store, label, NULL) ;
     
     if ( node == NULL ) return NULL ;
     
@@ -536,23 +520,23 @@ void* RKStore_GetItem( RKStore Store, const char* label ) {
 
 int RKStore_ItemExists( RKStore Store, const char* label ) {
     
-    RKList_node node = RKS_GetSetNodeWithString(Store, label, NULL) ;
+    RKList_node node = RKS_GetSetNode(Store, label, NULL) ;
     
     if ( node != NULL ) return 1 ;
     
     return 0 ;
 }
 
-int RKStore_AddItemToList( RKStore Store, void *item ) {
+int RKStore_AddItemToList( RKStore store, void *item ) {
     
-    if ( RKS_AddItem(Store, item) == NULL ) return 0 ;
+    if ( RKS_AddItem(store, item) == NULL ) return 0 ;
     
     return 1 ;
 }
 
-void RKStore_IterateStoreWith( RKMemIteratorFuncType Iterator, RKStore Store ) {
+void RKStore_IterateStoreWith( RKMemIteratorFuncType iterator, RKStore store ) {
     
-    if (Store->items != NULL) RKList_IterateListWith(Iterator, Store->items) ;
+    if (store->items != NULL) RKList_IterateListWith(iterator, store->items) ;
 }
 
 static void RKS_DestroyAlphabet( RKStore_letter* alphabet ) {
@@ -576,11 +560,11 @@ static void RKS_DestroyAlphabet( RKStore_letter* alphabet ) {
     free(alphabet) ;
 }
 
-void RKStore_DestroyStore( RKStore Store ) {
+void RKStore_DestroyStore( RKStore store ) {
     
-    if (Store->dictionary != NULL) RKS_DestroyAlphabet(Store->dictionary) ;
+    if (store->dictionary != NULL) RKS_DestroyAlphabet(store->dictionary) ;
     
-    if (Store->items != NULL) RKList_DeleteList(Store->items) ;
+    if (store->items != NULL) RKList_DeleteList(store->items) ;
     
-    free(Store) ;
+    free(store) ;
 }

@@ -90,24 +90,24 @@ RKList_node RKList_GetNode( RKList list, int index ) ;
 
 void RKList_DeleteNodeWithIndex( RKList list, int index ) ;
 
-void RKList_IterateListWith( RKMemIteratorFuncType Iterator, RKList list ) ;
+void RKList_IterateListWith( RKMemIteratorFuncType iterator, RKList list ) ;
 
 typedef struct RKStore_s* RKStore ;
 
 RKStore RKStore_NewStore( void ) ;
 
-int RKStore_AddItem( RKStore Store, void* item, const char* label ) ;
+int RKStore_AddItem( RKStore store, void* item, const char* label ) ;
 
-int RKStore_RemoveItem( RKStore Store, const char* label ) ;
+int RKStore_RemoveItem( RKStore store, const char* label ) ;
 
-void* RKStore_GetItem( RKStore Store, const char* label ) ;
+void* RKStore_GetItem( RKStore store, const char* label ) ;
 
-int RKStore_ItemExists( RKStore Store, const char* label ) ;
+int RKStore_ItemExists( RKStore store, const char* label ) ;
 
-int RKStore_AddItemToList( RKStore Store, void *item ) ;
+int RKStore_AddItemToList( RKStore store, void *item ) ;
 
-void RKStore_IterateStoreWith( RKMemIteratorFuncType Iterator, RKStore Store ) ;
+void RKStore_IterateStoreWith( RKMemIteratorFuncType iterator, RKStore store ) ;
 
-void RKStore_DestroyStore( RKStore Store ) ;
+void RKStore_DestroyStore( RKStore store ) ;
 
 #endif
