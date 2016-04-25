@@ -398,7 +398,7 @@ static RKStore_letter* RKS_NewAlphabet( void ) {
     
 }
 
-static RKList_node RKS_LookUpStoreNode( RKStore Store, int* buffer, int size, RKList_node node ) {
+static RKList_node RKS_GetSetStoreNode( RKStore Store, const char* label, int size, RKList_node node ) {
     
     RKStore_letter* current_alphabet = NULL ;
     
@@ -415,7 +415,7 @@ static RKList_node RKS_LookUpStoreNode( RKStore Store, int* buffer, int size, RK
     
     while ( i < size ) {
         
-        value = buffer[i] ;
+        value = RKS_LookUpCharID(label[i]) ;
         
         if ( value != 0 ) {
             
@@ -447,25 +447,6 @@ static RKList_node RKS_LookUpStoreNode( RKStore Store, int* buffer, int size, RK
     }
     
     return NULL ;
-}
-
-static RKList_node RKS_GetSetStoreNode( RKStore Store, const char* label, int size, RKList_node node ) {
-    
-    int buffer[100] ;
-    
-    int i = 0 ;
-    
-    if ( size > 100 ) size = 100 ;
-    
-    while (i < size) {
-        
-        buffer[i] = RKS_LookUpCharID( label[i] ) ;
-        
-        i++ ;
-    }
-    
-    return RKS_LookUpStoreNode( Store, buffer, size, node ) ;
-    
 }
 
 static RKList_node RKS_GetSetNode( RKStore Store, const char* string, int min, int max, RKList_node node ) {
