@@ -195,10 +195,6 @@ RKTasks_TaskGroup RKTasks_NewTaskGroup( void ) {
     
 }
 
-typedef struct { int refcount ; } TaskArgs_Type ;
-
-typedef TaskArgs_Type* TaskArgs_Type_ptr ;
-
 void RKTasks_KillTaskGroup( RKTasks_TaskGroup TaskGroup ) {
     
     RKTasks_Task Task = NULL ;
