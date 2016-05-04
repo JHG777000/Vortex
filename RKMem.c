@@ -366,11 +366,11 @@ void RKList_IterateListWith( RKMemIteratorFuncType iterator, RKList list ) {
 
 static int RKS_GetCharID( char c ) {
     
-    int value = (c - 32) + 1 ;
+    int value = ((int)c) - 32 ;
     
-    if ( value <= 0 ) value = 0 ;
+    if ( value < 0 ) value = -1 ;
     
-    if ( value > RKS_MAX_LETTER_NUM + 1 ) value = 0 ;
+    if ( value > RKS_MAX_LETTER_NUM ) value = -1 ;
     
     return value ;
 }
@@ -379,7 +379,7 @@ static RKStore_letter* RKS_NewAlphabet( void ) {
     
     RKStore_letter* rks_alphabet = NULL ;
     
-    int size = RKS_MAX_LETTER_NUM + 1 ;
+    int size = RKS_MAX_LETTER_NUM ;
     
     rks_alphabet = RKMem_CArray(size, RKStore_letter) ;
     
@@ -419,7 +419,7 @@ static RKList_node RKS_GetSetNode( RKStore store, const char* label, RKList_node
         
         value = RKS_GetCharID(label[i]) ;
         
-        if ( value != 0 ) {
+        if ( value != -1 ) {
             
             if ( i == ( size - 1 ) ) {
                 
@@ -541,7 +541,7 @@ void RKStore_IterateStoreWith( RKMemIteratorFuncType iterator, RKStore store ) {
 
 static void RKS_DestroyAlphabet( RKStore_letter* alphabet ) {
     
-    int size = RKS_MAX_LETTER_NUM + 1 ;
+    int size = RKS_MAX_LETTER_NUM ;
     
     int i = 0 ;
     
