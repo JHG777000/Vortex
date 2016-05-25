@@ -60,15 +60,17 @@ vec_a[2] = vec_b[2]  \
 
  typedef float* RKMVector ;
 
- typedef struct RKMath_RandState_s* RKMath_RandState ;
+ typedef struct { int init ; int init_ ; int gate ; long state_a ; long state_b ; long update ; long seconds ; }  RKMath_RandState ;
 
- int RKMath_ARandomNumber( RKMath_RandState randstate, int randmin, int randmax ) ;
+ void RKMath_SeedRandomState( RKMath_RandState* randstate, int seed ) ;
 
- int RKMath_AMoreRandomNumber( RKMath_RandState randstate, int randmin, int randmax ) ;
+ int RKMath_ARandomNumber( RKMath_RandState* randstate, int randmin, int randmax ) ;
 
- float RKMath_ARandomFloat( RKMath_RandState randstate ) ;
+ int RKMath_AMoreRandomNumber( RKMath_RandState* randstate, int randmin, int randmax ) ;
 
- float RKMath_AMoreRandomFloat( RKMath_RandState randstate ) ;
+ float RKMath_ARandomFloat( RKMath_RandState* randstate ) ;
+
+ float RKMath_AMoreRandomFloat( RKMath_RandState* randstate ) ;
 
  float RKMath_Sum(float vec[], const int size) ;
 

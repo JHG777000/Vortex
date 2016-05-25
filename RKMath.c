@@ -27,9 +27,14 @@
 #include "RKMem.h"
 #include "RKMath.h"
 
-struct RKMath_RandState_s { int init ; int init_ ; int gate ; long state_a ; long state_b ; long update ; long seconds ; } ;
+ void RKMath_SeedRandomState( RKMath_RandState* randstate, int seed ) {
+    
+     randstate->init = 1 ;
+     
+     randstate->state_a = (unsigned)time(NULL) + seed ;
+ }
 
- int RKMath_ARandomNumber( RKMath_RandState randstate, int randmin, int randmax ) {
+ int RKMath_ARandomNumber( RKMath_RandState* randstate, int randmin, int randmax ) {
     
     int randval = 0 ;
     
@@ -64,7 +69,7 @@ struct RKMath_RandState_s { int init ; int init_ ; int gate ; long state_a ; lon
 
 //Is it more random?
 
-int RKMath_AMoreRandomNumber( RKMath_RandState randstate, int randmin, int randmax ) {
+int RKMath_AMoreRandomNumber( RKMath_RandState* randstate, int randmin, int randmax ) {
     
     int randval = 0 ;
     
@@ -124,14 +129,14 @@ int RKMath_AMoreRandomNumber( RKMath_RandState randstate, int randmin, int randm
     
 }
 
-float RKMath_ARandomFloat( RKMath_RandState randstate ) {
+float RKMath_ARandomFloat( RKMath_RandState* randstate ) {
     
-    return (((float)RKMath_ARandomNumber(randstate, 0, RAND_MAX)) / RAND_MAX) ;
+    return (((float)RKMath_ARandomNumber(randstate, 1, RAND_MAX)) / RAND_MAX) ;
 }
 
-float RKMath_AMoreRandomFloat( RKMath_RandState randstate ) {
+float RKMath_AMoreRandomFloat( RKMath_RandState* randstate ) {
     
-    return (((float)RKMath_AMoreRandomNumber(randstate, 0, RAND_MAX)) / RAND_MAX) ;
+    return (((float)RKMath_AMoreRandomNumber(randstate, 1, RAND_MAX)) / RAND_MAX) ;
 }
 
  float RKMath_Sum(float vec[], const int size) {
