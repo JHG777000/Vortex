@@ -173,7 +173,7 @@ int RKTasks_GetNumberOfThreadsForPlatform( int min_num_of_threads, int max_num_o
 
 RKTasks_TaskGroup RKTasks_NewTaskGroup( void ) {
     
-    RKTasks_TaskGroup NewGroup = RKMem_NewMemOfType(RKTasks_TaskGroup_object) ;
+    RKTasks_TaskGroup NewGroup = RKMem_NewMemOfType(struct RKTasks_TaskGroup_s) ;
     
     NewGroup->TaskList = RKList_NewList() ;
     
@@ -244,7 +244,7 @@ void RKTasks_KillTaskGroup( RKTasks_TaskGroup TaskGroup ) {
 
 RKTasks_ThreadGroup RKTasks_NewThreadGroup( int min_num_of_threads, int max_num_of_threads, int userSetNumOfCores, int dynamic0No1Yes, int mode ) {
     
-    RKTasks_ThreadGroup NewGroup = RKMem_NewMemOfType(RKTasks_ThreadGroup_object) ;
+    RKTasks_ThreadGroup NewGroup = RKMem_NewMemOfType(struct RKTasks_ThreadGroup_s) ;
     
     NewGroup->Current_TaskGroup = NULL ;
     
@@ -632,11 +632,11 @@ RKTasks_ThisTask RKTasks_AddTask_Func(RKTasks_TaskGroup TaskGroup, void (*TaskFu
     
     Args->refcount++ ;
     
-    RKTasks_ThisTask ThisTask = RKMem_NewMemOfType(RKTasks_ThisTask_object) ;
+    RKTasks_ThisTask ThisTask = RKMem_NewMemOfType(struct RKTasks_ThisTask_s) ;
     
     ThisTask->kill = 0 ;
     
-    RKTasks_Task Task = RKMem_NewMemOfType(RKTasks_Task_object) ;
+    RKTasks_Task Task = RKMem_NewMemOfType(struct RKTasks_Task_s) ;
     
     Task->active = 1 ;
     
@@ -664,3 +664,7 @@ RKTasks_ThisTask RKTasks_AddTask_Func(RKTasks_TaskGroup TaskGroup, void (*TaskFu
     
 }
 
+void RKTasks_AtomicInc( RKT_AtomicInt* val ) {
+    
+    atomic_fetch_add_explicit(val,1,memory_order_relaxed) ;
+}

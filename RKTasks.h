@@ -21,27 +21,21 @@
 #ifndef RKTasks_h
 #define RKTasks_h
 
+#include <stdatomic.h>
+
 typedef struct RKThread_s RKThread ;
 
 typedef RKThread* RKThreads ;
 
 typedef struct RKT_Lock_s RKT_Lock ;
 
-typedef struct RKTasks_Task_s RKTasks_Task_object ;
+typedef struct RKTasks_Task_s* RKTasks_Task ;
 
-typedef RKTasks_Task_object* RKTasks_Task ;
+typedef struct RKTasks_ThisTask_s* RKTasks_ThisTask ;
 
-typedef struct RKTasks_ThisTask_s RKTasks_ThisTask_object ;
+typedef struct RKTasks_TaskGroup_s* RKTasks_TaskGroup ;
 
-typedef RKTasks_ThisTask_object* RKTasks_ThisTask ;
-
-typedef struct RKTasks_TaskGroup_s RKTasks_TaskGroup_object ;
-
-typedef RKTasks_TaskGroup_object* RKTasks_TaskGroup ;
-
-typedef struct RKTasks_ThreadGroup_s RKTasks_ThreadGroup_object ;
-
-typedef RKTasks_ThreadGroup_object* RKTasks_ThreadGroup ;
+typedef struct RKTasks_ThreadGroup_s* RKTasks_ThreadGroup ;
 
 #define RKTasks_StartLock( lock ) RKTasks_InitLock( &(lock) )
 
@@ -312,6 +306,12 @@ int RKTasks_GetThreadID( RKTasks_ThisTask ThisTask ) ;
  */
 
 RKTasks_ThisTask RKTasks_AddTask_Func(RKTasks_TaskGroup TaskGroup, void (*TaskFunc)(void *, struct RKTasks_ThisTask_s *), void *TaskArgs ) ;
+
+///Atomics///
+
+typedef atomic_int RKT_AtomicInt ;
+
+void RKTasks_AtomicInc( RKT_AtomicInt* val ) ;
 
 #endif /* RKTasks_h */
 
