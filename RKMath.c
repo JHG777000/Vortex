@@ -402,6 +402,11 @@ void RKMath_AtomicInc( RKMAtomicInt* val ) {
     atomic_fetch_add_explicit(val,1,memory_order_relaxed) ;
 }
 
+void RKMath_AtomicDec( RKMAtomicInt* val )  {
+    
+    atomic_fetch_sub_explicit(val,1,memory_order_relaxed) ;
+}
+
 RKMAtomicBool RKMath_AtomicRWC( RKMAtomicInt* read_val, int write_val, int* compare_val ) {
     
     return atomic_compare_exchange_strong(read_val, compare_val, write_val) ;

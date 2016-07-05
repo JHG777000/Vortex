@@ -34,10 +34,6 @@ RKMath, a n-dimensional vector math library designed to take advantage of auto-v
 
 Xor based PRNG.
 
-—Untested Features:
-
--Matrix math.
-
 —RKTasks—
 RKTasks, a thread pool library. Uses pthreads(for now) as a backend.
 

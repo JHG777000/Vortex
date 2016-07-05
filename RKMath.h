@@ -121,6 +121,8 @@ typedef atomic_bool RKMAtomicBool ;
 
 void RKMath_AtomicInc( RKMAtomicInt* val ) ;
 
+void RKMath_AtomicDec( RKMAtomicInt* val ) ;
+
 RKMAtomicBool RKMath_AtomicRWC( RKMAtomicInt* read_val, int write_val, int* compare_val ) ;
 
 #endif
