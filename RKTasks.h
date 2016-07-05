@@ -21,8 +21,6 @@
 #ifndef RKTasks_h
 #define RKTasks_h
 
-#include <stdatomic.h>
-
 typedef struct RKThread_s RKThread ;
 
 typedef RKThread* RKThreads ;
@@ -147,7 +145,7 @@ void RKTasks_KillThreadGroup( RKTasks_ThreadGroup ThreadGroup ) ;
  
  */
 
-void RKTasks_BindTaskGroupToThreadGroup(RKTasks_TaskGroup TaskGroup, RKTasks_ThreadGroup ThreadGroup) ;
+void RKTasks_BindTaskGroupToThreadGroup( RKTasks_TaskGroup TaskGroup, RKTasks_ThreadGroup ThreadGroup ) ;
 
 /*
  RKTasks_SpawnThreads
@@ -198,7 +196,7 @@ void RKTasks_UseTaskGroup( RKTasks_TaskGroup TaskGroup ) ;
  
  */
 
-int RKTasks_GetNumOfThreads( RKTasks_ThreadGroup ThreadGroup) ;
+int RKTasks_GetNumOfThreads( RKTasks_ThreadGroup ThreadGroup ) ;
 
 /*
  RKTasks_GetNumOfTasks
@@ -207,7 +205,7 @@ int RKTasks_GetNumOfThreads( RKTasks_ThreadGroup ThreadGroup) ;
  
  */
 
-int RKTasks_GetNumOfTasks( RKTasks_TaskGroup TaskGroup) ;
+int RKTasks_GetNumOfTasks( RKTasks_TaskGroup TaskGroup ) ;
 
 /*
  RKTasks_AllTasksDone
@@ -305,13 +303,7 @@ int RKTasks_GetThreadID( RKTasks_ThisTask ThisTask ) ;
  
  */
 
-RKTasks_ThisTask RKTasks_AddTask_Func(RKTasks_TaskGroup TaskGroup, void (*TaskFunc)(void *, struct RKTasks_ThisTask_s *), void *TaskArgs ) ;
-
-///Atomics///
-
-typedef atomic_int RKT_AtomicInt ;
-
-void RKTasks_AtomicInc( RKT_AtomicInt* val ) ;
+RKTasks_ThisTask RKTasks_AddTask_Func( RKTasks_TaskGroup TaskGroup, void (*TaskFunc)(void *, struct RKTasks_ThisTask_s *), void *TaskArgs ) ;
 
 #endif /* RKTasks_h */
 

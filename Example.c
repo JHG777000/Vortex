@@ -29,9 +29,13 @@
 
 RKTasks_CreateTask(TestTask, int value ; RKMath_NewVector(Vec,3); RKMath_NewVector(Vec2,3);) { //Create a Task called TestTask
     
-    static RKT_AtomicInt counter = 0 ;
+    static RKMAtomicInt counter = 0 ;
     
-    RKTasks_AtomicInc(&counter) ;
+    int val = 0;
+    
+    RKMath_AtomicInc(&counter) ;
+    
+    val = counter ;
     
     if ( RKTArgs->value == 5 ) {
                      
@@ -39,7 +43,7 @@ RKTasks_CreateTask(TestTask, int value ; RKMath_NewVector(Vec,3); RKMath_NewVect
         
         RKMath_Mul(out, RKTArgs->Vec, RKTArgs->Vec2, 3) ;
         
-       printf("Task Id: %d: VecOut:%f %f %f %f\n", RKTasks_GetTaskID(ThisTask), out[RKM_X], out[RKM_Y], out[RKM_Z], RKMath_Dot(out, RKTArgs->Vec2, 3)) ;
+       //printf("Task Id: %d: VecOut:%f %f %f %f\n", RKTasks_GetTaskID(ThisTask), out[RKM_X], out[RKM_Y], out[RKM_Z], RKMath_Dot(out, RKTArgs->Vec2, 3)) ;
         
     } else {
         
@@ -49,9 +53,9 @@ RKTasks_CreateTask(TestTask, int value ; RKMath_NewVector(Vec,3); RKMath_NewVect
     
     RKMath_RandState randstate ;
     
-    RKMath_SeedRandomState(&randstate, RKTasks_GetTaskID(ThisTask) + counter) ;
+    RKMath_SeedRandomState(&randstate, RKTasks_GetTaskID(ThisTask) + val) ;
     
-    printf("%d, a random number from task: %d, with count: %d\n", RKMath_ARandomNumber(&randstate, 0, 5000), RKTasks_GetTaskID(ThisTask), counter) ;
+    printf("%d, a random number from task: %d, with count: %d\n", RKMath_ARandomNumber(&randstate, 0, 5000), RKTasks_GetTaskID(ThisTask), val) ;
 }
 
 int main(int argc, const char * argv[]) {

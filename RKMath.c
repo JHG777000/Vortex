@@ -397,70 +397,12 @@ void RKMath_MinMax_Solo(float* min, float* max, const float vec[], const int siz
     
 }
 
-void RKMath_Matrix_Multiply( float outmatrix[], const float matrix_a[], const float matrix_b[] ) {
+void RKMath_AtomicInc( RKMAtomicInt* val ) {
     
-    int i = 0 ;
-    
-    int j = 0 ;
-    
-    int k = 0 ;
-    
-    int l = 0 ;
-    
-    int j_ = 0 ;
-    
-    int k_ = 0 ;
-    
-    while ( l < 4 ) {
-        
-        while ( k < (4*(l+1)) ) {
-            
-            k_ = ( (k+1) >= 4 ) ? ( k / 4 ) : k ;
-            
-            while ( j < (4*(k_+1)) ) {
-                
-                j_ = ( (j+1) >= 4 ) ? ( j / 4 ) : j ;
-                
-                while ( i < (4*(j_+1)) ) {
-                    
-                    outmatrix[k] = (matrix_a[i] * matrix_b[j]) + outmatrix[k] ;
-                    
-                    i++ ;
-                }
-                
-                j++ ;
-            }
-            
-            k++ ;
-        }
-        
-        l++ ;
-    }
-    
+    atomic_fetch_add_explicit(val,1,memory_order_relaxed) ;
 }
 
-void RKMath_Matrix_Point_Multiply( float outvec[], const float matrix[], const float point[] ) {
+RKMAtomicBool RKMath_AtomicRWC( RKMAtomicInt* read_val, int write_val, int* compare_val ) {
     
-    outvec[RKM_X] = point[RKM_X] * matrix[0] + point[RKM_Y] * matrix[1] + point[RKM_Z] * matrix[2] + matrix[3] ;
-    
-    outvec[RKM_Y] = point[RKM_X] * matrix[4] + point[RKM_Y] * matrix[5] + point[RKM_Z] * matrix[6] + matrix[7] ;
-    
-    outvec[RKM_Z] = point[RKM_X] * matrix[8] + point[RKM_Y] * matrix[9] + point[RKM_Z] * matrix[10] + matrix[11] ;
-    
-    float w = point[RKM_X] * matrix[12] + point[RKM_Y] * matrix[13] + point[RKM_Z] * matrix[14] + matrix[15] ;
-    
-    RKMath_Vectorthat(w_vec, w) ;
-    
-    RKMath_Div(outvec, outvec, w_vec, 3) ;
+    return atomic_compare_exchange_strong(read_val, compare_val, write_val) ;
 }
-
-void RKMath_Matrix_Vec_Multiply( float outvec[], const float matrix[], const float vec[] ) {
-    
-    outvec[RKM_X] = vec[RKM_X] * matrix[0] + vec[RKM_Y] * matrix[1] + vec[RKM_Z] * matrix[2] ;
-    
-    outvec[RKM_Y] = vec[RKM_X] * matrix[4] + vec[RKM_Y] * matrix[5] + vec[RKM_Z] * matrix[6] ;
-    
-    outvec[RKM_Z] = vec[RKM_X] * matrix[8] + vec[RKM_Y] * matrix[9] + vec[RKM_Z] * matrix[10]  ;
-    
-   }
-

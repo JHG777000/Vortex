@@ -281,14 +281,13 @@ void RKTasks_KillThreadGroup( RKTasks_ThreadGroup ThreadGroup ) {
     free(ThreadGroup) ;
 }
 
-void RKTasks_BindTaskGroupToThreadGroup(RKTasks_TaskGroup TaskGroup, RKTasks_ThreadGroup ThreadGroup) {
+void RKTasks_BindTaskGroupToThreadGroup( RKTasks_TaskGroup TaskGroup, RKTasks_ThreadGroup ThreadGroup ) {
     
     RKTasks_LockLock(ThreadGroup->thread_group_lock) ;
     
     ThreadGroup->Current_TaskGroup = TaskGroup ;
     
     RKTasks_UnLockLock(ThreadGroup->thread_group_lock) ;
-    
 }
 
 static void *RKTasks_WorkerThread( void *argument ) {
@@ -499,7 +498,7 @@ void RKTasks_UseTaskGroup( RKTasks_TaskGroup TaskGroup ) {
     RKTasks_UnLockLock(TaskGroup->task_group_lock) ;
 }
 
-int RKTasks_GetNumOfThreads( RKTasks_ThreadGroup ThreadGroup) {
+int RKTasks_GetNumOfThreads( RKTasks_ThreadGroup ThreadGroup ) {
     
     int num_of_threads = 0 ;
     
@@ -513,7 +512,7 @@ int RKTasks_GetNumOfThreads( RKTasks_ThreadGroup ThreadGroup) {
     
 }
 
-int RKTasks_GetNumOfTasks( RKTasks_TaskGroup TaskGroup) {
+int RKTasks_GetNumOfTasks( RKTasks_TaskGroup TaskGroup ) {
     
     int num_of_tasks = 0 ;
     
@@ -626,7 +625,7 @@ int RKTasks_GetThreadID( RKTasks_ThisTask ThisTask ) {
     return ThisTask->thread_id ;
 }
 
-RKTasks_ThisTask RKTasks_AddTask_Func(RKTasks_TaskGroup TaskGroup, void (*TaskFunc)(void *, struct RKTasks_ThisTask_s *), void *TaskArgs ) {
+RKTasks_ThisTask RKTasks_AddTask_Func( RKTasks_TaskGroup TaskGroup, void (*TaskFunc)(void *, struct RKTasks_ThisTask_s *), void *TaskArgs ) {
     
     TaskArgs_Type_ptr Args = TaskArgs ;
     
@@ -662,9 +661,4 @@ RKTasks_ThisTask RKTasks_AddTask_Func(RKTasks_TaskGroup TaskGroup, void (*TaskFu
     
     return Task->ThisTask ;
     
-}
-
-void RKTasks_AtomicInc( RKT_AtomicInt* val ) {
-    
-    atomic_fetch_add_explicit(val,1,memory_order_relaxed) ;
 }

@@ -20,7 +20,12 @@
 
 #ifndef MBRT_RKMath_h
 #define MBRT_RKMath_h
+
 #include <math.h>
+
+#include <stdatomic.h>
+
+#include <stdbool.h>
 
 #define RKM_X 0
 
@@ -108,12 +113,14 @@ vec_a[2] = vec_b[2]  \
 
  void RKMath_Clamp(float vec[], const float min, const float max, const int size) ;
 
- //Untested
+///Atomics///
 
- void RKMath_Matrix_Multiply( float outmatrix[], const float matrix_a[], const float matrix_b[] ) ;
+typedef atomic_int RKMAtomicInt ;
 
- void RKMath_Matrix_Point_Multiply( float outvec[], const float matrix[], const float point[] ) ;
+typedef atomic_bool RKMAtomicBool ;
 
- void RKMath_Matrix_Vec_Multiply( float outvec[], const float matrix[], const float vec[] ) ;
+void RKMath_AtomicInc( RKMAtomicInt* val ) ;
+
+RKMAtomicBool RKMath_AtomicRWC( RKMAtomicInt* read_val, int write_val, int* compare_val ) ;
 
 #endif
