@@ -139,6 +139,17 @@ float RKMath_AMoreRandomFloat( RKMath_RandState* randstate ) {
     return (((float)RKMath_AMoreRandomNumber(randstate, 0, RAND_MAX)) / RAND_MAX) ;
 }
 
+double RKMath_ARandomDouble( RKMath_RandState* randstate ) {
+    
+    return (((double)RKMath_ARandomNumber(randstate, 0, RAND_MAX)) / RAND_MAX) ;
+}
+
+double RKMath_AMoreRandomDouble( RKMath_RandState* randstate ) {
+    
+    return (((double)RKMath_AMoreRandomNumber(randstate, 0, RAND_MAX)) / RAND_MAX) ;
+}
+
+
  float RKMath_Sum(float vec[], const int size) {
     
     int i = 0 ;

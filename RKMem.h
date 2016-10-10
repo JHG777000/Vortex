@@ -20,7 +20,36 @@
 
 #ifndef RKLib_RKMem_h
 #define RKLib_RKMem_h
-#include <string.h>
+
+typedef float RKFloat ;
+
+typedef double RKFDouble ;
+
+typedef unsigned char RKByte ;
+
+typedef signed char RKSByte ;
+
+typedef signed short RKShort ;
+
+typedef unsigned short RKUShort ;
+
+typedef signed int RKInt ;
+
+typedef unsigned int RKUInt ;
+
+#ifdef _WIN32
+
+typedef signed long long RKLong ;
+
+typedef unsigned long long RKULong ;
+
+#else
+
+typedef signed long RKLong ;
+
+typedef unsigned long RKULong ;
+
+#endif
 
 #define RKMem_CArray(size, type) (type*) malloc(sizeof(type) * (size))
 
@@ -105,6 +134,8 @@ void* RKStore_GetItem( RKStore store, const char* label ) ;
 int RKStore_ItemExists( RKStore store, const char* label ) ;
 
 int RKStore_AddItemToList( RKStore store, void *item ) ;
+
+RKList RKStore_GetList( RKStore store ) ;
 
 void RKStore_IterateStoreWith( RKMemIteratorFuncType iterator, RKStore store ) ;
 

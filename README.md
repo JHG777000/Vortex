@@ -25,9 +25,9 @@ A C List implementation.
 
 A C Dictionary type implementation.
 
-—Possible Future Features:
+—RKArgs—
 
--Memory pools which track the amount of memory stored.
+Allows for dynamically typed variadic functions in C.
 
 —RKMath—
 RKMath, a n-dimensional vector math library designed to take advantage of auto-vectorization.

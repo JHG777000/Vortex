@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "RKMem.h"
+#include "RKArgs.h"
 #include "RKMath.h"
 #include "RKTasks.h"
 
@@ -43,7 +44,7 @@ RKTasks_CreateTask(TestTask, int value ; RKMath_NewVector(Vec,3); RKMath_NewVect
         
         RKMath_Mul(out, RKTArgs->Vec, RKTArgs->Vec2, 3) ;
         
-       //printf("Task Id: %d: VecOut:%f %f %f %f\n", RKTasks_GetTaskID(ThisTask), out[RKM_X], out[RKM_Y], out[RKM_Z], RKMath_Dot(out, RKTArgs->Vec2, 3)) ;
+       printf("Task Id: %d: VecOut:%f %f %f %f\n", RKTasks_GetTaskID(ThisTask), out[RKM_X], out[RKM_Y], out[RKM_Z], RKMath_Dot(out, RKTArgs->Vec2, 3)) ;
         
     } else {
         
@@ -58,8 +59,40 @@ RKTasks_CreateTask(TestTask, int value ; RKMath_NewVector(Vec,3); RKMath_NewVect
     printf("%d, a random number from task: %d, with count: %d\n", RKMath_ARandomNumber(&randstate, 0, 5000), RKTasks_GetTaskID(ThisTask), val) ;
 }
 
-int main(int argc, const char * argv[]) {
+void rkargs_example2( RKArgs args, RKArgs args2 ) {
+    
+    RKArgs_UseArgs(args) ;
+    
+    printf("%d\n",RKArgs_GetNextArg(args, int)) ;
+    
+    printf("%d\n",RKArgs_GetNextArg(args, int)) ;
+    
+    printf("%d\n",RKArgs_GetNextArg(args, int)) ;
+    
+    printf("%s\n",RKArgs_GetNextArg(args, char*)) ;
+    
+    printf("%s\n",RKArgs_GetNextArg(args2, char*)) ;
+    
+    printf("%s\n",RKArgs_GetNextArg(args2, char*)) ;
+    
+    printf("%20.18f\n",RKArgs_GetNextArg(args2, float)) ;
+    
+    printf("%20.18f\n",RKArgs_GetNextArg(args2, double)) ;
+    
+    printf("%hd\n",RKArgs_GetNextArg(args2, short)) ;
+}
 
+void rkargs_example1(void) {
+    
+    rkargs_example2( newargs(ints(347342,62,754),args(char*,"Hello")), newargs(args(char*,"World!!!!","and stuff"),
+                                                                     
+                                                                     args(float,3.141592653589793238),args(double,3.141592653589793238),shorts(3)) ) ;
+}
+
+int main(int argc, const char * argv[]) {
+    
+    rkargs_example1() ;
+    
     //Note: Due to RKTasks flexible design, some of the following lines of code could be rearranged
     
     RKTasks_ThreadGroup ThreadGroup = RKTasks_NewThreadGroup(1, 10, 4, 1, 7) ;

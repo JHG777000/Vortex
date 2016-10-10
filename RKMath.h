@@ -25,8 +25,6 @@
 
 #include <stdatomic.h>
 
-#include <stdbool.h>
-
 #define RKM_X 0
 
 #define RKM_Y 1
@@ -76,6 +74,10 @@ vec_a[2] = vec_b[2]  \
  float RKMath_ARandomFloat( RKMath_RandState* randstate ) ;
 
  float RKMath_AMoreRandomFloat( RKMath_RandState* randstate ) ;
+
+ double RKMath_ARandomDouble( RKMath_RandState* randstate ) ;
+
+ double RKMath_AMoreRandomDouble( RKMath_RandState* randstate ) ;
 
  float RKMath_Sum(float vec[], const int size) ;
 
