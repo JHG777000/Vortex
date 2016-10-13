@@ -30,11 +30,13 @@ A C Dictionary type implementation.
 Allows for dynamically typed variadic functions in C.
 
 —RKMath—
+
 RKMath, a n-dimensional vector math library designed to take advantage of auto-vectorization.
 
 Xor based PRNG.
 
 —RKTasks—
+
 RKTasks, a thread pool library. Uses pthreads(for now) as a backend.
 
 —Possible Future Features:
