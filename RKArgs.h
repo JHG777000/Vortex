@@ -44,7 +44,7 @@ typedef struct RKArgs_s { int verify ; int index ; RKArgArray array ; } *RKArgs 
 
 #define RKArgs_GetNextItem(args,type) (type)RKArgs_GetNextArgFunc(args,#type,1)
 
-#define RKArgs_GetItemWithIndex(args,type,index) (type)RKArgs_GetNextArgFunc(args,index,#type,1)
+#define RKArgs_GetItemWithIndex(args,type,index) (type)RKArgs_GetArgWithIndexFunc(args,index,#type,1)
 
 #define UseArgs(args) RKArgs_UseArgs(args)
 

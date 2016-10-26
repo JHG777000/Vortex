@@ -51,7 +51,9 @@ void* RKArgs_GetArgWithIndexFunc( RKArgs args, int index, const char* typestring
         int num_of_items = (base->base_type == RKArgs_Proxy_type) ? base->args->num_of_bytes / base->args->size_in_bytes : 1 ;
         
         if ( (index < 0) || (index >= num_of_items) ) {
-                
+           
+          if ( index < 0 ) return NULL ;
+            
           index -= num_of_items ;
                 
           arg_index++ ;
