@@ -19,7 +19,8 @@ RKLib’s goal is to provide a framework for performance and cross-platform supp
 RKLib is currently composed of the following libraries:
 
 —RKMem—
-RKMem, provides some nice macros and a function to make dealing with memory a little easier in C.
+
+Provides some nice macros and a function to make dealing with memory a little easier in C, as well as:
 
 A C List implementation.
 
