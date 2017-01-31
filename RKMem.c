@@ -27,13 +27,15 @@
 
  #define RKS_MAX_LETTER_NUM 94
 
+ struct RKString_s { RKLong size ; char* string ; } ;
+
  typedef struct RKStore_letter_s { RKList_node node ; struct RKStore_letter_s* next_alphabet ; } RKStore_letter ;
 
  struct RKStore_s { RKStore_letter* dictionary ; RKList items ; } ;
 
  struct RKList_node_s { struct RKList_node_s* before ; struct RKList_node_s* after ; void* data ; } ;
 
- struct RKList_object_s { int num_of_nodes ; RKList_node first ; RKList_node last ; } ;
+ struct RKList_s { int num_of_nodes ; RKList_node first ; RKList_node last ; } ;
 
  void* RKMem_Realloc_Func(void* data, size_t newsize, size_t oldsize, int NULLonError0No1Yes) {
     
@@ -66,7 +68,7 @@
 
 RKList RKList_NewList( void ) {
     
-    RKList newlist = RKMem_NewMemOfType(RKList_object) ;
+    RKList newlist = RKMem_NewMemOfType(struct RKList_s) ;
     
     newlist->num_of_nodes = 0 ;
     
@@ -91,7 +93,7 @@ RKList_node RKList_AddToList( RKList list, void* data ) {
     
     if ( list->num_of_nodes == 0 ) {
         
-        list->first = RKMem_NewMemOfType(RKList_node_object) ;
+        list->first = RKMem_NewMemOfType(struct RKList_node_s) ;
         
         list->first->before = NULL ;
         
@@ -101,7 +103,7 @@ RKList_node RKList_AddToList( RKList list, void* data ) {
         
     } else {
         
-        list->last->after = RKMem_NewMemOfType(RKList_node_object) ;
+        list->last->after = RKMem_NewMemOfType(struct RKList_node_s) ;
         
         list->last->after->before = list->last ;
         
@@ -585,4 +587,34 @@ void RKStore_DestroyStore( RKStore store ) {
     if (store->items != NULL) RKList_DeleteList(store->items) ;
     
     free(store) ;
+}
+
+RKString RKString_NewString( const char* text ) {
+    
+    RKString string = RKMem_NewMemOfType(struct RKString_s) ;
+    
+    string->size = strlen(text) ;
+    
+    string->string = RKMem_CArray(string->size+1, char) ;
+    
+    strcpy(string->string, text) ;
+    
+    return string ;
+}
+
+void RKString_DestroyString( RKString string ) {
+    
+    free(string->string) ;
+    
+    free(string) ;
+}
+
+RKLong RKString_GetSize( RKString string ) {
+    
+    return string->size ;
+}
+
+char* RKString_GetString( RKString string ) {
+    
+    return string->string ;
 }

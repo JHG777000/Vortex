@@ -65,13 +65,13 @@ typedef void (*RKMemIteratorFuncType)(void* data) ;
 
 typedef void* (*RKList_GetDataFromArrayFuncType)(void* array, int index) ;
 
-typedef struct RKList_node_s RKList_node_object ;
+typedef struct RKList_node_s* RKList_node ;
 
-typedef RKList_node_object* RKList_node ;
+typedef struct RKList_s* RKList ;
 
-typedef struct RKList_object_s RKList_object ;
+typedef struct RKStore_s* RKStore ;
 
-typedef RKList_object* RKList ;
+typedef struct RKString_s* RKString ;
 
 RKList RKList_NewList( void ) ;
 
@@ -121,8 +121,6 @@ void RKList_DeleteNodeWithIndex( RKList list, int index ) ;
 
 void RKList_IterateListWith( RKMemIteratorFuncType iterator, RKList list ) ;
 
-typedef struct RKStore_s* RKStore ;
-
 RKStore RKStore_NewStore( void ) ;
 
 int RKStore_AddItem( RKStore store, void* item, const char* label ) ;
@@ -140,5 +138,13 @@ RKList RKStore_GetList( RKStore store ) ;
 void RKStore_IterateStoreWith( RKMemIteratorFuncType iterator, RKStore store ) ;
 
 void RKStore_DestroyStore( RKStore store ) ;
+
+RKString RKString_NewString( const char* text ) ;
+
+void RKString_DestroyString( RKString string ) ;
+
+RKLong RKString_GetSize( RKString string ) ;
+
+char* RKString_GetString( RKString string ) ;
 
 #endif
