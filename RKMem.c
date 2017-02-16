@@ -27,7 +27,7 @@
 
  #define RKS_MAX_LETTER_NUM 94
 
- struct RKString_s { RKLong size ; char* string ; } ;
+ struct RKString_s { RKULong size ; char* string ; } ;
 
  typedef struct RKStore_letter_s { RKList_node node ; struct RKStore_letter_s* next_alphabet ; } RKStore_letter ;
 
@@ -609,7 +609,7 @@ void RKString_DestroyString( RKString string ) {
     free(string) ;
 }
 
-RKLong RKString_GetSize( RKString string ) {
+RKULong RKString_GetSize( RKString string ) {
     
     return string->size ;
 }

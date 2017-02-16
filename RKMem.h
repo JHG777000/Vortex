@@ -143,7 +143,7 @@ RKString RKString_NewString( const char* text ) ;
 
 void RKString_DestroyString( RKString string ) ;
 
-RKLong RKString_GetSize( RKString string ) ;
+RKULong RKString_GetSize( RKString string ) ;
 
 char* RKString_GetString( RKString string ) ;
 
