@@ -59,6 +59,16 @@ typedef unsigned long RKULong ;
 
 #define RKMem_AddToArray(array_a,array_b,array_a_size,array_b_size,type) array_a = RKMem_Realloc(array_a,(array_a_size+array_b_size),array_a_size,type,1) ; memcpy(array_a[array_a_size+1],array_b,(array_b_size*sizeof(type)))
 
+#define rkstr( string ) RKString_NewString(string)
+
+#define rkstrfree( string ) RKString_DestroyString(string)
+
+#define rkstrprint( string ) RKString_PrintString(string)
+
+#define rkany(any) RKAny_NewAny(&any,sizeof(any))
+
+#define rkget(type,any) *((type*)any)
+
 void* RKMem_Realloc_Func(void* data, size_t newsize, size_t oldsize, int NULLonError0No1Yes) ;
 
 typedef void (*RKMemIteratorFuncType)(void* data) ;
@@ -72,6 +82,8 @@ typedef struct RKList_s* RKList ;
 typedef struct RKStore_s* RKStore ;
 
 typedef struct RKString_s* RKString ;
+
+typedef void* RKAny ;
 
 RKList RKList_NewList( void ) ;
 
@@ -146,5 +158,9 @@ void RKString_DestroyString( RKString string ) ;
 RKULong RKString_GetSize( RKString string ) ;
 
 char* RKString_GetString( RKString string ) ;
+
+void RKString_PrintString( RKString string ) ;
+
+void* RKAny_NewAny( void* any, RKULong size ) ;
 
 #endif

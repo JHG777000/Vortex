@@ -618,3 +618,17 @@ char* RKString_GetString( RKString string ) {
     
     return string->string ;
 }
+
+void RKString_PrintString( RKString string ) {
+    
+    printf("%s", string->string) ;
+}
+
+void* RKAny_NewAny( void* any, RKULong size ) {
+    
+    char* ptr = malloc(size) ;
+    
+    memcpy(ptr, any, size) ;
+    
+    return ptr ;
+}

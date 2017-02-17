@@ -93,6 +93,28 @@ int main(int argc, const char * argv[]) {
     
     rkargs_example1() ;
     
+    RKString string = rkstr("Hello Earth!!!!\n"
+                            "Hi!\n") ;
+    rkstrprint(string) ;
+    
+    RKAny any1 = rkany(string) ;
+    
+    rkstrprint(rkget(RKString,any1)) ;
+    
+    int z = 0 ;
+    
+    z = 37482 ;
+    
+    RKAny any2 = rkany(z) ;
+    
+    printf("hello:%d\n",rkget(int, any2)) ;
+    
+    rkstrfree(string) ;
+    
+    free(any1) ;
+    
+    free(any2) ;
+    
     //Note: Due to RKTasks flexible design, some of the following lines of code could be rearranged
     
     RKTasks_ThreadGroup ThreadGroup = RKTasks_NewThreadGroup(1, 10, 4, 1, 7) ;
