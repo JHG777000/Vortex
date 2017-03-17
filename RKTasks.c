@@ -507,6 +507,8 @@ void RKTasks_WaitForTasksToBeDone( RKTasks_TaskGroup taskgroup ) {
     
     if ( taskgroup->num_of_tasks == 0 ) return ;
     
+    if ( (taskgroup->done) || (taskgroup->dead) ) return ;
+    
     pthread_mutex_lock(&taskgroup->done_tasks_mutex) ;
     
     pthread_cond_wait(&taskgroup->done_tasks_cond, &taskgroup->done_tasks_mutex) ;
