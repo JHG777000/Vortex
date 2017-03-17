@@ -259,7 +259,7 @@ void RKTasks_BindTaskGroupToThreadGroup( RKTasks_TaskGroup taskgroup, RKTasks_Th
 
 void RKTasks_UnbindTaskGroupFromThreadGroup( RKTasks_TaskGroup taskgroup, RKTasks_ThreadGroup threadgroup ) {
     
-    if ( !threadgroup->init ) return ;
+    if ( !threadgroup->init || !taskgroup->bound ) return ;
     
     RKTasks_SleepThreadGroup(threadgroup) ;
 
