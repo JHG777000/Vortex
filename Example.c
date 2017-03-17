@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2016 Jacob Gordon. All rights reserved.
+ Copyright (c) 2017 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -28,7 +28,13 @@
 #include "RKMath.h"
 #include "RKTasks.h"
 
-RKTasks_CreateTask(TestTask, int value ; RKMath_NewVector(Vec,3); RKMath_NewVector(Vec2,3);) { //Create a Task called TestTask
+RKTasks_DefineModule(TestMod, RKTasks_GetModuleData(TestMod,module)->value = 0 ;
+                     
+printf("From Mod Destructor: %d!!!!!\n",RKTasks_GetModuleData(TestMod,module)->value2), int value ; int value2 ;
+                     
+RKMath_NewVector(Vec,3); RKMath_NewVector(Vec2,3);) ;
+
+RKTasks_CreateTask(TestTask) { //Create a Task called TestTask
     
     static RKMAtomicInt counter = 0 ;
     
@@ -38,28 +44,58 @@ RKTasks_CreateTask(TestTask, int value ; RKMath_NewVector(Vec,3); RKMath_NewVect
     
     val = counter ;
     
-    if ( RKTArgs->value == 5 ) {
-                     
+    int value = RKTasks_GetModuleData(TestMod,module)->value ;
+    
+    if ( value == 5 ) {
+        
         RKMath_NewVector(out, 3) ;
         
-        RKMath_Mul(out, RKTArgs->Vec, RKTArgs->Vec2, 3) ;
+        RKMath_NewVector(Vec,3) ;
         
-       printf("Task Id: %d: VecOut:%f %f %f %f\n", RKTasks_GetTaskID(ThisTask), out[RKM_X], out[RKM_Y], out[RKM_Z], RKMath_Dot(out, RKTArgs->Vec2, 3)) ;
+        RKMath_NewVector(Vec2,3) ;
+        
+        RKMath_Equal(Vec, RKTasks_GetModuleData(TestMod,module)->Vec, 3) ;
+        
+        RKMath_Equal(Vec2, RKTasks_GetModuleData(TestMod,module)->Vec2, 3) ;
+        
+        RKMath_Mul(out, Vec, Vec2, 3) ;
+        
+        printf("Task Id: %d: VecOut:%f %f %f %f\n", RKTasks_GetTaskID(thistask), out[RKM_X], out[RKM_Y], out[RKM_Z], RKMath_Dot(out, Vec2, 3)) ;
         
     } else {
         
-       printf("NOT 5, NOOOOO!!!!!\n") ;
-        
+        printf("NOT 5, NOOOOO!!!!!\n") ;
     }
     
     RKMath_RandState randstate ;
     
-    RKMath_SeedRandomState(&randstate, RKTasks_GetTaskID(ThisTask) + val) ;
+    RKMath_SeedRandomState(&randstate, RKTasks_GetTaskID(thistask) + val) ;
     
-    printf("%d, a random number from task: %d, with count: %d\n", RKMath_ARandomNumber(&randstate, 0, 5000), RKTasks_GetTaskID(ThisTask), val) ;
+    printf("%d, a random number from task: %d, with count: %d\n", RKMath_ARandomNumber(&randstate, 0, 5000), RKTasks_GetTaskID(thistask), val) ;
+    
+    RKTasks_GetModuleData(TestMod,module)->value2 = val ;
+    
+    return 1 ; //return 0 or false, if not done
 }
 
-void rkargs_example2( RKArgs args, RKArgs args2 ) {
+
+void rkargs_example3( RKArgs args ) {
+    
+    printf("And once more:\n") ;
+    
+    RKArgs_UseArgs(args) ;
+    
+    printf("%d\n",RKArgs_GetNextArg(args, int)) ;
+    
+    printf("%d\n",RKArgs_GetNextArg(args, int)) ;
+    
+    printf("%d\n",RKArgs_GetNextArg(args, int)) ;
+    
+    printf("%s\n",RKArgs_GetNextArg(args, char*)) ;
+    
+}
+
+RKArgs rkargs_example2( RKArgs args, RKArgs args2 ) {
     
     RKArgs_UseArgs(args) ;
     
@@ -80,18 +116,24 @@ void rkargs_example2( RKArgs args, RKArgs args2 ) {
     printf("%20.18f\n",RKArgs_GetNextArg(args2, double)) ;
     
     printf("%hd\n",RKArgs_GetNextArg(args2, short)) ;
+    
+    return RKArgs_CloneArgs(args) ;
 }
 
-void rkargs_example1(void) {
+RKArgs rkargs_example1(void) {
     
-    rkargs_example2( newargs(ints(347342,62,754),args(char*,"Hello")), newargs(args(char*,"World!!!!","and stuff"),
+    return rkargs_example2( newargs(ints(347342,62,754),args(char*,"Hello")), newargs(args(char*,"World!!!!","and stuff"),
                                                                      
                                                                      args(float,3.141592653589793238),args(double,3.141592653589793238),shorts(3)) ) ;
 }
 
 int main(int argc, const char * argv[]) {
     
-    rkargs_example1() ;
+    RKArgs args = rkargs_example1() ;
+    
+    rkargs_example3(args) ;
+    
+    RKArgs_DestroyClonedArgs(args) ;
     
     RKString string = rkstr("Hello Earth!!!!\n"
                             "Hi!\n") ;
@@ -117,17 +159,17 @@ int main(int argc, const char * argv[]) {
     
     //Note: Due to RKTasks flexible design, some of the following lines of code could be rearranged
     
-    RKTasks_ThreadGroup ThreadGroup = RKTasks_NewThreadGroup(1, 10, 4, 1, 7) ;
+    RKTasks_ThreadGroup ThreadGroup = RKTasks_NewThreadGroup(10) ;
     
     RKTasks_TaskGroup TaskGroup = RKTasks_NewTaskGroup() ;
     
-    RKTasks_BindTaskGroupToThreadGroup(TaskGroup, ThreadGroup) ; //TaskGroups need to be bound or they will not run
+    RKTasks_StartThreadGroup(ThreadGroup) ;
     
-    RKTasks_RunThreadGroup(ThreadGroup) ; //Activates a thread group, only an active thread group will run(this is also when thread creation happens)
+    RKTasks_Module module = RKTasks_CreateModule(TestMod) ;
     
-    RKTasks_UseTaskGroup(TaskGroup) ; //Must be called before each time a TaskGroup is to run
-
-    int i = 0 ;
+    RKTasks_GetModuleData(TestMod,module)->value = 5 ;
+    
+    RKTasks_GetModuleData(TestMod,module)->value2 = 0 ;
     
     RKMath_NewVector(MyVec, 3) ; //Creates a 3-dimensional vector called MyVec
     
@@ -137,36 +179,27 @@ int main(int argc, const char * argv[]) {
     
     MyVec2[RKM_X]++ ; //Add one to the X-value of MyVec2
     
-    RKTasks_Args(TestTask) ; //Declares task args for TestTask
+    RKMath_Equal(RKTasks_GetModuleData(TestMod,module)->Vec, MyVec, 3) ;
     
-    while ( i < 2000 ) {
-        
-        RKTasks_UseArgs(TestTask) ; //Mallocs a new set of args for each task
-        
-        TestTask_Args->value = 5 ;
-        
-        RKMath_VectorCopy(TestTask_Args->Vec, MyVec) ; //Copy vector via macro
-        
-        RKMath_Equal(TestTask_Args->Vec2, MyVec2, 3) ; //Copy vector via function
-        
-        RKTasks_AddTask(TaskGroup, TestTask, TestTask_Args) ; //Add the task TestTask with args to the task group, TaskGroup
-        
-        i++ ;
-    }
+    RKMath_Equal(RKTasks_GetModuleData(TestMod,module)->Vec2, MyVec2, 3) ;
     
-    RKTasks_WaitForTasksToBeDone(TaskGroup) ; //Wait for all task to run
+    RKTasks_AddTasks(TaskGroup, 2000, TestTask, module) ; //can not be called on a bound taskgroup
     
-    RKTasks_UseTaskGroup(TaskGroup) ; //Use the same TaskGroup for a second time
+    RKTasks_BindTaskGroupToThreadGroup(TaskGroup, ThreadGroup) ;
     
-    RKTasks_WaitForTasksToBeDone(TaskGroup) ; //Wait for all task to run
+    RKTasks_WaitForTasksToBeDone(TaskGroup) ;
     
-    RKTasks_UseTaskGroup(TaskGroup) ;  //Use the same TaskGroup for a third time
+    RKTasks_ResetTaskGroup(TaskGroup) ;
     
-    RKTasks_WaitForTasksToBeDone(TaskGroup) ; //Wait for all task to run
+    RKTasks_WaitForTasksToBeDone(TaskGroup) ;
     
-    RKTasks_KillThreadGroup(ThreadGroup) ; //Stop all threads and delete ThreadGroup
+    RKTasks_ResetTaskGroup(TaskGroup) ;
     
-    RKTasks_KillTaskGroup(TaskGroup) ; //Delete TaskGroup
+    RKTasks_WaitForTasksToBeDone(TaskGroup) ;
+    
+    RKTasks_DestroyThreadGroup(ThreadGroup) ;
+    
+    RKTasks_DestroyTaskGroup(TaskGroup, RKTasks_MainThreadID) ;
     
     printf("Hello World!!!!!\n") ;
     

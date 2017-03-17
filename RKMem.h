@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2016 Jacob Gordon. All rights reserved.
+ Copyright (c) 2017 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -21,9 +21,11 @@
 #ifndef RKLib_RKMem_h
 #define RKLib_RKMem_h
 
+#include <stdint.h>
+
 typedef float RKFloat ;
 
-typedef double RKFDouble ;
+typedef double RKDouble ;
 
 typedef unsigned char RKByte ;
 
@@ -80,6 +82,8 @@ typedef struct RKList_node_s* RKList_node ;
 typedef struct RKList_s* RKList ;
 
 typedef struct RKStore_s* RKStore ;
+
+typedef struct RKIndex_s* RKIndex ;
 
 typedef struct RKString_s* RKString ;
 
@@ -151,6 +155,20 @@ void RKStore_IterateStoreWith( RKMemIteratorFuncType iterator, RKStore store ) ;
 
 void RKStore_DestroyStore( RKStore store ) ;
 
+RKIndex RKIndex_NewIndex( int max_num_of_items ) ;
+
+void RKIndex_DestroyIndex( RKIndex rkindex ) ;
+
+int RKIndex_AddItem( RKIndex rkindex, void *item ) ;
+
+int RKIndex_SetItem( RKIndex rkindex, void *item, int index ) ;
+
+void* RKIndex_GetItem( RKIndex rkindex, int index ) ;
+
+int RKIndex_GetMaxNumOfItems( RKIndex rkindex ) ;
+
+int RKIndex_GetNumOfItems( RKIndex rkindex ) ;
+
 RKString RKString_NewString( const char* text ) ;
 
 void RKString_DestroyString( RKString string ) ;
@@ -158,6 +176,8 @@ void RKString_DestroyString( RKString string ) ;
 RKULong RKString_GetSize( RKString string ) ;
 
 char* RKString_GetString( RKString string ) ;
+
+char* RKString_ConvertToCString( RKString string ) ;
 
 void RKString_PrintString( RKString string ) ;
 

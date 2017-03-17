@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2016 Jacob Gordon. All rights reserved.
+ Copyright (c) 2017 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -28,6 +28,8 @@
  #define RKS_MAX_LETTER_NUM 94
 
  struct RKString_s { RKULong size ; char* string ; } ;
+
+ struct RKIndex_s { RKStore store ; int max_num_of_items ; int num_of_items ; } ;
 
  typedef struct RKStore_letter_s { RKList_node node ; struct RKStore_letter_s* next_alphabet ; } RKStore_letter ;
 
@@ -510,7 +512,7 @@ int RKStore_AddItem( RKStore store, void* item, const char* label ) {
         return RKS_StoreItem(store, item, label) ;
     }
     
-    return 1 ;
+    return 0 ;
 }
 
 int RKStore_RemoveItem( RKStore store, const char* label ) {
@@ -589,6 +591,110 @@ void RKStore_DestroyStore( RKStore store ) {
     free(store) ;
 }
 
+RKIndex RKIndex_NewIndex( int max_num_of_items ) {
+    
+    RKIndex rkindex = RKMem_NewMemOfType(struct RKIndex_s) ;
+    
+    rkindex->max_num_of_items = max_num_of_items ;
+    
+    rkindex->store = RKStore_NewStore() ;
+    
+    rkindex->num_of_items = 0 ;
+    
+    return rkindex ;
+}
+
+void RKIndex_DestroyIndex( RKIndex rkindex ) {
+    
+    RKStore_DestroyStore(rkindex->store) ;
+    
+    free(rkindex) ;
+}
+
+int RKIndex_AddItem( RKIndex rkindex, void *item ) {
+    
+    char string[100] ;
+    
+    int index = rkindex->num_of_items + 1 ;
+    
+    if ( rkindex->max_num_of_items > 0 ) {
+        
+        if ( index > rkindex->max_num_of_items ) return 0 ;
+    }
+    
+    if ( index < 0 ) return 0 ;
+    
+    snprintf(string, 100, "%d", index) ;
+    
+    if ( RKStore_ItemExists(rkindex->store, string) ) return 0 ;
+    
+    rkindex->num_of_items++ ;
+    
+    return RKStore_AddItem(rkindex->store, item, string) ;
+}
+
+int RKIndex_SetItem( RKIndex rkindex, void *item, int index ) {
+    
+    char string[100] ;
+    
+    if ( rkindex->max_num_of_items > 0 ) {
+        
+        if ( index > rkindex->max_num_of_items ) return 0 ;
+    }
+    
+    if ( index < 0 ) return 0 ;
+    
+    snprintf(string, 100, "%d", index) ;
+    
+    if ( !RKStore_ItemExists(rkindex->store, string) ) return 0 ;
+    
+    return RKStore_AddItem(rkindex->store, item, string) ;
+}
+
+void* RKIndex_GetItem( RKIndex rkindex, int index ) {
+    
+    char string[100] ;
+    
+    if ( rkindex->max_num_of_items > 0 ) {
+        
+        if ( index > rkindex->max_num_of_items ) return NULL ;
+    }
+    
+    if ( index < 0 ) return NULL ;
+    
+    snprintf(string, 100, "%d", index) ;
+    
+    return RKStore_GetItem(rkindex->store, string) ;
+}
+
+int RKIndex_RemoveItem( RKIndex rkindex, int index ) {
+    
+    char string[100] ;
+    
+    if ( rkindex->max_num_of_items > 0 ) {
+        
+        if ( index > rkindex->max_num_of_items ) return 0 ;
+    }
+    
+    if ( index < 0 ) return 0 ;
+    
+    rkindex->num_of_items-- ;
+    
+    snprintf(string, 100, "%d", index) ;
+    
+    return RKStore_RemoveItem(rkindex->store, string) ;
+}
+
+int RKIndex_GetMaxNumOfItems( RKIndex rkindex ) {
+    
+    return rkindex->max_num_of_items ;
+}
+
+int RKIndex_GetNumOfItems( RKIndex rkindex ) {
+    
+    return rkindex->num_of_items ;
+}
+
 RKString RKString_NewString( const char* text ) {
     
     RKString string = RKMem_NewMemOfType(struct RKString_s) ;
@@ -617,6 +723,15 @@ RKULong RKString_GetSize( RKString string ) {
 char* RKString_GetString( RKString string ) {
     
     return string->string ;
+}
+
+char* RKString_ConvertToCString( RKString string ) {
+    
+    char* str = string->string ;
+    
+    free(string) ;
+    
+    return str ;
 }
 
 void RKString_PrintString( RKString string ) {

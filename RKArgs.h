@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2016 Jacob Gordon. All rights reserved.
+ Copyright (c) 2017 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -26,7 +26,7 @@ typedef struct RKArgArray_s { int size_in_bytes ; int num_of_bytes ; void* array
 
 typedef struct RKArgsBase_s { int verify ; RKArgsBaseType base_type ; void* type_array ; RKArgArray args ; } *RKArgsBase ;
 
-typedef struct RKArgs_s { int verify ; int index ; RKArgArray array ; } *RKArgs ;
+typedef struct RKArgs_s { int verify ; int index ; int cloned ; RKArgArray array ; } *RKArgs ;
 
 #define RKArgs_Dynamic_Type_Protocol int verify ; RKArgsBaseType base_type ; void* type_array
 
@@ -34,7 +34,7 @@ typedef struct RKArgs_s { int verify ; int index ; RKArgArray array ; } *RKArgs 
 
 #define RKArgs_NewArgSet(type,...) (void*)&((struct RKArgsBase_s){12345423,RKArgs_Proxy_type,(void*[]){#type,NULL},&(RKArgs_NewArgArray(type,__VA_ARGS__))})
 
-#define RKArgs_NewArgs(...) (RKArgs)&((struct RKArgs_s){17345432,0,(RKArgArray)&RKArgs_NewArgArray(void*,__VA_ARGS__)})
+#define RKArgs_NewArgs(...) (RKArgs)&((struct RKArgs_s){17345432,0,0,(RKArgArray)&RKArgs_NewArgArray(void*,__VA_ARGS__)})
 
 #define RKArgs_UseArgs(args) args->index = 0
 
@@ -99,5 +99,9 @@ typedef struct RKArgs_s { int verify ; int index ; RKArgArray array ; } *RKArgs 
 void* RKArgs_GetNextArgFunc( RKArgs args, const char* typestring, int is_item ) ;
 
 void* RKArgs_GetArgWithIndexFunc( RKArgs args, int index, const char* typestring, int is_item ) ;
+
+RKArgs RKArgs_CloneArgs( RKArgs args ) ;
+
+int RKArgs_DestroyClonedArgs( RKArgs args ) ;
 
 #endif /* RKArgs_h */

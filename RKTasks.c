@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2016 Jacob Gordon. All rights reserved.
+ Copyright (c) 2017 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -20,430 +20,436 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <pthread.h>
-#include "RKMem.h"
+#include "RKMath.h"
 #include "RKTasks.h"
 
-typedef RKList RKTasks_TaskList ;
+typedef struct RKThread_s RKThread ;
 
-typedef RKList_node RKTasks_Tasklet ;
+typedef RKThread* RKThreads ;
 
-struct RKT_Lock_s { pthread_mutex_t mutex ; } ;
+struct RKTasks_Module_s { RKTasks_ModuleDestructor_Type destructor ; pthread_mutex_t mutex ; void* data ; int refcount ; int tid ; int dead ; } ;
 
-struct RKThread_s { pthread_t thread ; int alive ; } ;
+struct RKTasks_ThisTask_s { int active ; int delete ; int task_id ; int thread_id ; } ;
 
-struct RKTasks_ThisTask_s { int kill ; int task_id ; int thread_id ; } ;
+struct RKTasks_Task_s { RKTasks_ThisTask this_task ; int done ; int run_id ; int (*task_func)(RKTasks_Module, struct RKTasks_ThisTask_s *) ; RKTasks_Module module ; } ;
 
-struct RKTasks_Task_s { RKT_Lock task_lock ; RKTasks_ThisTask ThisTask ; int active ;
+struct RKThread_s { pthread_t thread ; int alive ; int dead ; int awake ; int sleep ; } ;
+
+struct RKTasks_TaskGroup_s { RKTasks_Task* task_array ; int run_id ; int num_of_tasks ; int bound ; int done ; int dead ; int active ;
     
-void (*TaskFunc)(void *, struct RKTasks_ThisTask_s *) ; void *TaskArgs ; RKTasks_Tasklet list_node ; int task_run_id ; } ;
+pthread_cond_t done_tasks_cond ; pthread_mutex_t done_tasks_mutex ; RKMAtomicInt num_of_done_tasks ; RKMAtomicInt num_of_dead_tasks ; } ;
 
-struct RKTasks_TaskGroup_s { RKT_Lock task_group_lock ; pthread_cond_t done_tasks_cond ; RKT_Lock done_tasks_lock ;
+struct RKTasks_ThreadGroup_s { RKTasks_TaskGroup taskgroup ; RKThreads threadarray ; int max_num_of_threads ;
     
-RKTasks_TaskList TaskList ; int NumOfDoneTasks ; int NumOfTasks ; int init ;
+int num_of_threads ; int awake ; int alive ; int init ; } ;
+
+typedef struct RKTasks_Thread_Args_s { RKTasks_ThreadGroup threadgroup ; int tid ; }* RKTasks_Thread_Args ;
+
+RKTasks_Module RKTasks_NewModule( RKTasks_Module_NewDataFunc_Type module_newdatafunc, RKTasks_ModuleDestructor_Type moduledestructor) {
     
-int group_run_id ; } ;
-
-struct RKTasks_ThreadGroup_s { RKT_Lock thread_group_lock ; RKThreads ThreadArray ; int MaxNumOfThreads ; int NumOfDeadThreads ;
+    RKTasks_Module module = RKMem_NewMemOfType(struct RKTasks_Module_s) ;
     
-int NumOfThreads ; RKTasks_TaskGroup Current_TaskGroup ; int alive ; int GoToWork ; } ;
-
-typedef struct { RKTasks_ThreadGroup ThreadGroup ; int tid ; } RKTasks_Thread_Args_object ;
-
-typedef RKTasks_Thread_Args_object* RKTasks_Thread_Args ;
-
-int RKTasks_InitLock( RKT_Lock* lock ) {
+    module->data = module_newdatafunc() ;
     
-    return pthread_mutex_init(&(lock->mutex), NULL) ;
+    module->destructor = moduledestructor ;
+    
+    pthread_mutex_init(&(module->mutex), NULL) ;
+    
+    module->refcount = 0 ;
+    
+    module->tid = -2 ;
+    
+    module->dead = 0 ;
+    
+    return module ;
 }
 
-int RKTasks_KillLock( RKT_Lock* lock ) {
+void RKTAsks_AddToModuleRefCount( RKTasks_Module module ) {
     
-    return pthread_mutex_destroy(&(lock->mutex)) ;
+    module->refcount++ ;
 }
 
-int RKTasks_CloseLock( RKT_Lock* lock ) {
+void RKTasks_DestroyModule( RKTasks_Module module, int tid ) {
     
-    return pthread_mutex_lock(&(lock->mutex)) ;
+    RKTasks_LockModule(module) ;
+    
+    if ( module->tid == -2 ) module->tid = tid ;
+    
+    RKTasks_UnLockModule(module) ;
+    
+    if ( module->tid != tid ) return ;
+    
+    module->destructor(module) ;
+    
+    module->dead = 1 ;
+    
+    while ( RKTasks_IsModuleLocked(module) ) {}
+    
+    pthread_mutex_destroy(&(module->mutex)) ;
+    
+    free(module->data) ;
+    
+    free(module) ;
 }
 
-int RKTasks_OpenLock( RKT_Lock* lock ) {
+void RKTasks_DeleteModule( RKTasks_Module module, int tid ) {
     
-    return pthread_mutex_unlock(&(lock->mutex)) ;
+    module->refcount-- ;
+    
+    if ( module->refcount <= 0 ) RKTasks_DestroyModule(module,tid) ;
+    
 }
 
-int RKTasks_GetNumberOfThreadsForPlatform( int min_num_of_threads, int max_num_of_threads, int userSetNumOfCores, int dynamic0No1Yes, int mode ) {
+int RKTasks_LockModule( RKTasks_Module module ) {
     
-    int num_of_cores = 0 ;
+    if ( module->dead ) return -1 ;
     
-    int num_of_threads = 0 ;
+    if ( pthread_mutex_trylock(&(module->mutex)) == 0 ) return 0 ;
     
-    min_num_of_threads = (min_num_of_threads <= 0) ? 1 : min_num_of_threads ;
+    return 1 ;
+}
+
+int RKTasks_IsModuleLocked( RKTasks_Module module ) {
     
-    mode = (mode <= 0) ? 1 : mode ;
-    
-    mode = (mode >= 9) ? 8 : mode ;
-    
-    if ( dynamic0No1Yes ) {
+    if ( pthread_mutex_trylock(&(module->mutex)) ) {
         
-        num_of_cores = (int) sysconf( _SC_NPROCESSORS_ONLN ) ;
+        pthread_mutex_unlock(&(module->mutex)) ;
         
-    } else {
-        
-        num_of_cores = userSetNumOfCores ;
-        
+        return 0 ;
     }
     
-    if ( mode == 1 ) {
-        
-        num_of_threads = min_num_of_threads ;
-    }
+    return 1 ;
+}
+
+
+int RKTasks_UnLockModule( RKTasks_Module module ) {
     
-    if ( mode == 2 ) {
-        
-        num_of_threads = ( min_num_of_threads + max_num_of_threads ) / 2 ;
-    }
+    return pthread_mutex_unlock(&(module->mutex))  ;
+}
+
+void* RKTasks_GetDataFromModule( RKTasks_Module module ) {
+
+    return module->data ;
+
+}
+
+static int RKTasks_GetNumberOfThreadsForPlatform( int max_num_of_threads ) {
     
-    if ( mode == 3 ) {
-        
-        if ( num_of_cores >= max_num_of_threads ) {
-            
-            while ( num_of_cores >= max_num_of_threads ) {
-                num_of_cores = num_of_cores - 2 ;
-            }
-            
-        } else {
-            
-            num_of_cores = num_of_cores - 2 ;
-            
-        }
-        
-        num_of_threads = num_of_cores ;
-    }
+    int num_of_threads = (int) sysconf( _SC_NPROCESSORS_ONLN ) ;
     
-    if ( mode == 4 ) {
-        
-        if ( num_of_cores >= max_num_of_threads ) {
-            
-            while ( num_of_cores >= max_num_of_threads ) {
-                num_of_cores = num_of_cores / 2 ;
-            }
-            
-        } else {
-            
-            num_of_cores = num_of_cores / 2 ;
-            
-        }
-        
-        num_of_threads = num_of_cores ;
-    }
-    
-    if ( mode == 5 ) {
-        
-        num_of_threads = ( num_of_cores / 2 ) ;
-        
-    }
-    
-    
-    if ( mode == 6 ) {
-        
-        num_of_threads = ( ( num_of_cores / 2 ) - 1 ) ;
-        
-    }
-    
-    if ( mode == 7 ) {
-        
-        num_of_threads = num_of_cores ;
-        
-    }
-    
-    if ( mode == 8 ) {
-        
-        num_of_threads = max_num_of_threads ;
-        
-    }
-    
-    num_of_threads = (num_of_threads < min_num_of_threads) ? min_num_of_threads : num_of_threads ;
-    
-    num_of_threads = (num_of_threads > max_num_of_threads) ? max_num_of_threads : num_of_threads ;
+    if ( num_of_threads > max_num_of_threads ) num_of_threads = max_num_of_threads ;
     
     return num_of_threads ;
-    
 }
 
 RKTasks_TaskGroup RKTasks_NewTaskGroup( void ) {
     
-    RKTasks_TaskGroup NewGroup = RKMem_NewMemOfType(struct RKTasks_TaskGroup_s) ;
+    RKTasks_TaskGroup taskgroup = RKMem_NewMemOfType(struct RKTasks_TaskGroup_s) ;
     
-    NewGroup->TaskList = RKList_NewList() ;
+    taskgroup->active = 1 ;
     
-    NewGroup->NumOfTasks = 0 ;
+    taskgroup->dead = 0 ;
     
-    NewGroup->NumOfDoneTasks = 0 ;
+    taskgroup->done = 0 ;
     
-    NewGroup->group_run_id = 0 ;
+    taskgroup->bound = 0 ;
     
-    NewGroup->init = 0 ;
+    taskgroup->run_id = 0 ;
     
-    RKTasks_StartLock(NewGroup->task_group_lock) ;
+    taskgroup->num_of_tasks = 0 ;
     
-    RKTasks_StartLock(NewGroup->done_tasks_lock) ;
+    taskgroup->num_of_done_tasks = 0 ;
     
-    pthread_cond_init(&NewGroup->done_tasks_cond, NULL);
+    taskgroup->num_of_dead_tasks = 0 ;
     
-    return NewGroup ;
+    taskgroup->task_array = NULL ;
     
+    pthread_mutex_init(&taskgroup->done_tasks_mutex, NULL) ;
+    
+    pthread_cond_init(&taskgroup->done_tasks_cond, NULL);
+    
+    return taskgroup ;
 }
 
-void RKTasks_KillTaskGroup( RKTasks_TaskGroup TaskGroup ) {
+static void RKTasks_DestroyTask( RKTasks_Task task, int tid ) {
     
-    RKTasks_Task Task = NULL ;
+    free(task->this_task) ;
     
-    RKTasks_Tasklet Tasklet = RKList_GetFirstNode(TaskGroup->TaskList) ;
+    RKTasks_DeleteModule(task->module, tid) ;
     
-    while ( Tasklet != NULL ) {
+    free(task) ;
+}
+
+void RKTasks_DestroyTaskGroup( RKTasks_TaskGroup taskgroup, int tid ) {
+    
+    int i = 0 ;
+    
+    while (i < taskgroup->num_of_tasks) {
         
-         Task = (RKTasks_Task)RKList_GetData(Tasklet) ;
+        RKTasks_DestroyTask(taskgroup->task_array[i], tid) ;
+
+        i++ ;
+    }
+
+    pthread_mutex_destroy(&taskgroup->done_tasks_mutex) ;
+    
+    pthread_cond_destroy(&taskgroup->done_tasks_cond) ;
+    
+    free(taskgroup->task_array) ;
+    
+    free(taskgroup) ;
+}
+
+void RKTasks_SetTaskGroupActive( RKTasks_TaskGroup taskgroup, int active ) {
+    
+    if ( active ) taskgroup->active = 1 ;
+    
+    if ( !active ) taskgroup->active = 0 ;
+}
+
+int RKTasks_IsTaskGroupActive( RKTasks_TaskGroup taskgroup ) {
+    
+    return taskgroup->active ;
+}
+
+int RKTasks_IsTaskGroupDone( RKTasks_TaskGroup taskgroup ) {
+    
+    return taskgroup->done ;
+}
+
+int RKTasks_IsTaskGroupDead( RKTasks_TaskGroup taskgroup ) {
+    
+    return taskgroup->dead ;
+}
+
+void RKTasks_ResetTaskGroup( RKTasks_TaskGroup taskgroup ) {
+    
+    pthread_mutex_lock(&taskgroup->done_tasks_mutex) ;
+    
+    if ( !taskgroup->done ) {
         
-         RKTasks_EndLock(Task->task_lock) ;
+        pthread_mutex_unlock(&taskgroup->done_tasks_mutex) ;
         
-        if ( Task->TaskArgs != NULL ) {
-        
-         ((TaskArgs_Type_ptr)Task->TaskArgs)->refcount-- ;
-        
-         if ( ((TaskArgs_Type_ptr)Task->TaskArgs)->refcount <= 0 ) {
-            
-             free(Task->TaskArgs) ;
-            
-             Task->TaskArgs = NULL ;
-         }
-        
-        }
-        
-        free(Task->ThisTask) ;
-        
-        free(Task) ;
-        
-        Tasklet = RKList_GetNextNode(Tasklet) ;
+        return ;
     }
     
-    RKList_DeleteList(TaskGroup->TaskList) ;
+    taskgroup->num_of_done_tasks = 0 ;
     
-    TaskGroup->TaskList = NULL ;
+    taskgroup->run_id = !taskgroup->run_id ;
     
-    TaskGroup->NumOfTasks = 0 ;
+    taskgroup->done = 0 ;
     
-    TaskGroup->group_run_id = 0 ;
-    
-    RKTasks_EndLock(TaskGroup->task_group_lock) ;
-    
-    RKTasks_EndLock(TaskGroup->done_tasks_lock) ;
-    
-    free(TaskGroup) ;
+    pthread_mutex_unlock(&taskgroup->done_tasks_mutex) ;
 }
 
-RKTasks_ThreadGroup RKTasks_NewThreadGroup( int min_num_of_threads, int max_num_of_threads, int userSetNumOfCores, int dynamic0No1Yes, int mode ) {
+void RKTasks_BindTaskGroupToThreadGroup( RKTasks_TaskGroup taskgroup, RKTasks_ThreadGroup threadgroup ) {
     
-    RKTasks_ThreadGroup NewGroup = RKMem_NewMemOfType(struct RKTasks_ThreadGroup_s) ;
+    if ( !threadgroup->init ) return ;
     
-    NewGroup->Current_TaskGroup = NULL ;
+    RKTasks_SleepThreadGroup(threadgroup) ;
     
-    NewGroup->ThreadArray = NULL ;
+    taskgroup->bound = 1 ;
     
-    NewGroup->MaxNumOfThreads = RKTasks_GetNumberOfThreadsForPlatform(min_num_of_threads,max_num_of_threads,userSetNumOfCores,dynamic0No1Yes,mode) ;
+    threadgroup->taskgroup = taskgroup ;
     
-    NewGroup->NumOfDeadThreads = 0 ;
+    RKTasks_AwakeThreadGroup(threadgroup) ;
+}
+
+void RKTasks_UnbindTaskGroupFromThreadGroup( RKTasks_TaskGroup taskgroup, RKTasks_ThreadGroup threadgroup ) {
     
-    NewGroup->NumOfThreads = 0 ;
+    if ( !threadgroup->init ) return ;
     
-    NewGroup->GoToWork = 0 ;
+    RKTasks_SleepThreadGroup(threadgroup) ;
+
+    taskgroup->bound = 0 ;
     
-    NewGroup->alive = 1 ;
+    threadgroup->taskgroup = NULL ;
     
-    RKTasks_StartLock(NewGroup->thread_group_lock) ;
+    RKTasks_AwakeThreadGroup(threadgroup) ;
+}
+
+void RKTasks_AddTasks_Func( RKTasks_TaskGroup taskgroup, int num_of_tasks, int (*task_func)(RKTasks_Module, struct RKTasks_ThisTask_s *), RKTasks_Module module ) {
     
-    return NewGroup ;
+    int i = 0 ;
+    
+    RKTasks_Task task = NULL ;
+    
+    RKTasks_ThisTask thistask = NULL ;
+    
+    if ( taskgroup->bound ) return ;
+    
+    taskgroup->num_of_tasks += num_of_tasks ;
+    
+    if ( taskgroup->task_array == NULL ) {
+        
+        taskgroup->task_array = RKMem_CArray(taskgroup->num_of_tasks, RKTasks_Task) ;
+        
+    } else {
+        
+        taskgroup->task_array = RKMem_Realloc(taskgroup->task_array, taskgroup->num_of_tasks, taskgroup->num_of_tasks-num_of_tasks, RKTasks_Task, 1) ;
+    }
+    
+    i = taskgroup->num_of_tasks-num_of_tasks ;
+    
+    while ( i < taskgroup->num_of_tasks ) {
+        
+        thistask = RKMem_NewMemOfType(struct RKTasks_ThisTask_s) ;
+        
+        thistask->active = 1 ;
+        
+        thistask->delete = 0 ;
+        
+        thistask->thread_id = -3 ;
+        
+        thistask->task_id = i ;
+        
+        task = RKMem_NewMemOfType(struct RKTasks_Task_s) ;
+        
+        task->done = 0 ;
+        
+        task->run_id = 0 ;
+        
+        task->this_task = thistask ;
+        
+        task->task_func = task_func ;
+        
+        RKTAsks_AddToModuleRefCount(module) ;
+        
+        task->module = module ;
+        
+        taskgroup->task_array[i] = task ;
+
+        i++ ;
+    }
     
 }
 
-void RKTasks_KillThreadGroup( RKTasks_ThreadGroup ThreadGroup ) {
+static void RKTasks_DeadDoneCheck( int* dead, int* done, int num_of_tasks, RKTasks_TaskGroup taskgroup ) {
     
-    RKTasks_KillAllThreads(ThreadGroup) ;
+    pthread_mutex_lock(&taskgroup->done_tasks_mutex) ;
     
-    ThreadGroup->Current_TaskGroup = NULL ;
+    if ( taskgroup->num_of_dead_tasks == num_of_tasks ) *dead = 1 ;
     
-    free(ThreadGroup->ThreadArray) ;
+    if ( taskgroup->num_of_done_tasks == num_of_tasks ) *done = 1 ;
     
-    ThreadGroup->ThreadArray = NULL ;
-    
-    RKTasks_EndLock(ThreadGroup->thread_group_lock) ;
-    
-    free(ThreadGroup) ;
-}
-
-void RKTasks_BindTaskGroupToThreadGroup( RKTasks_TaskGroup TaskGroup, RKTasks_ThreadGroup ThreadGroup ) {
-    
-    RKTasks_LockLock(ThreadGroup->thread_group_lock) ;
-    
-    ThreadGroup->Current_TaskGroup = TaskGroup ;
-    
-    RKTasks_UnLockLock(ThreadGroup->thread_group_lock) ;
+    pthread_mutex_unlock(&taskgroup->done_tasks_mutex) ;
 }
 
 static void *RKTasks_WorkerThread( void *argument ) {
     
-    RKTasks_Thread_Args ThreadArgs = (RKTasks_Thread_Args)argument ;
+    RKTasks_Thread_Args threadargs = argument ;
     
-    RKTasks_ThreadGroup ThreadGroup = ThreadArgs->ThreadGroup ;
+    RKTasks_ThreadGroup threadgroup = threadargs->threadgroup ;
     
-    RKTasks_TaskGroup TaskGroup = NULL ;
+    RKTasks_TaskGroup taskgroup = NULL ;
     
-    RKTasks_Task Task = NULL ;
+    RKTasks_Task task = NULL ;
     
-    RKTasks_Tasklet Tasklet = NULL ;
+    int tid = threadargs->tid ;
     
-    int tid = ThreadArgs->tid ;
+    int index = threadargs->tid ;
     
-    int thread_run_state = 0 ;
-    
-    int not_found = 1 ;
-    
-    int alive = 1 ;
-    
-    int awake = 0 ;
-    
-    while (alive) {
+    while ( threadgroup->alive && threadgroup->threadarray[tid].alive ) {
         
-        if ( ThreadGroup == NULL ) break ;
-        
-        RKTasks_LockLock(ThreadGroup->thread_group_lock) ;
-        
-        if ( (!(ThreadGroup->alive)) || (!(ThreadGroup->ThreadArray[tid].alive))) alive = 0 ;
-        
-        if ( ThreadGroup->Current_TaskGroup != NULL ) {
+        while ( threadgroup->awake && threadgroup->threadarray[tid].awake ) {
             
-            TaskGroup = ThreadGroup->Current_TaskGroup ;
+            if ( !threadgroup->alive || !threadgroup->threadarray[tid].alive ) break ;
             
-            RKTasks_LockLock(TaskGroup->task_group_lock) ;
+            threadgroup->threadarray[tid].sleep = 0 ;
             
-            if ( TaskGroup->init && ThreadGroup->GoToWork && TaskGroup->NumOfTasks > TaskGroup->NumOfDoneTasks ) {
+            if ( (taskgroup != threadgroup->taskgroup) && (threadgroup->taskgroup != NULL) ) taskgroup = threadgroup->taskgroup ;
+            
+            if ( (taskgroup == NULL) || (taskgroup->task_array == NULL) ) continue ;
+            
+            if ( (taskgroup->active) && (!taskgroup->done) && (!taskgroup->dead)) {
+            
+              task = (index >= taskgroup->num_of_tasks) ? NULL : taskgroup->task_array[index] ;
+            
+              if ( task != NULL ) {
+                  
+                if ( (task->this_task->active) && (task->run_id == taskgroup->run_id) ) {
                 
-                thread_run_state = TaskGroup->group_run_id ;
-                
-                awake = 1 ;
-            }
-            
-            RKTasks_UnLockLock(TaskGroup->task_group_lock) ;
-        }
-        
-        RKTasks_UnLockLock(ThreadGroup->thread_group_lock) ;
-        
-        if (!alive) break ;
-        
-        while (awake) {
-            
-           if (Tasklet == NULL) Tasklet = RKList_GetFirstNode(TaskGroup->TaskList) ;
-            
-            while (not_found) {
-                
-                if ( Tasklet != NULL ) {
+                    task->this_task->thread_id = tid ;
+                  
+                    task->done = task->task_func(task->module,task->this_task) ;
                     
-                    Task = (RKTasks_Task)RKList_GetData(Tasklet) ;
-                    
-                    if ( Task->task_run_id == thread_run_state ) {
+                    if ( task->done ) {
                         
-                        RKTasks_LockLock(Task->task_lock) ;
+                        task->run_id = !task->run_id ;
                         
-                        if ( Task->task_run_id == thread_run_state ) {
-                            
-                            Task->task_run_id = !(Task->task_run_id) ;
-                            
-                            Task->ThisTask->thread_id = tid ;
-                            
-                            not_found = 0 ;
-                        }
-                        
-                        RKTasks_UnLockLock(Task->task_lock) ;
-                        
-                    } else {
-                        
-                        Tasklet = RKList_GetNextNode(Tasklet) ;
+                        RKMath_AtomicInc(&taskgroup->num_of_done_tasks) ;
                     }
                     
-                } else {
-                    
-                    awake = 0 ;
-                    
-                    break ;
-                }
-            }
-            
-            if ( !not_found ) {
-                
-                if ( Task->active ) {
-                    
-                    Task->TaskFunc(Task->TaskArgs,Task->ThisTask) ;
-                    
-                    if (Task->ThisTask->kill) Task->active = 0 ;
+                    if ( task->this_task->delete ) {
+                        
+                        RKTasks_DestroyTask(task,tid) ;
+                        
+                        taskgroup->task_array[index] = NULL ;
+                        
+                        RKMath_AtomicInc(&taskgroup->num_of_dead_tasks) ;
+                    }
                     
                 }
-                
-                RKTasks_LockLock(TaskGroup->done_tasks_lock) ;
-                
-                TaskGroup->NumOfDoneTasks++ ;
-                
-                if (TaskGroup->NumOfTasks <= TaskGroup->NumOfDoneTasks) pthread_cond_signal(&TaskGroup->done_tasks_cond) ;
-                
-                RKTasks_UnLockLock(TaskGroup->done_tasks_lock) ;
-                
+            
+              }
+            
+              index += threadgroup->num_of_threads ;
+
             }
             
-            not_found = 1 ;
+            if ( index >= taskgroup->num_of_tasks ) {
+                
+                index = tid ;
+                
+                RKTasks_DeadDoneCheck(&taskgroup->dead, &taskgroup->done, taskgroup->num_of_tasks, taskgroup) ;
+                
+                if ( (taskgroup->done) || (taskgroup->dead) ) pthread_cond_signal(&taskgroup->done_tasks_cond) ;
+            }
         }
+        
+        threadgroup->threadarray[tid].sleep = 1 ;
     }
     
-    if ( ThreadGroup != NULL ) {
-        
-        RKTasks_LockLock(ThreadGroup->thread_group_lock) ;
-        
-        ThreadGroup->NumOfDeadThreads++ ;
-        
-        ThreadGroup->ThreadArray[tid].alive = -1 ;
-        
-        RKTasks_UnLockLock(ThreadGroup->thread_group_lock) ;
-        
-    }
+    threadgroup->threadarray[tid].dead = 1 ;
     
-    free(ThreadArgs) ;
+    free(threadargs) ;
     
     return NULL ;
 }
 
-int RKTasks_SpawnThreads(RKTasks_ThreadGroup ThreadGroup) {
+static int RKTasks_SpawnThreads( RKTasks_ThreadGroup threadgroup ) {
     
-    RKTasks_Thread_Args ThreadArgs = NULL ;
+    RKTasks_Thread_Args threadargs = NULL ;
     
     int Error = 0 ;
     
     int t = 0 ;
     
-    ThreadGroup->ThreadArray = RKMem_CArray(ThreadGroup->MaxNumOfThreads, RKThread) ;
+    threadgroup->threadarray = RKMem_CArray(threadgroup->max_num_of_threads, RKThread) ;
     
-    while ( t < ThreadGroup->MaxNumOfThreads ) {
+    while ( t < threadgroup->max_num_of_threads ) {
         
-        ThreadArgs = RKMem_NewMemOfType(RKTasks_Thread_Args_object) ;
+        threadargs = RKMem_NewMemOfType(struct RKTasks_Thread_Args_s) ;
         
-        ThreadArgs->ThreadGroup = ThreadGroup ;
+        threadargs->threadgroup = threadgroup ;
         
-        ThreadArgs->tid = t ;
+        threadargs->tid = t ;
         
-        ThreadGroup->ThreadArray[t].alive = 1 ;
+        threadgroup->threadarray[t].alive = 1 ;
         
-        Error = pthread_create(&(ThreadGroup->ThreadArray[t].thread), NULL, RKTasks_WorkerThread, (void *) ThreadArgs) ;
+        threadgroup->threadarray[t].dead = 0 ;
+        
+        threadgroup->threadarray[t].awake = 1 ;
+        
+        threadgroup->threadarray[t].sleep = 0 ;
+        
+        Error = pthread_create(&(threadgroup->threadarray[t].thread), NULL, RKTasks_WorkerThread, (void *) threadargs) ;
         
         if ( Error ) return Error ;
         
-        Error = pthread_detach( ThreadGroup->ThreadArray[t].thread ) ;
+        Error = pthread_detach( threadgroup->threadarray[t].thread ) ;
         
         if ( Error ) return Error ;
         
@@ -451,135 +457,80 @@ int RKTasks_SpawnThreads(RKTasks_ThreadGroup ThreadGroup) {
         
     }
     
-    ThreadGroup->NumOfThreads = t ;
+    threadgroup->num_of_threads = t ;
+    
+    threadgroup->init = 1 ;
     
     return Error ;
     
 }
 
-void RKTasks_RunThreadGroup( RKTasks_ThreadGroup ThreadGroup ) {
+void RKTasks_StartThreadGroup( RKTasks_ThreadGroup threadgroup ) {
     
-    RKTasks_LockLock(ThreadGroup->thread_group_lock) ;
-    
-    if ( ThreadGroup->NumOfThreads == 0 ) RKTasks_SpawnThreads(ThreadGroup) ;
-    
-    if ( ThreadGroup->Current_TaskGroup != NULL ) ThreadGroup->GoToWork = 1 ;
-    
-    RKTasks_UnLockLock(ThreadGroup->thread_group_lock) ;
-    
+    if ( !threadgroup->init ) RKTasks_SpawnThreads(threadgroup) ;
 }
 
-void RKTasks_StopThreadGroup( RKTasks_ThreadGroup ThreadGroup ) {
+
+RKTasks_ThreadGroup RKTasks_NewThreadGroup( int max_num_of_threads ) {
     
-    RKTasks_LockLock(ThreadGroup->thread_group_lock) ;
+    RKTasks_ThreadGroup threadgroup = RKMem_NewMemOfType(struct RKTasks_ThreadGroup_s) ;
     
-    if ( ThreadGroup->Current_TaskGroup != NULL ) ThreadGroup->GoToWork = 0 ;
+    threadgroup->threadarray = NULL ;
     
-    RKTasks_UnLockLock(ThreadGroup->thread_group_lock) ;
+    threadgroup->max_num_of_threads = RKTasks_GetNumberOfThreadsForPlatform(max_num_of_threads) ;
     
+    threadgroup->num_of_threads = 0 ;
+    
+    threadgroup->taskgroup = NULL ;
+    
+    threadgroup->awake = 0 ;
+    
+    threadgroup->alive = 1 ;
+    
+    threadgroup->init = 0 ;
+    
+    return threadgroup ;
 }
 
-void RKTasks_UseTaskGroup( RKTasks_TaskGroup TaskGroup ) {
+void RKTasks_DestroyThreadGroup( RKTasks_ThreadGroup threadgroup ) {
     
-    RKTasks_LockLock(TaskGroup->task_group_lock) ;
+    RKTasks_KillAllThreads(threadgroup) ;
     
-    if ( !(TaskGroup->init) ) {
+    free(threadgroup->threadarray) ;
+    
+    threadgroup->threadarray = NULL ;
+    
+    free(threadgroup) ;
+}
+
+void RKTasks_WaitForTasksToBeDone( RKTasks_TaskGroup taskgroup ) {
+    
+    if ( taskgroup->num_of_tasks == 0 ) return ;
+    
+    pthread_mutex_lock(&taskgroup->done_tasks_mutex) ;
+    
+    pthread_cond_wait(&taskgroup->done_tasks_cond, &taskgroup->done_tasks_mutex) ;
+    
+    pthread_mutex_unlock(&taskgroup->done_tasks_mutex) ;
+}
+
+int RKTasks_AllThreadsDead( RKTasks_ThreadGroup threadgroup ) {
+    
+    int i = 0 ;
+    
+    while ( i < threadgroup->num_of_threads ) {
         
-        TaskGroup->init = 1 ;
+        if ( !threadgroup->threadarray[i].dead ) return 0 ;
         
-    } else {
-        
-        TaskGroup->NumOfDoneTasks = 0 ;
-        
-        TaskGroup->group_run_id = !(TaskGroup->group_run_id) ;
-        
+        i++ ;
     }
     
-    RKTasks_UnLockLock(TaskGroup->task_group_lock) ;
-}
-
-int RKTasks_GetNumOfThreads( RKTasks_ThreadGroup ThreadGroup ) {
-    
-    int num_of_threads = 0 ;
-    
-    RKTasks_LockLock(ThreadGroup->thread_group_lock) ;
-    
-    num_of_threads = ThreadGroup->NumOfThreads ;
-    
-    RKTasks_UnLockLock(ThreadGroup->thread_group_lock) ;
-    
-    return num_of_threads ;
-    
-}
-
-int RKTasks_GetNumOfTasks( RKTasks_TaskGroup TaskGroup ) {
-    
-    int num_of_tasks = 0 ;
-    
-    RKTasks_LockLock(TaskGroup->task_group_lock) ;
-    
-    num_of_tasks = TaskGroup->NumOfTasks ;
-    
-    RKTasks_UnLockLock(TaskGroup->task_group_lock) ;
-    
-    return num_of_tasks ;
-    
-}
-
-int RKTasks_AllTasksDone( RKTasks_TaskGroup TaskGroup ) {
-    
-    int num_of_tasks = 0 ;
-    
-    int done = 0 ;
-    
-    RKTasks_LockLock(TaskGroup->task_group_lock) ;
-    
-    num_of_tasks = TaskGroup->NumOfTasks ;
-    
-    done = TaskGroup->NumOfDoneTasks ;
-    
-    RKTasks_UnLockLock(TaskGroup->task_group_lock) ;
-    
-    if ( num_of_tasks <= done ) return 1 ;
-    
-    return 0 ;
-}
-
-void RKTasks_WaitForTasksToBeDone( RKTasks_TaskGroup TaskGroup ) {
-    
-    RKTasks_LockLock(TaskGroup->done_tasks_lock) ;
-    
-    pthread_cond_wait(&TaskGroup->done_tasks_cond, &TaskGroup->done_tasks_lock.mutex) ;
-    
-    RKTasks_UnLockLock(TaskGroup->done_tasks_lock) ;
-}
-
-int RKTasks_AllThreadsDead( RKTasks_ThreadGroup ThreadGroup ) {
-    
-    int num_of_threads = 0 ;
-    
-    int dead = 0 ;
-    
-    RKTasks_LockLock(ThreadGroup->thread_group_lock) ;
-    
-    num_of_threads = ThreadGroup->NumOfThreads ;
-    
-    dead = ThreadGroup->NumOfDeadThreads ;
-    
-    RKTasks_UnLockLock(ThreadGroup->thread_group_lock) ;
-    
-    if ( num_of_threads == dead ) return 1 ;
-    
-    return 0 ;
+    return 1 ;
 }
 
 void RKTasks_KillAllThreads( RKTasks_ThreadGroup ThreadGroup ) {
     
-    RKTasks_LockLock(ThreadGroup->thread_group_lock) ;
-    
     ThreadGroup->alive = 0 ;
-    
-    RKTasks_UnLockLock(ThreadGroup->thread_group_lock) ;
     
     while ( 1 ) {
         
@@ -588,77 +539,119 @@ void RKTasks_KillAllThreads( RKTasks_ThreadGroup ThreadGroup ) {
     
 }
 
-int RKTasks_KillThreadWithTid( RKTasks_ThreadGroup ThreadGroup, int tid ) {
+int RKTasks_KillThreadWithTid( RKTasks_ThreadGroup threadgroup, int tid ) {
     
-    if ( (tid < 0) || (tid > ThreadGroup->NumOfThreads) ) return -1 ;
+    if ( (tid < 0) || (tid > threadgroup->num_of_threads) ) return -1 ;
     
-    RKTasks_LockLock(ThreadGroup->thread_group_lock) ;
-    
-    if ( ThreadGroup->ThreadArray[tid].alive != -1 ) {
-        
-        ThreadGroup->ThreadArray[tid].alive = 0 ;
-        
-    }
-    
-    RKTasks_UnLockLock(ThreadGroup->thread_group_lock) ;
+    threadgroup->threadarray[tid].alive = 0 ;
     
     while ( 1 ) {
         
-        if ( ThreadGroup->ThreadArray[tid].alive == -1 ) break ;
+        if ( threadgroup->threadarray[tid].dead == 1 ) break ;
     }
     
     return 0 ;
 }
 
-void RKTasks_DeactivateTask( RKTasks_ThisTask ThisTask ) {
+int RKTasks_AllThreadsSleep( RKTasks_ThreadGroup threadgroup ) {
     
-    ThisTask->kill = 1 ;
+    int i = 0 ;
+    
+    while ( i < threadgroup->num_of_threads ) {
+        
+        if ( !threadgroup->threadarray[i].sleep ) return 0 ;
+        
+        i++ ;
+    }
+    
+    return 1 ;
 }
 
-int RKTasks_GetTaskID( RKTasks_ThisTask ThisTask ) {
+void RKTasks_SleepThreadGroup( RKTasks_ThreadGroup threadgroup ) {
     
-    return ThisTask->task_id ;
+    threadgroup->awake = 0 ;
+    
+    while ( 1 ) {
+        
+        if ( RKTasks_AllThreadsSleep(threadgroup) ) break ;
+    }
+    
 }
 
-int RKTasks_GetThreadID( RKTasks_ThisTask ThisTask ) {
+int RKTasks_SleepThreadWithTid( RKTasks_ThreadGroup threadgroup, int tid ) {
     
-    return ThisTask->thread_id ;
+    if ( (tid < 0) || (tid > threadgroup->num_of_threads) ) return -1 ;
+    
+    threadgroup->threadarray[tid].awake = 0 ;
+    
+    while ( 1 ) {
+        
+        if ( threadgroup->threadarray[tid].sleep == 1 ) break ;
+    }
+    
+    return 0 ;
 }
 
-RKTasks_ThisTask RKTasks_AddTask_Func( RKTasks_TaskGroup TaskGroup, void (*TaskFunc)(void *, struct RKTasks_ThisTask_s *), void *TaskArgs ) {
+int RKTasks_AllThreadsAwake( RKTasks_ThreadGroup threadgroup ) {
     
-    TaskArgs_Type_ptr Args = TaskArgs ;
+    int i = 0 ;
     
-    Args->refcount++ ;
+    while ( i < threadgroup->num_of_threads ) {
+        
+        if ( threadgroup->threadarray[i].sleep ) return 0 ;
+        
+        i++ ;
+    }
     
-    RKTasks_ThisTask ThisTask = RKMem_NewMemOfType(struct RKTasks_ThisTask_s) ;
-    
-    ThisTask->kill = 0 ;
-    
-    RKTasks_Task Task = RKMem_NewMemOfType(struct RKTasks_Task_s) ;
-    
-    Task->active = 1 ;
-    
-    Task->ThisTask = ThisTask ;
-    
-    Task->TaskFunc = TaskFunc ;
-    
-    Task->TaskArgs = TaskArgs ;
-    
-    Task->task_run_id = TaskGroup->group_run_id ;
-    
-    RKTasks_StartLock(Task->task_lock) ;
-    
-    RKTasks_LockLock(TaskGroup->task_group_lock) ;
-    
-    Task->list_node = RKList_AddToList(TaskGroup->TaskList, (void*)Task) ;
-    
-    TaskGroup->NumOfTasks = RKList_GetNumOfNodes(TaskGroup->TaskList) ;
-    
-    Task->ThisTask->task_id = TaskGroup->NumOfTasks ;
-    
-    RKTasks_UnLockLock(TaskGroup->task_group_lock) ;
-    
-    return Task->ThisTask ;
-    
+    return 1 ;
 }
+
+void RKTasks_AwakeThreadGroup( RKTasks_ThreadGroup threadgroup ) {
+    
+    threadgroup->awake = 1 ;
+}
+
+int RKTasks_IsThreadGroupAwake( RKTasks_ThreadGroup threadgroup ) {
+    
+    return threadgroup->awake ;
+}
+
+int RKTasks_GetNumOfThreads( RKTasks_ThreadGroup threadgroup ) {
+    
+    return threadgroup->num_of_threads ;
+}
+
+int RKTasks_AwakeThreadWithTid( RKTasks_ThreadGroup threadgroup, int tid ) {
+    
+    if ( (tid < 0) || (tid > threadgroup->num_of_threads) ) return -1 ;
+    
+    threadgroup->threadarray[tid].awake = 1 ;
+    
+    while ( 1 ) {
+        
+        if ( threadgroup->threadarray[tid].sleep == 0 ) break ;
+    }
+    
+    return 0 ;
+}
+
+void RKTasks_DeactivateTask( RKTasks_ThisTask thistask ) {
+    
+    thistask->active = 0 ;
+}
+
+void RKTasks_DeleteTask( RKTasks_ThisTask thistask ) {
+    
+    thistask->delete = 1 ;
+}
+
+int RKTasks_GetTaskID( RKTasks_ThisTask thistask ) {
+    
+    return thistask->task_id ;
+}
+
+int RKTasks_GetThreadID( RKTasks_ThisTask thistask ) {
+    
+    return thistask->thread_id ;
+}
+
