@@ -45,8 +45,6 @@ static void modname##_##RKTasks_ModuleDestructor( RKTasks_Module  module ){destr
 static void* modname##_##RKTasks_Module_NewDataFunc_CreateModule( void ) {\
 return RKMem_NewMemOfType( struct struct_##modname##_s ) ; }
 
-#define RKTasks_ModuleDestructor( modname )
-
 #define RKTasks_CreateModule( modname ) RKTasks_NewModule( modname##_##RKTasks_Module_NewDataFunc_CreateModule, modname##_##RKTasks_ModuleDestructor )
 
 #define RKTasks_GetModuleData( modname, module ) ((modname)RKTasks_GetDataFromModule(module))
