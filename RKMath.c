@@ -38,6 +38,8 @@
     
     int randval = 0 ;
     
+    if ( randmin < 0 ) randmin = 0 ;
+     
     if ( randmax == -1 ) randstate->init = 0 ;
     
     randmax++ ;
@@ -72,6 +74,8 @@
 int RKMath_AMoreRandomNumber( RKMath_RandState* randstate, int randmin, int randmax ) {
     
     int randval = 0 ;
+    
+    if ( randmin < 0 ) randmin = 0 ;
     
     if ( randmax <= 0 ) randmax = 1 ;
     

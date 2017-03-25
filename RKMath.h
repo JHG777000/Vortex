@@ -46,7 +46,7 @@
 
 #define  RKMath_Vectorit(name, x, y, z) RKMath_NewVector(name, 3) = {x,y,z}
 
-#define RKMath_Vectoris(name,size,...) RKMath_NewVector(name,size) = {__VA_ARGS__}
+#define  RKMath_Vectoris(name,size,...) RKMath_NewVector(name,size) = {__VA_ARGS__}
 
 #define  RKMath_Vectorthat(name, that) RKMath_Vectorit(name,that,that,that)
 
