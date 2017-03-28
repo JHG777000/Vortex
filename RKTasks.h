@@ -39,10 +39,10 @@ typedef struct RKTasks_TaskGroup_s* RKTasks_TaskGroup ;
 
 #define RKTasks_MainThreadID -1
 
-#define RKTasks_DefineModule( modname, destructor, ... ) typedef struct struct_##modname##_s { __VA_ARGS__ }* modname ;\
-static void modname##_##RKTasks_ModuleDestructor( RKTasks_Module  module ){destructor;}\
+#define RKTasks_DefineModule( modname, ... ) typedef struct struct_##modname##_s { __VA_ARGS__ }* modname ;\
 static void* modname##_##RKTasks_Module_NewDataFunc_CreateModule( void ) {\
-return RKMem_NewMemOfType( struct struct_##modname##_s ) ; }
+return RKMem_NewMemOfType( struct struct_##modname##_s ) ; }\
+static void modname##_##RKTasks_ModuleDestructor( RKTasks_Module  module )
 
 #define RKTasks_CreateModule( modname ) RKTasks_NewModule( modname##_##RKTasks_Module_NewDataFunc_CreateModule, modname##_##RKTasks_ModuleDestructor )
 

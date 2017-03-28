@@ -28,11 +28,12 @@
 #include "RKMath.h"
 #include "RKTasks.h"
 
-RKTasks_DefineModule(TestMod, RKTasks_GetModuleData(TestMod,module)->value = 0 ;
-                     
-printf("From Mod Destructor: %d!!!!!\n",RKTasks_GetModuleData(TestMod,module)->value2), int value ; int value2 ;
-                     
-RKMath_NewVector(Vec,3); RKMath_NewVector(Vec2,3);) ;
+RKTasks_DefineModule(TestMod, int value ; int value2 ; RKMath_NewVector(Vec,3); RKMath_NewVector(Vec2,3);) {
+    
+    RKTasks_GetModuleData(TestMod,module)->value = 0 ;
+    
+    printf("From Mod Destructor: %d!!!!!\n",RKTasks_GetModuleData(TestMod,module)->value2) ;
+}
 
 RKTasks_CreateTask(TestTask) { //Create a Task called TestTask
     
