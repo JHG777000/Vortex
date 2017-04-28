@@ -32,9 +32,11 @@
 
 #define RKM_R 0
 
-#define RKM_B 1
+#define RKM_G 1
 
-#define RKM_G 2
+#define RKM_B 2
+
+#define RKM_A 3
 
 #define  RKMath_VectorType(name) float name[] //use for function declarations
 
@@ -59,6 +61,14 @@ oldvec[2] = z  \
 vec_a[0] = vec_b[0] ; \
 vec_a[1] = vec_b[1] ; \
 vec_a[2] = vec_b[2]  \
+
+#define RKMath_Max(a,b) (((a)>(b))?(a):(b))
+
+#define RKMath_Min(a,b) (((a)<(b))?(a):(b))
+
+#define RKMath_Abs_m(a) (((a)<0) ? -(a) : (a))
+
+#define RKMath_Zsgn(a) (((a)<0) ? -1 : (a)>0 ? 1 : 0)
 
  typedef float* RKMVector ;
 
