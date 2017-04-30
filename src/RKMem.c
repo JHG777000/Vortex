@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "RKMem.h"
+#include <RKLib/RKMem.h>
 
  #define RKS_MAX_LETTER_NUM 94
 

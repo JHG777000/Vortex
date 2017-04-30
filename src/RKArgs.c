@@ -20,8 +20,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "RKMem.h"
-#include "RKArgs.h"
+#include <RKLib/RKMem.h>
+#include <RKLib/RKArgs.h>
 
 void* RKArgs_GetNextArgFunc( RKArgs args, const char* typestring, int is_item ) {
     

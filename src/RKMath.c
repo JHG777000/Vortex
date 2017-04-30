@@ -24,8 +24,8 @@
 #include <unistd.h>
 #include <time.h>
 #include <math.h>
-#include "RKMem.h"
-#include "RKMath.h"
+#include <RKLib/RKMem.h>
+#include <RKLib/RKMath.h>
 
  void RKMath_SeedRandomState( RKMath_RandState* randstate, int seed ) {
     

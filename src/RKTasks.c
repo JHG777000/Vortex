@@ -22,8 +22,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
-#include "RKMath.h"
-#include "RKTasks.h"
+#include <RKLib/RKMath.h>
+#include <RKLib/RKTasks.h>
 
 typedef struct RKThread_s RKThread ;
 

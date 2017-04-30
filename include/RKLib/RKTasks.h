@@ -21,7 +21,7 @@
 #ifndef RKTasks4_h
 #define RKTasks4_h
 
-#include "RKMem.h"
+#include <RKLib/RKMem.h>
 
 typedef struct RKTasks_Module_s* RKTasks_Module ;
 
