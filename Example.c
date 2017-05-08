@@ -23,10 +23,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "RKMem.h"
-#include "RKArgs.h"
-#include "RKMath.h"
-#include "RKTasks.h"
+#include <RKLib/RKMem.h>
+#include <RKLib/RKArgs.h>
+#include <RKLib/RKMath.h>
+#include <RKLib/RKTasks.h>
 
 RKTasks_DefineModule(TestMod, int value ; int value2 ; RKMath_NewVector(Vec,3); RKMath_NewVector(Vec2,3);) {
     
