@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+
 #include <time.h>
 #include <math.h>
 #include <RKLib/RKMem.h>
@@ -412,6 +412,8 @@ void RKMath_MinMax_Solo(float* min, float* max, const float vec[], const int siz
     
 }
 
+#ifdef RKMATH_ENABLE_ATOMICS
+
 void RKMath_AtomicInc( RKMAtomicInt* val ) {
     
     atomic_fetch_add_explicit(val,1,memory_order_relaxed) ;
@@ -426,3 +428,5 @@ RKMAtomicBool RKMath_AtomicRWC( RKMAtomicInt* read_val, int write_val, int* comp
     
     return atomic_compare_exchange_strong(read_val, compare_val, write_val) ;
 }
+
+#endif

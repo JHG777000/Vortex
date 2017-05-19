@@ -185,7 +185,7 @@ static void* CloneArg( RKArgs args, int* index_ptr, int* error ) {
                 new_type_array = RKMem_Realloc(new_type_array, i+1, i, void*, 1) ;
             }
             
-            string = RKString_NewString(type_array[i]) ;
+            string = RKString_NewStringFromCString(type_array[i]) ;
             
             new_type_array[i] = RKString_ConvertToCString(string) ;
             

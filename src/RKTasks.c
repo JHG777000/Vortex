@@ -19,27 +19,30 @@
 //RKTasks, a thread pool library.
 
 #include <stdlib.h>
+
+#if  !_WIN32
 #include <unistd.h>
+#endif
+
 #include <string.h>
-#include <pthread.h>
-#include <RKLib/RKMath.h>
+#include <tinycthread.h>
 #include <RKLib/RKTasks.h>
 
 typedef struct RKThread_s RKThread ;
 
 typedef RKThread* RKThreads ;
 
-struct RKTasks_Module_s { RKTasks_ModuleDestructor_Type destructor ; pthread_mutex_t mutex ; void* data ; int refcount ; int tid ; int dead ; } ;
+struct RKTasks_Module_s { RKTasks_ModuleDestructor_Type destructor ; mtx_t mutex ; void* data ; int refcount ; int tid ; int dead ; } ;
 
 struct RKTasks_ThisTask_s { int active ; int delete ; int task_id ; int thread_id ; } ;
 
 struct RKTasks_Task_s { RKTasks_ThisTask this_task ; int done ; int run_id ; int (*task_func)(RKTasks_Module, struct RKTasks_ThisTask_s *) ; RKTasks_Module module ; } ;
 
-struct RKThread_s { pthread_t thread ; int alive ; int dead ; int awake ; int sleep ; } ;
+struct RKThread_s { thrd_t thread ; int alive ; int dead ; int awake ; int sleep ; int num_of_done_tasks ; int num_of_dead_tasks ; } ;
 
 struct RKTasks_TaskGroup_s { RKTasks_Task* task_array ; int run_id ; int num_of_tasks ; int bound ; int done ; int dead ; int active ;
     
-pthread_cond_t done_tasks_cond ; pthread_mutex_t done_tasks_mutex ; RKMAtomicInt num_of_done_tasks ; RKMAtomicInt num_of_dead_tasks ; } ;
+cnd_t done_tasks_cond ; mtx_t done_tasks_mutex ; int num_of_done_tasks ; int num_of_dead_tasks ; } ;
 
 struct RKTasks_ThreadGroup_s { RKTasks_TaskGroup taskgroup ; RKThreads threadarray ; int max_num_of_threads ;
     
@@ -55,7 +58,7 @@ RKTasks_Module RKTasks_NewModule( RKTasks_Module_NewDataFunc_Type module_newdata
     
     module->destructor = moduledestructor ;
     
-    pthread_mutex_init(&(module->mutex), NULL) ;
+    mtx_init(&(module->mutex), mtx_plain) ;
     
     module->refcount = 0 ;
     
@@ -87,7 +90,7 @@ void RKTasks_DestroyModule( RKTasks_Module module, int tid ) {
     
     while ( RKTasks_IsModuleLocked(module) ) {}
     
-    pthread_mutex_destroy(&(module->mutex)) ;
+    mtx_destroy(&(module->mutex)) ;
     
     free(module->data) ;
     
@@ -106,16 +109,16 @@ int RKTasks_LockModule( RKTasks_Module module ) {
     
     if ( module->dead ) return -1 ;
     
-    if ( pthread_mutex_trylock(&(module->mutex)) == 0 ) return 0 ;
+    if ( mtx_lock(&(module->mutex)) == thrd_success ) return 0 ;
     
     return 1 ;
 }
 
 int RKTasks_IsModuleLocked( RKTasks_Module module ) {
     
-    if ( pthread_mutex_trylock(&(module->mutex)) ) {
+    if ( mtx_trylock(&(module->mutex)) ) {
         
-        pthread_mutex_unlock(&(module->mutex)) ;
+        mtx_unlock(&(module->mutex)) ;
         
         return 0 ;
     }
@@ -126,7 +129,7 @@ int RKTasks_IsModuleLocked( RKTasks_Module module ) {
 
 int RKTasks_UnLockModule( RKTasks_Module module ) {
     
-    return pthread_mutex_unlock(&(module->mutex))  ;
+    return mtx_unlock(&(module->mutex))  ;
 }
 
 void* RKTasks_GetDataFromModule( RKTasks_Module module ) {
@@ -137,8 +140,20 @@ void* RKTasks_GetDataFromModule( RKTasks_Module module ) {
 
 static int RKTasks_GetNumberOfThreadsForPlatform( int max_num_of_threads ) {
     
+    #ifdef _WIN32
+    
+    SYSTEM_INFO sysinfo ;
+    
+    GetSystemInfo(&sysinfo) ;
+    
+    int num_of_threads = sysinfo.dwNumberOfProcessors ;
+    
+    #else
+    
     int num_of_threads = (int) sysconf( _SC_NPROCESSORS_ONLN ) ;
     
+    #endif
+ 
     if ( num_of_threads > max_num_of_threads ) num_of_threads = max_num_of_threads ;
     
     return num_of_threads ;
@@ -166,9 +181,9 @@ RKTasks_TaskGroup RKTasks_NewTaskGroup( void ) {
     
     taskgroup->task_array = NULL ;
     
-    pthread_mutex_init(&taskgroup->done_tasks_mutex, NULL) ;
+    mtx_init(&taskgroup->done_tasks_mutex, mtx_plain) ;
     
-    pthread_cond_init(&taskgroup->done_tasks_cond, NULL);
+    cnd_init(&taskgroup->done_tasks_cond) ;
     
     return taskgroup ;
 }
@@ -193,9 +208,9 @@ void RKTasks_DestroyTaskGroup( RKTasks_TaskGroup taskgroup, int tid ) {
         i++ ;
     }
 
-    pthread_mutex_destroy(&taskgroup->done_tasks_mutex) ;
+    mtx_destroy(&taskgroup->done_tasks_mutex) ;
     
-    pthread_cond_destroy(&taskgroup->done_tasks_cond) ;
+    cnd_destroy(&taskgroup->done_tasks_cond) ;
     
     free(taskgroup->task_array) ;
     
@@ -226,11 +241,11 @@ int RKTasks_IsTaskGroupDead( RKTasks_TaskGroup taskgroup ) {
 
 void RKTasks_ResetTaskGroup( RKTasks_TaskGroup taskgroup ) {
     
-    pthread_mutex_lock(&taskgroup->done_tasks_mutex) ;
+    mtx_lock(&taskgroup->done_tasks_mutex) ;
     
     if ( !taskgroup->done ) {
         
-        pthread_mutex_unlock(&taskgroup->done_tasks_mutex) ;
+        mtx_unlock(&taskgroup->done_tasks_mutex) ;
         
         return ;
     }
@@ -241,7 +256,7 @@ void RKTasks_ResetTaskGroup( RKTasks_TaskGroup taskgroup ) {
     
     taskgroup->done = 0 ;
     
-    pthread_mutex_unlock(&taskgroup->done_tasks_mutex) ;
+    mtx_unlock(&taskgroup->done_tasks_mutex) ;
 }
 
 void RKTasks_BindTaskGroupToThreadGroup( RKTasks_TaskGroup taskgroup, RKTasks_ThreadGroup threadgroup ) {
@@ -326,18 +341,26 @@ void RKTasks_AddTasks_Func( RKTasks_TaskGroup taskgroup, int num_of_tasks, int (
     
 }
 
-static void RKTasks_DeadDoneCheck( int* dead, int* done, int num_of_tasks, RKTasks_TaskGroup taskgroup ) {
+static void RKTasks_DeadDoneCheck( int* dead, int* done, int num_of_tasks, RKTasks_TaskGroup taskgroup, RKTasks_ThreadGroup threadgroup, int tid ) {
     
-    pthread_mutex_lock(&taskgroup->done_tasks_mutex) ;
+    mtx_lock(&taskgroup->done_tasks_mutex) ;
+        
+    taskgroup->num_of_dead_tasks += threadgroup->threadarray[tid].num_of_dead_tasks ;
+        
+    taskgroup->num_of_done_tasks += threadgroup->threadarray[tid].num_of_done_tasks ;
+        
+    threadgroup->threadarray[tid].num_of_dead_tasks = 0 ;
+        
+    threadgroup->threadarray[tid].num_of_done_tasks = 0 ;
     
     if ( taskgroup->num_of_dead_tasks == num_of_tasks ) *dead = 1 ;
     
     if ( taskgroup->num_of_done_tasks == num_of_tasks ) *done = 1 ;
-    
-    pthread_mutex_unlock(&taskgroup->done_tasks_mutex) ;
+   
+    mtx_unlock(&taskgroup->done_tasks_mutex) ;
 }
 
-static void *RKTasks_WorkerThread( void *argument ) {
+static int RKTasks_WorkerThread( void *argument ) {
     
     RKTasks_Thread_Args threadargs = argument ;
     
@@ -379,7 +402,7 @@ static void *RKTasks_WorkerThread( void *argument ) {
                         
                         task->run_id = !task->run_id ;
                         
-                        RKMath_AtomicInc(&taskgroup->num_of_done_tasks) ;
+                        threadgroup->threadarray[tid].num_of_done_tasks++ ;
                     }
                     
                     if ( task->this_task->delete ) {
@@ -388,7 +411,7 @@ static void *RKTasks_WorkerThread( void *argument ) {
                         
                         taskgroup->task_array[index] = NULL ;
                         
-                        RKMath_AtomicInc(&taskgroup->num_of_dead_tasks) ;
+                        threadgroup->threadarray[tid].num_of_dead_tasks++ ;
                     }
                     
                 }
@@ -403,9 +426,9 @@ static void *RKTasks_WorkerThread( void *argument ) {
                 
                 index = tid ;
                 
-                RKTasks_DeadDoneCheck(&taskgroup->dead, &taskgroup->done, taskgroup->num_of_tasks, taskgroup) ;
+                RKTasks_DeadDoneCheck(&taskgroup->dead, &taskgroup->done, taskgroup->num_of_tasks, taskgroup, threadgroup, tid) ;
                 
-                if ( (taskgroup->done) || (taskgroup->dead) ) pthread_cond_signal(&taskgroup->done_tasks_cond) ;
+                if ( (taskgroup->done) || (taskgroup->dead) ) cnd_signal(&taskgroup->done_tasks_cond) ;
             }
         }
         
@@ -416,14 +439,14 @@ static void *RKTasks_WorkerThread( void *argument ) {
     
     free(threadargs) ;
     
-    return NULL ;
+    return 0 ;
 }
 
 static int RKTasks_SpawnThreads( RKTasks_ThreadGroup threadgroup ) {
     
     RKTasks_Thread_Args threadargs = NULL ;
     
-    int Error = 0 ;
+    int error = 0 ;
     
     int t = 0 ;
     
@@ -445,13 +468,17 @@ static int RKTasks_SpawnThreads( RKTasks_ThreadGroup threadgroup ) {
         
         threadgroup->threadarray[t].sleep = 0 ;
         
-        Error = pthread_create(&(threadgroup->threadarray[t].thread), NULL, RKTasks_WorkerThread, (void *) threadargs) ;
+        threadgroup->threadarray[t].num_of_done_tasks = 0 ;
         
-        if ( Error ) return Error ;
+        threadgroup->threadarray[t].num_of_dead_tasks = 0 ;
         
-        Error = pthread_detach( threadgroup->threadarray[t].thread ) ;
+        error = thrd_create(&(threadgroup->threadarray[t].thread), RKTasks_WorkerThread, (void *)threadargs) ;
         
-        if ( Error ) return Error ;
+        if ( error != thrd_success ) return error ;
+        
+        error = thrd_detach( threadgroup->threadarray[t].thread ) ;
+        
+        if ( error != thrd_success ) return error ;
         
         t++ ;
         
@@ -461,7 +488,7 @@ static int RKTasks_SpawnThreads( RKTasks_ThreadGroup threadgroup ) {
     
     threadgroup->init = 1 ;
     
-    return Error ;
+    return error ;
     
 }
 
@@ -509,11 +536,11 @@ void RKTasks_WaitForTasksToBeDone( RKTasks_TaskGroup taskgroup ) {
     
     if ( (taskgroup->done) || (taskgroup->dead) ) return ;
     
-    pthread_mutex_lock(&taskgroup->done_tasks_mutex) ;
+    mtx_lock(&taskgroup->done_tasks_mutex) ;
     
-    pthread_cond_wait(&taskgroup->done_tasks_cond, &taskgroup->done_tasks_mutex) ;
+    cnd_wait(&taskgroup->done_tasks_cond, &taskgroup->done_tasks_mutex) ;
     
-    pthread_mutex_unlock(&taskgroup->done_tasks_mutex) ;
+    mtx_unlock(&taskgroup->done_tasks_mutex) ;
 }
 
 int RKTasks_AllThreadsDead( RKTasks_ThreadGroup threadgroup ) {

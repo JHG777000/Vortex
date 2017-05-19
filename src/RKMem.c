@@ -695,7 +695,29 @@ int RKIndex_GetNumOfItems( RKIndex rkindex ) {
     return rkindex->num_of_items ;
 }
 
-RKString RKString_NewString( const char* text ) {
+RKString RKString_NewStringFromBuffer( const char* text, size_t size_in_bytes ) {
+    
+    RKString string = RKMem_NewMemOfType(struct RKString_s) ;
+    
+    string->size = size_in_bytes ;
+    
+    string->string = RKMem_CArray(string->size, char) ;
+    
+    string->string[string->size-1] = '\0' ;
+    
+    int i = 0 ;
+    
+    while ( i < string->size-1 ) {
+        
+        string->string[i] = text[i] ;
+        
+        i++ ;
+    }
+    
+    return string ;
+}
+
+RKString RKString_NewStringFromCString( const char* text ) {
     
     RKString string = RKMem_NewMemOfType(struct RKString_s) ;
     

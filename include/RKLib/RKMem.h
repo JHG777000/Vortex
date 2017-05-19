@@ -61,6 +61,9 @@ typedef unsigned long RKULong ;
 
 #define RKMem_AddToArray(array_a,array_b,array_a_size,array_b_size,type) array_a = RKMem_Realloc(array_a,(array_a_size+array_b_size),array_a_size,type,1) ; memcpy(array_a[array_a_size+1],array_b,(array_b_size*sizeof(type)))
 
+
+#define RKString_NewString( string ) RKString_NewStringFromBuffer(string,sizeof(string))
+
 #define rkstr( string ) RKString_NewString(string)
 
 #define rkstrfree( string ) RKString_DestroyString(string)
@@ -169,7 +172,9 @@ int RKIndex_GetMaxNumOfItems( RKIndex rkindex ) ;
 
 int RKIndex_GetNumOfItems( RKIndex rkindex ) ;
 
-RKString RKString_NewString( const char* text ) ;
+RKString RKString_NewStringFromBuffer( const char* text, size_t size_in_bytes )  ;
+
+RKString RKString_NewStringFromCString( const char* text ) ;
 
 void RKString_DestroyString( RKString string ) ;
 

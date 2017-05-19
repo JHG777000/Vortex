@@ -28,7 +28,7 @@
 #include <RKLib/RKMath.h>
 #include <RKLib/RKTasks.h>
 
-RKTasks_DefineModule(TestMod, int value ; int value2 ; RKMath_NewVector(Vec,3); RKMath_NewVector(Vec2,3);) {
+RKTasks_DefineModule(TestMod, int value ; int value2 ; int counter ; RKMath_NewVector(Vec,3); RKMath_NewVector(Vec2,3);) {
     
     RKTasks_GetModuleData(TestMod,module)->value = 0 ;
     
@@ -37,13 +37,15 @@ RKTasks_DefineModule(TestMod, int value ; int value2 ; RKMath_NewVector(Vec,3); 
 
 RKTasks_CreateTask(TestTask) { //Create a Task called TestTask
     
-    static RKMAtomicInt counter = 0 ;
+    int counter = 0 ;
     
-    int val = 0;
+    RKTasks_LockModule(module) ;
     
-    RKMath_AtomicInc(&counter) ;
+    RKTasks_GetModuleData(TestMod,module)->counter++ ;
     
-    val = counter ;
+    counter = RKTasks_GetModuleData(TestMod,module)->counter ;
+    
+    RKTasks_UnLockModule(module) ;
     
     int value = RKTasks_GetModuleData(TestMod,module)->value ;
     
@@ -70,11 +72,11 @@ RKTasks_CreateTask(TestTask) { //Create a Task called TestTask
     
     RKMath_RandState randstate ;
     
-    RKMath_SeedRandomState(&randstate, RKTasks_GetTaskID(thistask) + val) ;
+    RKMath_SeedRandomState(&randstate, RKTasks_GetTaskID(thistask) + counter) ;
     
-    printf("%d, a random number from task: %d, with count: %d\n", RKMath_ARandomNumber(&randstate, 0, 5000), RKTasks_GetTaskID(thistask), val) ;
+    printf("%d, a random number from task: %d, with count: %d\n", RKMath_ARandomNumber(&randstate, 0, 5000), RKTasks_GetTaskID(thistask), counter) ;
     
-    RKTasks_GetModuleData(TestMod,module)->value2 = val ;
+    RKTasks_GetModuleData(TestMod,module)->value2 = counter ;
     
     return 1 ; //return 0 or false, if not done
 }
@@ -172,6 +174,8 @@ int main(int argc, const char * argv[]) {
     
     RKTasks_GetModuleData(TestMod,module)->value2 = 0 ;
     
+    RKTasks_GetModuleData(TestMod,module)->counter = 0 ;
+    
     RKMath_NewVector(MyVec, 3) ; //Creates a 3-dimensional vector called MyVec
     
     RKMath_Vectorit(MyVec2, 1, 2, 3) ; //Creates a 3-dimensional vector called MyVec2, with the values 1,2 and 3
@@ -184,14 +188,14 @@ int main(int argc, const char * argv[]) {
     
     RKMath_Equal(RKTasks_GetModuleData(TestMod,module)->Vec2, MyVec2, 3) ;
     
-    RKTasks_AddTasks(TaskGroup, 2000, TestTask, module) ; //can not be called on a bound taskgroup
+    RKTasks_AddTasks(TaskGroup, 200000, TestTask, module) ; //can not be called on a bound taskgroup
     
     RKTasks_BindTaskGroupToThreadGroup(TaskGroup, ThreadGroup) ;
-    
+   
     RKTasks_WaitForTasksToBeDone(TaskGroup) ;
-    
+  
     RKTasks_ResetTaskGroup(TaskGroup) ;
-    
+  
     RKTasks_WaitForTasksToBeDone(TaskGroup) ;
     
     RKTasks_ResetTaskGroup(TaskGroup) ;

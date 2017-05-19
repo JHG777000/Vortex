@@ -21,8 +21,9 @@
 #ifndef MBRT_RKMath_h
 #define MBRT_RKMath_h
 
+#define _USE_MATH_DEFINES
 #include <math.h>
-#include <stdatomic.h>
+
 
 #define RKM_X 0
 
@@ -126,6 +127,10 @@ vec_a[2] = vec_b[2]  \
 
 ///Atomics///
 
+#ifdef RKMATH_ENABLE_ATOMICS
+
+#include <stdatomic.h>
+
 typedef atomic_int RKMAtomicInt ;
 
 typedef atomic_bool RKMAtomicBool ;
@@ -135,5 +140,7 @@ void RKMath_AtomicInc( RKMAtomicInt* val ) ;
 void RKMath_AtomicDec( RKMAtomicInt* val ) ;
 
 RKMAtomicBool RKMath_AtomicRWC( RKMAtomicInt* read_val, int write_val, int* compare_val ) ;
+
+#endif
 
 #endif
