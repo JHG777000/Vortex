@@ -150,6 +150,8 @@ void* RKStore_GetItem( RKStore store, const char* label ) ;
 
 int RKStore_ItemExists( RKStore store, const char* label ) ;
 
+int RKStore_GetNumOfItems( RKStore Store )  ;
+
 int RKStore_AddItemToList( RKStore store, void *item ) ;
 
 RKList RKStore_GetList( RKStore store ) ;

@@ -43,3 +43,7 @@ RKTasks, a thread pool library. Uses tinycthread as a backend.
 —More advanced scheduling, possibly adding a priority system.
 
 —More advanced thread creation algorithm allowing for the dynamic adjustment of the number of threads during runtime.
+
+Dependencies: 
+
+ -TinyCThread https://github.com/tinycthread/tinycthread

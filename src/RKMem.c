@@ -544,6 +544,11 @@ int RKStore_ItemExists( RKStore Store, const char* label ) {
     return 0 ;
 }
 
+int RKStore_GetNumOfItems( RKStore Store ) {
+    
+    return RKList_GetNumOfNodes(RKStore_GetList(Store)) ;
+}
+
 int RKStore_AddItemToList( RKStore store, void *item ) {
     
     if ( RKS_AddItem(store, item) == NULL ) return 0 ;

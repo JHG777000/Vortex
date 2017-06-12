@@ -135,7 +135,6 @@ int RKTasks_UnLockModule( RKTasks_Module module ) {
 void* RKTasks_GetDataFromModule( RKTasks_Module module ) {
 
     return module->data ;
-
 }
 
 static int RKTasks_GetNumberOfThreadsForPlatform( int max_num_of_threads ) {
