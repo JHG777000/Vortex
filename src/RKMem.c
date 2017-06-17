@@ -27,6 +27,8 @@
 
  #define RKS_MAX_LETTER_NUM 94
 
+ struct RKStack_s { RKList list ; } ;
+
  struct RKString_s { RKULong size ; char* string ; } ;
 
  struct RKIndex_s { RKStore store ; int max_num_of_items ; int num_of_items ; } ;
@@ -231,15 +233,21 @@ void RKList_SetData(RKList_node node, void* data) {
 
 void* RKList_GetData(RKList_node node) {
     
+    if ( node == NULL ) return NULL ;
+    
     return node->data ;
 }
 
 RKList_node RKList_GetNextNode(RKList_node node) {
     
+    if ( node == NULL ) return NULL ;
+    
     return node->after ;
 }
 
 RKList_node RKList_GetPreviousNode(RKList_node node) {
+    
+    if ( node == NULL ) return NULL ;
     
     return node->before ;
 }
@@ -719,6 +727,8 @@ RKString RKString_NewStringFromBuffer( const char* text, size_t size_in_bytes ) 
         i++ ;
     }
     
+    string->size -= 1 ;
+    
     return string ;
 }
 
@@ -773,4 +783,44 @@ void* RKAny_NewAny( void* any, RKULong size ) {
     memcpy(ptr, any, size) ;
     
     return ptr ;
+}
+
+RKStack RKStack_NewStack( void ) {
+    
+    RKStack stack = RKMem_NewMemOfType(struct RKStack_s) ;
+    
+    stack->list = RKList_NewList() ;
+    
+    return stack ;
+}
+
+void RKStack_DestroyStack( RKStack stack ) {
+    
+    if (stack != NULL) RKList_DeleteList(stack->list) ;
+    
+    free(stack) ;
+}
+
+void RKStack_Push( RKStack stack, void* data ) {
+    
+    RKList_AddToList(stack->list, data) ;
+}
+
+void* RKStack_Pop( RKStack stack ) {
+    
+    void* data = RKList_GetData(RKList_GetLastNode(stack->list)) ;
+    
+    RKList_DeleteNode(stack->list, RKList_GetLastNode(stack->list)) ;
+    
+    return data ;
+}
+
+void* RKStack_Peek( RKStack stack ) {
+    
+    return RKList_GetData(RKList_GetLastNode(stack->list)) ;
+}
+
+RKList RKStack_GetList( RKStack stack ) {
+    
+    return stack->list ;
 }

@@ -88,6 +88,8 @@ typedef struct RKStore_s* RKStore ;
 
 typedef struct RKIndex_s* RKIndex ;
 
+typedef struct RKStack_s* RKStack ;
+
 typedef struct RKString_s* RKString ;
 
 typedef void* RKAny ;
@@ -189,5 +191,17 @@ char* RKString_ConvertToCString( RKString string ) ;
 void RKString_PrintString( RKString string ) ;
 
 void* RKAny_NewAny( void* any, RKULong size ) ;
+
+RKStack RKStack_NewStack( void ) ;
+
+void RKStack_DestroyStack( RKStack stack ) ;
+
+void RKStack_Push( RKStack stack, void* data ) ;
+
+void* RKStack_Pop( RKStack stack ) ;
+
+void* RKStack_Peek( RKStack stack ) ;
+
+RKList RKStack_GetList( RKStack stack ) ;
 
 #endif
