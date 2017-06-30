@@ -27,6 +27,8 @@
 #include <RKLib/RKMem.h>
 #include <RKLib/RKMath.h>
 
+//ARandomNumber from:https://stackoverflow.com/questions/13213395/adjusting-xorshift-generator-to-return-a-number-within-a-maximum
+
  void RKMath_SeedRandomState( RKMath_RandState* randstate, int seed ) {
     
      randstate->init = 1 ;

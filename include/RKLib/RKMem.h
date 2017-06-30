@@ -64,6 +64,8 @@ typedef unsigned long RKULong ;
 
 #define RKString_NewString( string ) RKString_NewStringFromBuffer(string,sizeof(string))
 
+#define RKString_AddStrings( a, b ) RKString_NewStringFromTwoStrings(a,b)
+
 #define rkstr( string ) RKString_NewString(string)
 
 #define rkstrfree( string ) RKString_DestroyString(string)
@@ -180,11 +182,15 @@ RKString RKString_NewStringFromBuffer( const char* text, size_t size_in_bytes ) 
 
 RKString RKString_NewStringFromCString( const char* text ) ;
 
+RKString RKString_NewStringFromTwoStrings( RKString a, RKString b ) ;
+
 void RKString_DestroyString( RKString string ) ;
 
 RKULong RKString_GetSize( RKString string ) ;
 
 char* RKString_GetString( RKString string ) ;
+
+RKString RKString_AppendString( RKString BaseString, RKString AppendingString ) ;
 
 char* RKString_ConvertToCString( RKString string ) ;
 

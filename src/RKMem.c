@@ -727,7 +727,7 @@ RKString RKString_NewStringFromBuffer( const char* text, size_t size_in_bytes ) 
         i++ ;
     }
     
-    string->size -= 1 ;
+    string->size -= 1 ; //not counting '\0'
     
     return string ;
 }
@@ -741,6 +741,43 @@ RKString RKString_NewStringFromCString( const char* text ) {
     string->string = RKMem_CArray(string->size+1, char) ;
     
     strcpy(string->string, text) ;
+    
+    return string ;
+}
+
+RKString RKString_NewStringFromTwoStrings( RKString a, RKString b ) {
+    
+    RKString string = RKMem_NewMemOfType(struct RKString_s) ;
+    
+    string->size = a->size + b->size ;
+    
+    string->string = RKMem_CArray(string->size+1, char) ;
+    
+    int i = 0 ;
+    
+    int j = 0 ;
+    
+    while ( j < a->size ) {
+        
+        string->string[i] = a->string[j] ;
+        
+        i++ ;
+        
+        j++ ;
+    }
+
+    j = 0 ;
+    
+    while ( j < b->size ) {
+        
+        string->string[i] = a->string[j] ;
+        
+        i++ ;
+        
+        j++ ;
+    }
+    
+    string->string[i] = '\0' ;
     
     return string ;
 }
@@ -760,6 +797,15 @@ RKULong RKString_GetSize( RKString string ) {
 char* RKString_GetString( RKString string ) {
     
     return string->string ;
+}
+
+RKString RKString_AppendString( RKString BaseString, RKString AppendingString ) {
+    
+    RKString string = RKString_AddStrings(BaseString, AppendingString) ;
+    
+    RKString_DestroyString(BaseString) ;
+    
+    return string ;
 }
 
 char* RKString_ConvertToCString( RKString string ) {
