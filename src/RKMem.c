@@ -353,6 +353,22 @@ RKList_node RKList_GetNode( RKList list, int index ) {
     return node ;
 }
 
+RKList_node RKList_GetNextNodeAfterN( RKList_node node, int n ) {
+    
+    int i = 0 ;
+    
+    while ( i < n ) {
+        
+        if ( node == NULL ) return NULL ;
+        
+        node = node->after ;
+        
+        i++ ;
+    }
+    
+    return node ;
+}
+
 void RKList_DeleteNodeWithIndex( RKList list, int index ) {
     
     RKList_node node = RKList_GetNode(list, index) ;
@@ -770,7 +786,7 @@ RKString RKString_NewStringFromTwoStrings( RKString a, RKString b ) {
     
     while ( j < b->size ) {
         
-        string->string[i] = a->string[j] ;
+        string->string[i] = b->string[j] ;
         
         i++ ;
         
@@ -783,6 +799,8 @@ RKString RKString_NewStringFromTwoStrings( RKString a, RKString b ) {
 }
 
 void RKString_DestroyString( RKString string ) {
+    
+    if ( string == NULL ) return ;
     
     free(string->string) ;
     
@@ -806,6 +824,11 @@ RKString RKString_AppendString( RKString BaseString, RKString AppendingString ) 
     RKString_DestroyString(BaseString) ;
     
     return string ;
+}
+
+RKString RKString_CopyString( RKString string ) {
+    
+    return RKString_NewStringFromCString(RKString_GetString(string)) ;
 }
 
 char* RKString_ConvertToCString( RKString string ) {
@@ -854,6 +877,8 @@ void RKStack_Push( RKStack stack, void* data ) {
 
 void* RKStack_Pop( RKStack stack ) {
     
+    if ( RKStack_IsEmpty(stack) ) return NULL ;
+    
     void* data = RKList_GetData(RKList_GetLastNode(stack->list)) ;
     
     RKList_DeleteNode(stack->list, RKList_GetLastNode(stack->list)) ;
@@ -866,7 +891,17 @@ void* RKStack_Peek( RKStack stack ) {
     return RKList_GetData(RKList_GetLastNode(stack->list)) ;
 }
 
+int RKStack_IsEmpty( RKStack stack ) {
+    
+    return (RKList_GetNumOfNodes(stack->list) == 0) ? 1 : 0 ;
+}
+
 RKList RKStack_GetList( RKStack stack ) {
     
     return stack->list ;
+}
+
+RKList_node RKStack_GetListNode( RKStack stack ) {
+    
+    return RKList_GetLastNode(stack->list) ;
 }

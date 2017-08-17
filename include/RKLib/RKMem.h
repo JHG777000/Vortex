@@ -140,6 +140,8 @@ void RKList_DeleteAllNodesInList( RKList list ) ;
 
 RKList_node RKList_GetNode( RKList list, int index ) ;
 
+RKList_node RKList_GetNextNodeAfterN( RKList_node node, int n ) ;
+
 void RKList_DeleteNodeWithIndex( RKList list, int index ) ;
 
 void RKList_IterateListWith( RKMemIteratorFuncType iterator, RKList list ) ;
@@ -192,6 +194,8 @@ char* RKString_GetString( RKString string ) ;
 
 RKString RKString_AppendString( RKString BaseString, RKString AppendingString ) ;
 
+RKString RKString_CopyString( RKString string ) ;
+
 char* RKString_ConvertToCString( RKString string ) ;
 
 void RKString_PrintString( RKString string ) ;
@@ -208,6 +212,10 @@ void* RKStack_Pop( RKStack stack ) ;
 
 void* RKStack_Peek( RKStack stack ) ;
 
+int RKStack_IsEmpty( RKStack stack ) ;
+
 RKList RKStack_GetList( RKStack stack ) ;
+
+RKList_node RKStack_GetListNode( RKStack stack ) ;
 
 #endif

@@ -67,7 +67,7 @@
     
     randval = (randval < randmin) ? RKMath_ARandomNumber(randstate, randmin, randmax) : randval ;
     
-    return  randval ;
+    return randval ;
     
 }
 
@@ -131,8 +131,8 @@ int RKMath_AMoreRandomNumber( RKMath_RandState* randstate, int randmin, int rand
     
     randval = (randval < randmin) ? RKMath_AMoreRandomNumber(randstate, randmin, randmax) : randval ;
     
-    return  randval ;
-    
+    return randval ;
+
 }
 
 float RKMath_ARandomFloat( RKMath_RandState* randstate ) {
