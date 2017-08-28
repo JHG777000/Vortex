@@ -814,6 +814,8 @@ RKULong RKString_GetSize( RKString string ) {
 
 char* RKString_GetString( RKString string ) {
     
+    if ( string == NULL ) return NULL ;
+    
     return string->string ;
 }
 
@@ -827,6 +829,8 @@ RKString RKString_AppendString( RKString BaseString, RKString AppendingString ) 
 }
 
 RKString RKString_CopyString( RKString string ) {
+    
+    if ( string == NULL ) return NULL ;
     
     return RKString_NewStringFromCString(RKString_GetString(string)) ;
 }
