@@ -22,6 +22,7 @@
 #define RKLib_RKMem_h
 
 #include <stdint.h>
+#include <limits.h>
 
 typedef float RKFloat ;
 

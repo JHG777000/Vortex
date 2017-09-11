@@ -392,22 +392,11 @@ void RKList_IterateListWith( RKMemIteratorFuncType iterator, RKList list ) {
     }
 }
 
-static int RKS_GetCharID( char c ) {
-    
-    int value = ((int)c) - 32 ;
-    
-    if ( value < 0 ) value = -1 ;
-    
-    if ( value > RKS_MAX_LETTER_NUM ) value = -1 ;
-    
-    return value ;
-}
-
-static RKStore_letter* RKS_NewAlphabet( void ) {
+static RKStore_letter* RKS_NewBinaryNode( void ) {
     
     RKStore_letter* rks_alphabet = NULL ;
     
-    int size = RKS_MAX_LETTER_NUM ;
+    int size = 2 ;
     
     rks_alphabet = RKMem_CArray(size, RKStore_letter) ;
     
@@ -430,9 +419,15 @@ static RKList_node RKS_GetSetNode( RKStore store, const char* label, RKList_node
     
     int i = 0 ;
     
+    int j = 0 ;
+    
     int value = 0 ;
     
+    signed char byte = 0 ;
+    
     int size = (int) strlen( label ) ;
+    
+    int size2 = sizeof(char) * CHAR_BIT ;
     
     RKList_node retnode = NULL ;
     
@@ -440,23 +435,29 @@ static RKList_node RKS_GetSetNode( RKStore store, const char* label, RKList_node
     
     if ( store->dictionary == NULL ) {
         
-        store->dictionary = RKS_NewAlphabet() ;
+        store->dictionary = RKS_NewBinaryNode() ;
     }
     
     current_alphabet = store->dictionary ;
     
     while ( i < size ) {
         
-        value = RKS_GetCharID(label[i]) ;
+        byte = label[i] ;
         
-        if ( value != -1 ) {
+        j = 0 ;
+        
+        while ( j < size2 ) {
             
-            if ( i == ( size - 1 ) ) {
+            value = (byte < 0) ? 1 : 0 ;
+            
+            byte = byte << 1 ;
+            
+            if ( i == ( size - 1 ) && j == ( size2 - 1 ) ) {
                 
                 if ( node == NULL ) {
                     
                     if (!flag) {
-                    
+                        
                         return current_alphabet[value].node ;
                         
                     } else {
@@ -478,12 +479,13 @@ static RKList_node RKS_GetSetNode( RKStore store, const char* label, RKList_node
                 
             } else {
                 
-                if ( current_alphabet[value].next_alphabet == NULL ) current_alphabet[value].next_alphabet = RKS_NewAlphabet() ;
+                if ( current_alphabet[value].next_alphabet == NULL ) current_alphabet[value].next_alphabet = RKS_NewBinaryNode() ;
                 
                 current_alphabet = current_alphabet[value].next_alphabet ;
                 
             }
             
+            j++ ;
         }
         
         i++ ;
@@ -590,30 +592,28 @@ void RKStore_IterateStoreWith( RKMemIteratorFuncType iterator, RKStore store ) {
     if (store->items != NULL) RKList_IterateListWith(iterator, store->items) ;
 }
 
-static void RKS_DestroyAlphabet( RKStore_letter* alphabet ) {
-    
-    int size = RKS_MAX_LETTER_NUM ;
+static void RKS_DestroyBinaryNodes( RKStore_letter* alphabet ) {
     
     int i = 0 ;
     
-    while ( i < size ) {
+    while ( i < 2 ) {
         
         if (alphabet[i].next_alphabet != NULL)  {
             
-            RKS_DestroyAlphabet(alphabet[i].next_alphabet) ;
+            RKS_DestroyBinaryNodes(alphabet[i].next_alphabet) ;
             
             alphabet[i].next_alphabet = NULL ;
         }
         
         i++ ;
     }
-
+    
     free(alphabet) ;
 }
 
 void RKStore_DestroyStore( RKStore store ) {
     
-    if (store->dictionary != NULL) RKS_DestroyAlphabet(store->dictionary) ;
+    if (store->dictionary != NULL) RKS_DestroyBinaryNodes(store->dictionary) ;
     
     if (store->items != NULL) RKList_DeleteList(store->items) ;
     
