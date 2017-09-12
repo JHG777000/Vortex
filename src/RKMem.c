@@ -16,7 +16,7 @@
  */
 
 //File: RKMem.c
-//RKMem, provides some nice macros and a funtion to make dealling with memory a little easier in C.
+//RKMem, provides some nice macros and a funtion to make dealing with memory a little easier in C.
 //As well as a double linked-list implementation, RKList.
 //And a dictionary type, RKStore.
 
@@ -24,8 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <RKLib/RKMem.h>
-
- #define RKS_MAX_LETTER_NUM 94
 
  struct RKStack_s { RKList list ; } ;
 
