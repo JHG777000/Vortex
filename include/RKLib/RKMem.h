@@ -181,6 +181,8 @@ int RKIndex_GetMaxNumOfItems( RKIndex rkindex ) ;
 
 int RKIndex_GetNumOfItems( RKIndex rkindex ) ;
 
+RKString RKString_NewEmptyString( size_t size_in_bytes ) ;
+
 RKString RKString_NewStringFromBuffer( const char* text, size_t size_in_bytes )  ;
 
 RKString RKString_NewStringFromCString( const char* text ) ;
@@ -193,6 +195,10 @@ RKULong RKString_GetSize( RKString string ) ;
 
 char* RKString_GetString( RKString string ) ;
 
+int RKString_GetCharacter( RKString string, int index ) ;
+
+void RKString_SetCharacter( RKString string, int index, int character ) ;
+
 RKString RKString_AppendString( RKString BaseString, RKString AppendingString ) ;
 
 RKString RKString_CopyString( RKString string ) ;
@@ -200,6 +206,8 @@ RKString RKString_CopyString( RKString string ) ;
 char* RKString_ConvertToCString( RKString string ) ;
 
 void RKString_PrintString( RKString string ) ;
+
+RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) ;
 
 void* RKAny_NewAny( void* any, RKULong size ) ;
 

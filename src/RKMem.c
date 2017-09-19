@@ -722,6 +722,21 @@ int RKIndex_GetNumOfItems( RKIndex rkindex ) {
     return rkindex->num_of_items ;
 }
 
+RKString RKString_NewEmptyString( size_t size_in_bytes ) {
+    
+    RKString string = RKMem_NewMemOfType(struct RKString_s) ;
+    
+    string->size = size_in_bytes ;
+    
+    string->string = RKMem_CArray(string->size, char) ;
+    
+    string->string[string->size-1] = '\0' ;
+    
+    string->size -= 1 ; //not counting '\0'
+    
+    return string ;
+}
+
 RKString RKString_NewStringFromBuffer( const char* text, size_t size_in_bytes ) {
     
     RKString string = RKMem_NewMemOfType(struct RKString_s) ;
@@ -817,6 +832,24 @@ char* RKString_GetString( RKString string ) {
     return string->string ;
 }
 
+int RKString_GetCharacter( RKString string, int index ) {
+    
+    if ( index > string->size ) return 0 ;
+    
+    if ( index < 0 ) return 0 ;
+    
+    return string->string[index] ;
+}
+
+void RKString_SetCharacter( RKString string, int index, int character ) {
+    
+    if ( index > string->size ) return ;
+    
+    if ( index < 0 ) return ;
+    
+    string->string[index] = character ;
+}
+
 RKString RKString_AppendString( RKString BaseString, RKString AppendingString ) {
     
     RKString string = RKString_AddStrings(BaseString, AppendingString) ;
@@ -845,6 +878,126 @@ char* RKString_ConvertToCString( RKString string ) {
 void RKString_PrintString( RKString string ) {
     
     printf("%s", string->string) ;
+}
+
+static int GetEscapeCharacter( int c ) {
+    
+    switch (c) {
+            
+        case '\a':
+            
+            return 'a' ;
+            
+            break;
+            
+        case '\b':
+            
+            return 'b' ;
+            
+            break;
+            
+        case '\f':
+            
+            return 'f' ;
+            
+            break;
+            
+        case '\n':
+            
+            return 'n' ;
+            
+            break;
+            
+        case '\r':
+            
+            return 'r' ;
+            
+            break;
+            
+        case '\t':
+            
+            return 't' ;
+            
+            break;
+            
+        case '\v':
+            
+            return 'v' ;
+            
+            break;
+            
+        default:
+            break;
+    }
+    
+    return 'n' ;
+}
+
+RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) {
+    
+    int i = 0 ;
+    
+    int j = 0 ;
+    
+    int x = 0 ;
+    
+    int c = 0 ;
+    
+    RKString str = string ;
+    
+    RKString str2 = NULL ;
+    
+    while ( i < str->size ) {
+        
+        c = RKString_GetCharacter(str, i) ;
+        
+        if ( c == '\a' || c == '\b' || c == '\f' || c == '\n'
+            || c == '\r' || c == '\t' || c == '\v' ) {
+            
+            j = 0 ;
+            
+            x = 0 ;
+            
+            str2 = RKString_NewEmptyString(RKString_GetSize(str)+3) ;
+            
+            while ( j < str2->size ) {
+                
+                
+                if ( j != i && j != (i+1) && j != (str2->size-1) ) {
+                    
+                    RKString_SetCharacter(str2, j, RKString_GetCharacter(str, j+x)) ;
+                }
+                
+                if ( j == i ) {
+                    
+                    RKString_SetCharacter(str2, j, '\\') ;
+                }
+                
+                if ( j == i+1 ) {
+                    
+                    RKString_SetCharacter(str2, j, GetEscapeCharacter(c)) ;
+                    
+                    x = -1 ;
+                }
+
+                
+                if ( j == (str2->size-1) ) {
+                    
+                    RKString_DestroyString(str) ;
+                    
+                    str = str2 ;
+                    
+                    i++ ;
+                }
+                
+                j++ ;
+            }
+        }
+        
+        i++ ;
+    }
+    
+    return str ;
 }
 
 void* RKAny_NewAny( void* any, RKULong size ) {
