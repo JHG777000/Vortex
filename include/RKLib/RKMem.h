@@ -69,6 +69,8 @@ typedef unsigned long RKULong ;
 
 #define rkstr( string ) RKString_NewString(string)
 
+#define rkstr32( string ) RKString_NewString(u8##string)
+
 #define rkstrfree( string ) RKString_DestroyString(string)
 
 #define rkstrprint( string ) RKString_PrintString(string)
@@ -193,11 +195,15 @@ void RKString_DestroyString( RKString string ) ;
 
 RKULong RKString_GetSize( RKString string ) ;
 
+RKULong RKString_GetSizeInBytes( RKString string ) ;
+
+RKULong RKString_GetLength( RKString string ) ;
+
 char* RKString_GetString( RKString string ) ;
 
 int RKString_GetCharacter( RKString string, int index ) ;
 
-void RKString_SetCharacter( RKString string, int index, int character ) ;
+void RKString_SetByte( RKString string, int index, char byte ) ;
 
 RKString RKString_AppendString( RKString BaseString, RKString AppendingString ) ;
 
@@ -206,6 +212,8 @@ RKString RKString_CopyString( RKString string ) ;
 char* RKString_ConvertToCString( RKString string ) ;
 
 void RKString_PrintString( RKString string ) ;
+
+RKString RKString_GetStringForASCII( RKString string ) ;
 
 RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) ;
 

@@ -142,6 +142,19 @@ int main(int argc, const char * argv[]) {
                             "Hi!\n") ;
     rkstrprint(string) ;
     
+    RKString string2 = rkstr32( "12345678\n"
+                               "Hi😀!\n"
+                               "😀, and 😀?!!!!\n") ;
+    
+    if ( RKString_GetCharacter(string2, 11) == L'😀' ) {
+        
+        printf("Hello:😀\n") ;
+    }
+    
+    rkstrprint(string2) ;
+    
+    rkstrprint(RKString_GetStringForASCII(string2)) ;
+    
     RKAny any1 = rkany(string) ;
     
     rkstrprint(rkget(RKString,any1)) ;
@@ -155,6 +168,8 @@ int main(int argc, const char * argv[]) {
     printf("hello:%d\n",rkget(int, any2)) ;
     
     rkstrfree(string) ;
+    
+    rkstrfree(string2) ;
     
     free(any1) ;
     
@@ -188,7 +203,7 @@ int main(int argc, const char * argv[]) {
     
     RKMath_Equal(RKTasks_GetModuleData(TestMod,module)->Vec2, MyVec2, 3) ;
     
-    RKTasks_AddTasks(TaskGroup, 200000, TestTask, module) ; //can not be called on a bound taskgroup
+   // RKTasks_AddTasks(TaskGroup, 200000, TestTask, module) ; //can not be called on a bound taskgroup
     
     RKTasks_BindTaskGroupToThreadGroup(TaskGroup, ThreadGroup) ;
    

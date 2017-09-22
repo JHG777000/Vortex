@@ -2,7 +2,7 @@ RKLib
 =====
 RKLib README
 
-RKLib is a cross-platform library written in C, that makes it easier to write portable and fast code.
+RKLib is a cross-platform library written in C(C11), that makes it easier to write portable and fast code.
 
 RKLib evolved out of several personal projects that I was working on, required such a library. I found most other libraries did not meet my requirements, mostly ease of use. Which I believe is one of the most important requirements for any piece of software. RKLib is a collection of smaller libraries that I feel (at least from my point of view) not only adhere to but are built from the ground up on the principle of ease of use.
 

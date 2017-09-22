@@ -27,7 +27,7 @@
 
  struct RKStack_s { RKList list ; } ;
 
- struct RKString_s { RKULong size ; char* string ; } ;
+ struct RKString_s { RKLong size_in_characters ; RKULong size_in_bytes ; char* string ; } ;
 
  struct RKIndex_s { RKStore store ; int max_num_of_items ; int num_of_items ; } ;
 
@@ -726,13 +726,15 @@ RKString RKString_NewEmptyString( size_t size_in_bytes ) {
     
     RKString string = RKMem_NewMemOfType(struct RKString_s) ;
     
-    string->size = size_in_bytes ;
+    string->size_in_bytes = size_in_bytes ;
     
-    string->string = RKMem_CArray(string->size, char) ;
+    string->string = RKMem_CArray(string->size_in_bytes, char) ;
     
-    string->string[string->size-1] = '\0' ;
+    string->string[string->size_in_bytes-1] = '\0' ;
     
-    string->size -= 1 ; //not counting '\0'
+    string->size_in_bytes -= 1 ; //not counting '\0'
+    
+    string->size_in_characters = -1 ;
     
     return string ;
 }
@@ -741,22 +743,24 @@ RKString RKString_NewStringFromBuffer( const char* text, size_t size_in_bytes ) 
     
     RKString string = RKMem_NewMemOfType(struct RKString_s) ;
     
-    string->size = size_in_bytes ;
+    string->size_in_bytes = size_in_bytes ;
     
-    string->string = RKMem_CArray(string->size, char) ;
+    string->string = RKMem_CArray(string->size_in_bytes, char) ;
     
-    string->string[string->size-1] = '\0' ;
+    string->string[string->size_in_bytes-1] = '\0' ;
     
     int i = 0 ;
     
-    while ( i < string->size-1 ) {
+    while ( i < string->size_in_bytes-1 ) {
         
         string->string[i] = text[i] ;
         
         i++ ;
     }
     
-    string->size -= 1 ; //not counting '\0'
+    string->size_in_bytes -= 1 ; //not counting '\0'
+    
+    string->size_in_characters = -1 ;
     
     return string ;
 }
@@ -765,11 +769,13 @@ RKString RKString_NewStringFromCString( const char* text ) {
     
     RKString string = RKMem_NewMemOfType(struct RKString_s) ;
     
-    string->size = strlen(text) ;
+    string->size_in_bytes = strlen(text) ;
     
-    string->string = RKMem_CArray(string->size+1, char) ;
+    string->string = RKMem_CArray(string->size_in_bytes+1, char) ;
     
     strcpy(string->string, text) ;
+    
+    string->size_in_characters = -1 ;
     
     return string ;
 }
@@ -778,15 +784,15 @@ RKString RKString_NewStringFromTwoStrings( RKString a, RKString b ) {
     
     RKString string = RKMem_NewMemOfType(struct RKString_s) ;
     
-    string->size = a->size + b->size ;
+    string->size_in_bytes = a->size_in_bytes + b->size_in_bytes ;
     
-    string->string = RKMem_CArray(string->size+1, char) ;
+    string->string = RKMem_CArray(string->size_in_bytes+1, char) ;
     
     int i = 0 ;
     
     int j = 0 ;
     
-    while ( j < a->size ) {
+    while ( j < a->size_in_bytes ) {
         
         string->string[i] = a->string[j] ;
         
@@ -797,7 +803,7 @@ RKString RKString_NewStringFromTwoStrings( RKString a, RKString b ) {
 
     j = 0 ;
     
-    while ( j < b->size ) {
+    while ( j < b->size_in_bytes ) {
         
         string->string[i] = b->string[j] ;
         
@@ -807,6 +813,8 @@ RKString RKString_NewStringFromTwoStrings( RKString a, RKString b ) {
     }
     
     string->string[i] = '\0' ;
+    
+    string->size_in_characters = -1 ;
     
     return string ;
 }
@@ -822,7 +830,57 @@ void RKString_DestroyString( RKString string ) {
 
 RKULong RKString_GetSize( RKString string ) {
     
-    return string->size ;
+    return string->size_in_bytes ;
+}
+
+RKULong RKString_GetSizeInBytes( RKString string ) {
+    
+    return string->size_in_bytes+1 ;
+}
+
+RKULong RKString_GetLength( RKString string ) {
+    
+    int i = 0 ;
+    
+    int n = 0 ;
+    
+    signed char byte = 0 ;
+    
+    int num_of_characters = 0 ;
+    
+    if ( string->size_in_characters == -1 ) {
+        
+        while ( i < string->size_in_bytes ) {
+            
+            byte = string->string[i] ;
+            
+            if ( byte > 0 ) {
+                
+                num_of_characters++ ;
+                
+            } else {
+                
+                n = 0 ;
+                
+                while (byte < 0) {
+                    
+                    byte = byte << 1 ;
+                    
+                    n++ ;
+                }
+        
+                i += (n-1) ;
+                
+                num_of_characters++ ;
+            }
+            
+            i++ ;
+        }
+        
+        string->size_in_characters = num_of_characters ;
+    }
+    
+    return string->size_in_characters ;
 }
 
 char* RKString_GetString( RKString string ) {
@@ -834,20 +892,131 @@ char* RKString_GetString( RKString string ) {
 
 int RKString_GetCharacter( RKString string, int index ) {
     
-    if ( index > string->size ) return 0 ;
+    int n = 0 ;
+    
+    signed char byte = 0 ;
+    
+    unsigned int byte0 = 0 ;
+    
+    unsigned int byte1 = 0 ;
+    
+    unsigned int byte2 = 0 ;
+    
+    unsigned int byte3 = 0 ;
+    
+    unsigned int value = 0 ;
+loop:
+    if ( index > string->size_in_bytes ) return 0 ;
     
     if ( index < 0 ) return 0 ;
     
-    return string->string[index] ;
+    byte = string->string[index] ;
+    
+    if ( byte > 0 ) {
+        
+        n = 1 ;
+        
+    } else {
+        
+        n = 0 ;
+        
+        while (byte < 0) {
+            
+            byte = byte << 1 ;
+            
+            n++ ;
+        }
+        
+        if ( n == 1 ) {
+            
+            index++ ;
+            
+            goto loop ;
+        }
+        
+    }
+        if ( n == 1 ) {
+            
+            byte0 = string->string[index] ;
+            
+            value = byte0 ;
+        }
+        
+        if ( n == 2 ) {
+            
+            byte0 = string->string[index] ;
+            
+            byte0 = byte0 & 0x3F ;
+            
+            byte0 = byte0 << 6 ;
+            
+            byte1 = string->string[index+1] ;
+            
+            byte1 = byte1 & 0x7F ;
+            
+            value = byte0 | byte1 ;
+        }
+        
+        if ( n == 3 ) {
+         
+            byte0 = string->string[index] ;
+            
+            byte0 = byte0 & 0x1F ;
+            
+            byte0 = byte0 << 12 ;
+            
+            byte1 = string->string[index+1] ;
+            
+            byte1 = byte1 & 0x7F ;
+            
+            byte1 = byte1 << 6 ;
+            
+            byte2 = string->string[index+2] ;
+            
+            byte2 = byte2 & 0x7F ;
+            
+            value = byte0 | byte1 | byte2 ;
+            
+        }
+        
+        if ( n == 4 ) {
+            
+            byte0 = string->string[index] ;
+            
+            byte0 = byte0 & 0xF ;
+            
+            byte0 = byte0 << 18 ;
+            
+            byte1 = string->string[index+1] ;
+            
+            byte1 = byte1 & 0x7F ;
+            
+            byte1 = byte1 << 12 ;
+            
+            byte2 = string->string[index+2] ;
+            
+            byte2 = byte2 & 0x7F ;
+            
+            byte2 = byte2 << 6 ;
+            
+            byte3 = string->string[index+3] ;
+            
+            byte3 = byte3 & 0x7F ;
+            
+            value = byte0 | byte1 | byte2 | byte3 ;
+            
+        }
+
+    return value ;
 }
 
-void RKString_SetCharacter( RKString string, int index, int character ) {
+void RKString_SetByte( RKString string, int index, char byte ) {
     
-    if ( index > string->size ) return ;
+    if ( index > string->size_in_bytes ) return ;
     
     if ( index < 0 ) return ;
     
-    string->string[index] = character ;
+    string->string[index] = byte ;
 }
 
 RKString RKString_AppendString( RKString BaseString, RKString AppendingString ) {
@@ -878,6 +1047,134 @@ char* RKString_ConvertToCString( RKString string ) {
 void RKString_PrintString( RKString string ) {
     
     printf("%s", string->string) ;
+}
+
+RKString RKString_GetStringForASCII( RKString string ) {
+    
+    int i = 0 ;
+    
+    int j = 0 ;
+    
+    int x = 0 ;
+    
+    int n = 0 ;
+    
+    int str_size = 1 ;
+    
+    signed char byte = 0 ;
+    
+    RKString ascii_string = NULL ;
+    
+    char* str = RKMem_CArray(1, char) ;
+
+    str[0] = '\0' ;
+    
+    while ( i < string->size_in_bytes  ) {
+        
+        if ( string->string[i] < 0 ) {
+            
+            str = RKMem_Realloc(str, str_size+8, str_size, char, 1) ;
+            
+            str_size += 8 ;
+            
+            str[str_size-9] = 'U' ;
+            
+            str[str_size-8] = 'N' ;
+            
+            str[str_size-7] = 'I' ;
+            
+            str[str_size-6] = 'C' ;
+            
+            str[str_size-5] = 'O' ;
+            
+            str[str_size-4] = 'D' ;
+            
+            str[str_size-3] = 'E' ;
+            
+            str[str_size-2] = '_' ;
+            
+            str[str_size-1] = '\0' ;
+            
+            byte = string->string[i] ;
+            
+            n = 0 ;
+            
+            while (byte < 0) {
+                
+                byte = byte << 1 ;
+                
+                n++ ;
+            }
+
+            x = 0 ;
+            
+            byte = string->string[i] ;
+            
+            while ( x < n ) {
+                
+                j = 0 ;
+                
+                while ( j < (sizeof(char) * CHAR_BIT) ) {
+                    
+                    str = RKMem_Realloc(str, str_size+1, str_size, char, 1) ;
+                    
+                    str_size++ ;
+                    
+                    if ( byte == 0 ) {
+                        
+                        str[str_size-2] = '0' ;
+                    }
+                    
+                    if ( byte > 0 ) {
+                        
+                        str[str_size-2] = '0' ;
+                    }
+                    
+                    if ( byte < 0 ){
+                        
+                        str[str_size-2] = '1' ;
+                    }
+                    
+                    str[str_size-1] = '\0' ;
+                    
+                    byte = byte << 1 ;
+                    
+                    j++ ;
+                }
+                
+                i++ ;
+                
+                if (  i >= string->size_in_bytes ) {
+                    
+                    break ;
+                }
+                
+                byte = string->string[i] ;
+                
+                x++ ;
+            }
+            
+            i-- ;
+            
+        } else {
+            
+            str = RKMem_Realloc(str, str_size+1, str_size, char, 1) ;
+            
+            str_size++ ;
+            
+            str[str_size-2] = string->string[i] ;
+            
+            str[str_size-1] = '\0' ;
+        }
+        
+        i++ ;
+    }
+    
+    ascii_string = RKString_NewStringFromCString(str) ;
+    
+    free(str) ;
+    
+    return ascii_string ;
 }
 
 static int GetEscapeCharacter( int c ) {
@@ -947,7 +1244,7 @@ RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) {
     
     RKString str2 = NULL ;
     
-    while ( i < str->size ) {
+    while ( i < str->size_in_bytes ) {
         
         c = RKString_GetCharacter(str, i) ;
         
@@ -960,28 +1257,28 @@ RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) {
             
             str2 = RKString_NewEmptyString(RKString_GetSize(str)+3) ;
             
-            while ( j < str2->size ) {
+            while ( j < str2->size_in_bytes ) {
                 
                 
-                if ( j != i && j != (i+1) && j != (str2->size-1) ) {
+                if ( j != i && j != (i+1) && j != (str2->size_in_bytes-1) ) {
                     
-                    RKString_SetCharacter(str2, j, RKString_GetCharacter(str, j+x)) ;
+                    RKString_SetByte(str2, j, RKString_GetCharacter(str, j+x)) ;
                 }
                 
                 if ( j == i ) {
                     
-                    RKString_SetCharacter(str2, j, '\\') ;
+                    RKString_SetByte(str2, j, '\\') ;
                 }
                 
                 if ( j == i+1 ) {
                     
-                    RKString_SetCharacter(str2, j, GetEscapeCharacter(c)) ;
+                    RKString_SetByte(str2, j, GetEscapeCharacter(c)) ;
                     
                     x = -1 ;
                 }
 
                 
-                if ( j == (str2->size-1) ) {
+                if ( j == (str2->size_in_bytes-1) ) {
                     
                     RKString_DestroyString(str) ;
                     
