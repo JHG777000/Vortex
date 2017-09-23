@@ -185,6 +185,8 @@ int RKIndex_GetNumOfItems( RKIndex rkindex ) ;
 
 RKString RKString_NewEmptyString( size_t size_in_bytes ) ;
 
+RKString RKString_NewStringFromUTF32( const int* text, int num_of_characters ) ;
+
 RKString RKString_NewStringFromBuffer( const char* text, size_t size_in_bytes )  ;
 
 RKString RKString_NewStringFromCString( const char* text ) ;

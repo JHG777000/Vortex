@@ -739,6 +739,159 @@ RKString RKString_NewEmptyString( size_t size_in_bytes ) {
     return string ;
 }
 
+RKString RKString_NewStringFromUTF32( const int* text, int num_of_characters ) {
+    
+    int i = 0 ;
+    
+    int character = 0 ;
+    
+    unsigned int value = 0 ;
+    
+    unsigned int value0 = 0 ;
+    
+    unsigned int value1 = 0 ;
+    
+    unsigned int value2 = 0 ;
+    
+    RKString string = NULL ;
+    
+    int utf8string_size = 1 ;
+    
+    char* utf8string = RKMem_CArray(1, char) ;
+    
+    utf8string[utf8string_size-1] = '\0' ;
+    
+    while ( i < num_of_characters ) {
+        
+        character = text[i] ;
+        
+        if ( character >= 0 && character <= 0x007F ) {
+            
+            utf8string = RKMem_Realloc(utf8string, utf8string_size+1, utf8string_size, char, 1) ;
+            
+            utf8string_size++ ;
+            
+            utf8string[utf8string_size-2] = character ;
+            
+            utf8string[utf8string_size-1] = '\0' ;
+        }
+        
+        if ( character >= 0x0080 && character <= 0x07FF ) {
+            
+            value = character ;
+            
+            value = value >> 6 ;
+            
+            value = value | 0xC0 ;
+            
+            value0 = character ;
+            
+            value0 = value0 & 0x3F ;
+            
+            value0 = value0 | 0x80 ;
+            
+            utf8string = RKMem_Realloc(utf8string, utf8string_size+2, utf8string_size, char, 1) ;
+            
+            utf8string_size+=2 ;
+            
+            utf8string[utf8string_size-3] = value ;
+            
+            utf8string[utf8string_size-2] = value0 ;
+            
+            utf8string[utf8string_size-1] = '\0' ;
+        }
+        
+        if ( character >= 0x0800 && character <= 0xFFFF ) {
+            
+            value = character ;
+            
+            value = value >> 12 ;
+            
+            value = value | 0xE0 ;
+            
+            value0 = character ;
+            
+            value0 = value0 >> 6 ;
+            
+            value0 = value0 & 0xBF ;
+            
+            value0 = value0 | 0x80 ;
+            
+            value1 = character ;
+            
+            value1 = value1 & 0x3F ;
+            
+            value1 = value1 | 0x80 ;
+            
+            utf8string = RKMem_Realloc(utf8string, utf8string_size+3, utf8string_size, char, 1) ;
+            
+            utf8string_size+=3 ;
+            
+            utf8string[utf8string_size-4] = value ;
+            
+            utf8string[utf8string_size-3] = value0 ;
+            
+            utf8string[utf8string_size-2] = value1 ;
+            
+            utf8string[utf8string_size-1] = '\0' ;
+            
+        }
+        
+        if ( character >= 0x10000 && character <= 0x10FFFF ) {
+            
+            value = character ;
+            
+            value = value >> 18 ;
+            
+            value = value | 0xF0 ;
+            
+            value0 = character ;
+            
+            value0 = value0 >> 12 ;
+            
+            value0 = value0 & 0xBF ;
+            
+            value0 = value0 | 0x80 ;
+            
+            value1 = character ;
+            
+            value1 = value1 >> 6 ;
+            
+            value1 = value1 & 0xBF ;
+            
+            value1 = value1 | 0x80 ;
+            
+            value2 = character ;
+            
+            value2 = value2 & 0x3F ;
+            
+            value2 = value2 | 0x80 ;
+            
+            utf8string = RKMem_Realloc(utf8string, utf8string_size+4, utf8string_size, char, 1) ;
+            
+            utf8string_size+=4 ;
+            
+            utf8string[utf8string_size-5] = value ;
+            
+            utf8string[utf8string_size-4] = value0 ;
+            
+            utf8string[utf8string_size-3] = value1 ;
+            
+            utf8string[utf8string_size-2] = value2 ;
+            
+            utf8string[utf8string_size-1] = '\0' ;
+        }
+        
+        i++ ;
+    }
+    
+    string = RKString_NewStringFromCString(utf8string) ;
+    
+    free(utf8string) ;
+    
+    return string ;
+}
+
 RKString RKString_NewStringFromBuffer( const char* text, size_t size_in_bytes ) {
     
     RKString string = RKMem_NewMemOfType(struct RKString_s) ;
@@ -1048,6 +1201,10 @@ void RKString_PrintString( RKString string ) {
     
     printf("%s", string->string) ;
 }
+
+//For systems and environments that still don't support unicode
+//mangles unicode characters into UNICODE_<<binary(0 and 1's) of the unicode character>>
+//better system would be turn unicode characters into hex not binary
 
 RKString RKString_GetStringForASCII( RKString string ) {
     
