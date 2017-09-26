@@ -1007,9 +1007,9 @@ RKULong RKString_GetLength( RKString string ) {
             
             byte = string->string[i] ;
             
-            if ( byte > 0 ) {
+            if ( byte >= 0 ) {
                 
-                num_of_characters++ ;
+                if ( byte > 0 ) num_of_characters++ ;
                 
             } else {
                 
@@ -1043,7 +1043,7 @@ char* RKString_GetString( RKString string ) {
     return string->string ;
 }
 
-int RKString_GetCharacter( RKString string, int index ) {
+int RKString_GetCharacter( RKString string, int index, int* offset ) {
     
     int n = 0 ;
     
@@ -1093,6 +1093,8 @@ loop:
             byte0 = string->string[index] ;
             
             value = byte0 ;
+            
+            *offset = 0 ;
         }
         
         if ( n == 2 ) {
@@ -1108,6 +1110,8 @@ loop:
             byte1 = byte1 & 0x7F ;
             
             value = byte0 | byte1 ;
+            
+            *offset = 1 ;
         }
         
         if ( n == 3 ) {
@@ -1129,6 +1133,8 @@ loop:
             byte2 = byte2 & 0x7F ;
             
             value = byte0 | byte1 | byte2 ;
+            
+            *offset = 2 ;
             
         }
         
@@ -1158,9 +1164,20 @@ loop:
             
             value = byte0 | byte1 | byte2 | byte3 ;
             
+            *offset = 3 ;
+            
         }
 
     return value ;
+}
+
+char RKString_GetByte( RKString string, int index ) {
+    
+    if ( index > string->size_in_bytes ) return 0 ;
+    
+    if ( index < 0 ) return 0 ;
+    
+    return string->string[index] ;
 }
 
 void RKString_SetByte( RKString string, int index, char byte ) {
@@ -1200,6 +1217,36 @@ char* RKString_ConvertToCString( RKString string ) {
 void RKString_PrintString( RKString string ) {
     
     printf("%s", string->string) ;
+}
+
+int* RKString_GetUTF32String( RKString string, RKULong* size ) {
+    
+    int i = 0 ;
+    
+    int j = 0 ;
+    
+    int offset = 0 ;
+    
+    RKULong size_of_string = RKString_GetSize(string) ;
+    
+    int* utf32string = RKMem_CArray(size_of_string+1, int) ;
+    
+    while ( i < size_of_string ) {
+        
+        utf32string[j] = RKString_GetCharacter(string, i, &offset) ;
+        
+        i += offset ;
+        
+        j++ ;
+        
+        i++ ;
+    }
+    
+    utf32string[size_of_string] = '\0' ;
+    
+    *size = size_of_string ;
+    
+    return utf32string ;
 }
 
 //For systems and environments that still don't support unicode
@@ -1397,13 +1444,22 @@ RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) {
     
     int c = 0 ;
     
-    RKString str = string ;
+    RKULong str_size = 0 ;
     
-    RKString str2 = NULL ;
+    RKULong str2_size = 0 ;
     
-    while ( i < str->size_in_bytes ) {
+    int* str = RKString_GetUTF32String(string, &str_size) ;
+    
+    int* str2 = NULL ;
+    
+    while ( i < str_size ) {
         
-        c = RKString_GetCharacter(str, i) ;
+        c = str[i] ;
+        
+        if ( c == L'😀' ) {
+            
+            i+=0 ;
+        }
         
         if ( c == '\a' || c == '\b' || c == '\f' || c == '\n'
             || c == '\r' || c == '\t' || c == '\v' ) {
@@ -1412,34 +1468,43 @@ RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) {
             
             x = 0 ;
             
-            str2 = RKString_NewEmptyString(RKString_GetSize(str)+3) ;
+            str2_size = str_size+2 ;
             
-            while ( j < str2->size_in_bytes ) {
+            str2 = RKMem_CArray(str2_size, int) ;
+            
+            while ( j < str2_size ) {
                 
-                
-                if ( j != i && j != (i+1) && j != (str2->size_in_bytes-1) ) {
+                if ( j != i && j != (i+1) && j != (str2_size-1) ) {
+                    if ( str[j+x] == L'😀' ) {
+                        
+                        i+=0 ;
+                    }
+                    str2[j] = str[j+x] ;
                     
-                    RKString_SetByte(str2, j, RKString_GetCharacter(str, j+x)) ;
+                    //RKString_SetCharacter(str2, j, RKString_GetCharacter(str, j+x)) ;
                 }
                 
                 if ( j == i ) {
                     
-                    RKString_SetByte(str2, j, '\\') ;
+                    str2[j] = '\\' ;
+                    
+                    //RKString_SetCharacter(str2, j, '\\') ;
                 }
                 
                 if ( j == i+1 ) {
                     
-                    RKString_SetByte(str2, j, GetEscapeCharacter(c)) ;
+                    str2[j] = GetEscapeCharacter(c) ;
+                    
+                    //RKString_SetCharacter(str2, j, GetEscapeCharacter(c)) ;
                     
                     x = -1 ;
                 }
 
-                
-                if ( j == (str2->size_in_bytes-1) ) {
-                    
-                    RKString_DestroyString(str) ;
+                if ( j == (str2_size-1) ) {
                     
                     str = str2 ;
+                    
+                    str_size = str2_size ;
                     
                     i++ ;
                 }
@@ -1451,7 +1516,11 @@ RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) {
         i++ ;
     }
     
-    return str ;
+    RKString_DestroyString(string) ;
+    
+    if ( str2 == NULL ) str2_size = str_size ;
+    
+    return RKString_NewStringFromUTF32(str, (int)str_size) ;
 }
 
 void* RKAny_NewAny( void* any, RKULong size ) {

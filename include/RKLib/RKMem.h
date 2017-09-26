@@ -203,7 +203,9 @@ RKULong RKString_GetLength( RKString string ) ;
 
 char* RKString_GetString( RKString string ) ;
 
-int RKString_GetCharacter( RKString string, int index ) ;
+int RKString_GetCharacter( RKString string, int index, int* offset ) ;
+
+char RKString_GetByte( RKString string, int index ) ;
 
 void RKString_SetByte( RKString string, int index, char byte ) ;
 
@@ -214,6 +216,8 @@ RKString RKString_CopyString( RKString string ) ;
 char* RKString_ConvertToCString( RKString string ) ;
 
 void RKString_PrintString( RKString string ) ;
+
+int* RKString_GetUTF32String( RKString string, RKULong* size ) ;
 
 RKString RKString_GetStringForASCII( RKString string ) ;
 

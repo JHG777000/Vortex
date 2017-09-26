@@ -138,6 +138,8 @@ int main(int argc, const char * argv[]) {
     
     RKArgs_DestroyClonedArgs(args) ;
     
+    int offset = 0 ;
+    
     RKString string = rkstr("Hello Earth!!!!\n"
                             "Hi!\n") ;
     rkstrprint(string) ;
@@ -146,9 +148,15 @@ int main(int argc, const char * argv[]) {
                                "Hi😀!\n"
                                "😀, and 😀?!!!!\n") ;
     
-    if ( RKString_GetCharacter(string2, 11) == L'😀' ) {
+    RKString string3 = RKString_NewStringFromUTF32(L"😀and,😀\n",7) ;
+    
+    if ( RKString_GetCharacter(string2, 11, &offset) == L'😀' ) {
         
-        printf("Hello:😀\n") ;
+        printf("Hello:😀, and %lu\n",RKString_GetLength(string2)) ;
+        
+        printf("Hello2:😀, and %lu\n",RKString_GetLength(string3)) ;
+        
+        rkstrprint(string3) ;
     }
     
     rkstrprint(string2) ;

@@ -250,7 +250,7 @@ int RKFile_GetUTF32Character( RKFile file ) {
     
     unsigned int value = 0 ;
     
-    signed char basebyte ;
+    signed char basebyte = 0 ;
     
 loop:
     
