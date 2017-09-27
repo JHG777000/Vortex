@@ -1456,11 +1456,6 @@ RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) {
         
         c = str[i] ;
         
-        if ( c == L'😀' ) {
-            
-            i+=0 ;
-        }
-        
         if ( c == '\a' || c == '\b' || c == '\f' || c == '\n'
             || c == '\r' || c == '\t' || c == '\v' ) {
             
@@ -1475,27 +1470,19 @@ RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) {
             while ( j < str2_size ) {
                 
                 if ( j != i && j != (i+1) && j != (str2_size-1) ) {
-                    if ( str[j+x] == L'😀' ) {
-                        
-                        i+=0 ;
-                    }
+                    
                     str2[j] = str[j+x] ;
                     
-                    //RKString_SetCharacter(str2, j, RKString_GetCharacter(str, j+x)) ;
                 }
                 
                 if ( j == i ) {
                     
                     str2[j] = '\\' ;
-                    
-                    //RKString_SetCharacter(str2, j, '\\') ;
                 }
                 
                 if ( j == i+1 ) {
                     
                     str2[j] = GetEscapeCharacter(c) ;
-                    
-                    //RKString_SetCharacter(str2, j, GetEscapeCharacter(c)) ;
                     
                     x = -1 ;
                 }

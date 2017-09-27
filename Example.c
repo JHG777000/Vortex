@@ -211,7 +211,7 @@ int main(int argc, const char * argv[]) {
     
     RKMath_Equal(RKTasks_GetModuleData(TestMod,module)->Vec2, MyVec2, 3) ;
     
-   // RKTasks_AddTasks(TaskGroup, 200000, TestTask, module) ; //can not be called on a bound taskgroup
+    RKTasks_AddTasks(TaskGroup, 200000, TestTask, module) ; //can not be called on a bound taskgroup
     
     RKTasks_BindTaskGroupToThreadGroup(TaskGroup, ThreadGroup) ;
    
