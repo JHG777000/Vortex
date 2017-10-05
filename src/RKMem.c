@@ -1205,6 +1205,11 @@ RKString RKString_CopyString( RKString string ) {
     return RKString_NewStringFromCString(RKString_GetString(string)) ;
 }
 
+int RKString_AreStringsEqual( RKString a, RKString b ) {
+    
+    return ( strcmp(RKString_GetString(a), RKString_GetString(b)) == 0 ) ;
+}
+
 char* RKString_ConvertToCString( RKString string ) {
     
     char* str = string->string ;

@@ -213,6 +213,8 @@ RKString RKString_AppendString( RKString BaseString, RKString AppendingString ) 
 
 RKString RKString_CopyString( RKString string ) ;
 
+int RKString_AreStringsEqual( RKString a, RKString b ) ;
+
 char* RKString_ConvertToCString( RKString string ) ;
 
 void RKString_PrintString( RKString string ) ;
