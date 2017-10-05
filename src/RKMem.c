@@ -1494,6 +1494,8 @@ RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) {
 
                 if ( j == (str2_size-1) ) {
                     
+                    free(str) ;
+                    
                     str = str2 ;
                     
                     str_size = str2_size ;
