@@ -23,6 +23,22 @@
 #include <RKLib/RKMem.h>
 #include <RKLib/RKArgs.h>
 
+int RKArgs_CanGetNextArgFunc( RKArgs args, const char* typestring, int is_item ) {
+    
+   return RKArgs_CanGetArgWithIndexFunc(args, args->index, typestring, is_item) ;
+}
+
+int RKArgs_CanGetArgWithIndexFunc( RKArgs args, int index, const char* typestring, int is_item ) {
+    
+    if (args->verify != 17345432) return 0 ;
+    
+    void* retval = RKArgs_GetArgWithIndexFunc(args, index, typestring, is_item) ;
+    
+    if ( retval == NULL ) return 0 ;
+    
+    return 1 ;
+}
+
 void* RKArgs_GetNextArgFunc( RKArgs args, const char* typestring, int is_item ) {
     
     if (args->verify != 17345432) return NULL ;

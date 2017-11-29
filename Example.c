@@ -76,7 +76,11 @@ RKTasks_CreateTask(TestTask) { //Create a Task called TestTask
     
     printf("%d, a random number from task: %d, with count: %d\n", RKMath_ARandomNumber(&randstate, 0, 5000), RKTasks_GetTaskID(thistask), counter) ;
     
+    RKTasks_LockModule(module) ;
+    
     RKTasks_GetModuleData(TestMod,module)->value2 = counter ;
+    
+    RKTasks_UnLockModule(module) ;
     
     return 1 ; //return 0 or false, if not done
 }
@@ -102,6 +106,8 @@ RKArgs rkargs_example2( RKArgs args, RKArgs args2 ) {
     
     RKArgs_UseArgs(args) ;
     
+    if ( RKArgs_CanGetNextArg(args, int) ) printf("Can get arg!!!!\n") ;
+    
     printf("%d\n",RKArgs_GetNextArg(args, int)) ;
     
     printf("%d\n",RKArgs_GetNextArg(args, int)) ;
@@ -119,6 +125,8 @@ RKArgs rkargs_example2( RKArgs args, RKArgs args2 ) {
     printf("%20.18f\n",RKArgs_GetNextArg(args2, double)) ;
     
     printf("%hd\n",RKArgs_GetNextArg(args2, short)) ;
+    
+    if ( !RKArgs_CanGetNextArg(args2, short) ) printf("Can not get arg!!!!\n") ;
     
     return RKArgs_CloneArgs(args) ;
 }
@@ -211,7 +219,7 @@ int main(int argc, const char * argv[]) {
     
     RKMath_Equal(RKTasks_GetModuleData(TestMod,module)->Vec2, MyVec2, 3) ;
     
-    RKTasks_AddTasks(TaskGroup, 200000, TestTask, module) ; //can not be called on a bound taskgroup
+    RKTasks_AddTasks(TaskGroup, 2000, TestTask, module) ; //can not be called on a bound taskgroup
     
     RKTasks_BindTaskGroupToThreadGroup(TaskGroup, ThreadGroup) ;
    

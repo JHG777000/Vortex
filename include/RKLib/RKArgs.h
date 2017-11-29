@@ -46,6 +46,14 @@ typedef struct RKArgs_s { int verify ; int index ; int cloned ; RKArgArray array
 
 #define RKArgs_GetItemWithIndex(args,type,index) (type)RKArgs_GetArgWithIndexFunc(args,index,#type,1)
 
+#define RKArgs_CanGetNextArg(args,type) RKArgs_CanGetNextArgFunc(args,#type,0)
+
+#define RKArgs_CanGetArgWithIndex(args,type,index) RKArgs_CanGetArgWithIndexFunc(args,index,#type,0)
+
+#define RKArgs_CanGetNextItem(args,type) RKArgs_CanGetNextArgFunc(args,#type,1)
+
+#define RKArgs_CanGetItemWithIndex(args,type,index) RKArgs_CanGetArgWithIndexFunc(args,index,#type,1)
+
 #define UseArgs(args) RKArgs_UseArgs(args)
 
 #define GetNextArg(args,type) RKArgs_GetNextArg(args,type)
@@ -55,6 +63,14 @@ typedef struct RKArgs_s { int verify ; int index ; int cloned ; RKArgArray array
 #define GetNextItem(args,type) RKArgs_GetNextItem(args,type)
 
 #define GetItemWithIndex(args,type,index) RKArgs_GetItemWithIndex(args,type,index)
+
+#define CanGetNextArg(args,type) RKArgs_CanGetNextArg(args,type)
+
+#define CanGetArgWithIndex(args,type,index) RKArgs_CanGetArgWithIndex(args,type,index)
+
+#define CanGetNextItem(args,type) RKArgs_CanGetNextItem(args,type)
+
+#define CanGetItemWithIndex(args,type,index) RKArgs_CanGetItemWithIndex(args,type,index)
 
 #define NewArgs(...) RKArgs_NewArgs(__VA_ARGS__)
 
@@ -95,6 +111,10 @@ typedef struct RKArgs_s { int verify ; int index ; int cloned ; RKArgArray array
 #define UInts(...) RKArgs_NewArgSet(RKUInt,__VA_ARGS__)
 
 #define ULongs(...) RKArgs_NewArgSet(RKULong,__VA_ARGS__)
+
+int RKArgs_CanGetNextArgFunc( RKArgs args, const char* typestring, int is_item ) ;
+
+int RKArgs_CanGetArgWithIndexFunc( RKArgs args, int index, const char* typestring, int is_item ) ;
 
 void* RKArgs_GetNextArgFunc( RKArgs args, const char* typestring, int is_item ) ;
 
