@@ -1212,6 +1212,8 @@ int RKString_AreStringsEqual( RKString a, RKString b ) {
 
 char* RKString_ConvertToCString( RKString string ) {
     
+    if ( string == NULL ) return NULL ;
+    
     char* str = string->string ;
     
     free(string) ;
