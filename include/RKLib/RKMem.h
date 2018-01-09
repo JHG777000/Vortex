@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017 Jacob Gordon. All rights reserved.
+ Copyright (c) 2018 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -164,6 +164,8 @@ int RKStore_GetNumOfItems( RKStore Store )  ;
 int RKStore_AddItemToList( RKStore store, void *item ) ;
 
 RKList RKStore_GetList( RKStore store ) ;
+
+RKString RKStore_GetStoreLabelFromListNode( RKList_node node ) ;
 
 void RKStore_IterateStoreWith( RKMemIteratorFuncType iterator, RKStore store ) ;
 

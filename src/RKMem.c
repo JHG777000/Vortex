@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017 Jacob Gordon. All rights reserved.
+ Copyright (c) 2018 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -35,7 +35,7 @@
 
  struct RKStore_s { RKStore_letter* dictionary ; RKList items ; } ;
 
- struct RKList_node_s { struct RKList_node_s* before ; struct RKList_node_s* after ; void* data ; } ;
+ struct RKList_node_s { struct RKList_node_s* before ; struct RKList_node_s* after ; void* data ; RKString string ; } ;
 
  struct RKList_s { int num_of_nodes ; RKList_node first ; RKList_node last ; } ;
 
@@ -115,6 +115,8 @@ RKList_node RKList_AddToList( RKList list, void* data ) {
     }
     
     list->last->data = data ;
+    
+    list->last->string = NULL ;
     
     list->num_of_nodes++ ;
     
@@ -235,6 +237,19 @@ void* RKList_GetData(RKList_node node) {
     
     return node->data ;
 }
+
+static void RKList_SetString(RKList_node node, RKString string) {
+    
+    node->string = string ;
+}
+
+static RKString RKList_GetString(RKList_node node) {
+    
+    if ( node == NULL ) return NULL ;
+    
+    return node->string ;
+}
+
 
 RKList_node RKList_GetNextNode(RKList_node node) {
     
@@ -462,6 +477,10 @@ static RKList_node RKS_GetSetNode( RKStore store, const char* label, RKList_node
                         
                         retnode = current_alphabet[value].node ;
                         
+                        RKString_DestroyString(RKList_GetString(current_alphabet[value].node)) ;
+                        
+                        RKList_SetString(current_alphabet[value].node, NULL) ;
+                        
                         current_alphabet[value].node = NULL ;
                         
                         return retnode ;
@@ -471,8 +490,9 @@ static RKList_node RKS_GetSetNode( RKStore store, const char* label, RKList_node
                     
                     current_alphabet[value].node = node ;
                     
-                    return current_alphabet[value].node ;
+                    RKList_SetString(current_alphabet[value].node, RKString_NewStringFromCString(label)) ;
                     
+                    return current_alphabet[value].node ;
                 }
                 
             } else {
@@ -583,6 +603,11 @@ int RKStore_AddItemToList( RKStore store, void *item ) {
 RKList RKStore_GetList( RKStore store ) {
     
     return store->items ;
+}
+
+RKString RKStore_GetStoreLabelFromListNode( RKList_node node ) {
+    
+    return RKList_GetString(node) ;
 }
 
 void RKStore_IterateStoreWith( RKMemIteratorFuncType iterator, RKStore store ) {
