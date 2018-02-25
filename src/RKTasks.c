@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017 Jacob Gordon. All rights reserved.
+ Copyright (c) 2014-2018 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -25,7 +25,7 @@
 #endif
 
 #include <string.h>
-#include <tinycthread.h>
+#include <RKLib/threads.h>
 #include <RKLib/RKTasks.h>
 
 typedef struct RKThread_s RKThread ;
@@ -48,15 +48,15 @@ struct RKTasks_ThreadGroup_s { RKTasks_TaskGroup taskgroup ; RKThreads threadarr
     
 int num_of_threads ; int awake ; int alive ; int init ; } ;
 
-typedef struct RKTasks_Thread_Args_s { RKTasks_ThreadGroup threadgroup ; int tid ; }* RKTasks_Thread_Args ;
+typedef struct RKTasks_ThreadArgs_s { RKTasks_ThreadGroup threadgroup ; int tid ; }* RKTasks_ThreadArgs ;
 
-RKTasks_Module RKTasks_NewModule( RKTasks_Module_NewDataFunc_Type module_newdatafunc, RKTasks_ModuleDestructor_Type moduledestructor) {
+RKTasks_Module RKTasks_NewModule( RKTasks_Module_NewDataFunc_Type module_newdata_func, RKTasks_ModuleDestructor_Type module_destructor) {
     
     RKTasks_Module module = RKMem_NewMemOfType(struct RKTasks_Module_s) ;
     
-    module->data = module_newdatafunc() ;
+    module->data = module_newdata_func() ;
     
-    module->destructor = moduledestructor ;
+    module->destructor = module_destructor ;
     
     mtx_init(&(module->mutex), mtx_plain) ;
     
@@ -361,7 +361,7 @@ static void RKTasks_DeadDoneCheck( int* dead, int* done, int num_of_tasks, RKTas
 
 static int RKTasks_WorkerThread( void *argument ) {
     
-    RKTasks_Thread_Args threadargs = argument ;
+    RKTasks_ThreadArgs threadargs = argument ;
     
     RKTasks_ThreadGroup threadgroup = threadargs->threadgroup ;
     
@@ -443,7 +443,7 @@ static int RKTasks_WorkerThread( void *argument ) {
 
 static int RKTasks_SpawnThreads( RKTasks_ThreadGroup threadgroup ) {
     
-    RKTasks_Thread_Args threadargs = NULL ;
+    RKTasks_ThreadArgs threadargs = NULL ;
     
     int error = 0 ;
     
@@ -453,7 +453,7 @@ static int RKTasks_SpawnThreads( RKTasks_ThreadGroup threadgroup ) {
     
     while ( t < threadgroup->max_num_of_threads ) {
         
-        threadargs = RKMem_NewMemOfType(struct RKTasks_Thread_Args_s) ;
+        threadargs = RKMem_NewMemOfType(struct RKTasks_ThreadArgs_s) ;
         
         threadargs->threadgroup = threadgroup ;
         
@@ -540,6 +540,10 @@ void RKTasks_WaitForTasksToBeDone( RKTasks_TaskGroup taskgroup ) {
     cnd_wait(&taskgroup->done_tasks_cond, &taskgroup->done_tasks_mutex) ;
     
     mtx_unlock(&taskgroup->done_tasks_mutex) ;
+    
+    while (!taskgroup->done) {
+
+    }
 }
 
 int RKTasks_AllThreadsDead( RKTasks_ThreadGroup threadgroup ) {

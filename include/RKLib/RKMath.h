@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017 Jacob Gordon. All rights reserved.
+ Copyright (c) 2014-2018 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -18,8 +18,8 @@
 //File: RKMath.h
 //Header file for RKMath.
 
-#ifndef MBRT_RKMath_h
-#define MBRT_RKMath_h
+#ifndef RKLib_RKMath_h
+#define RKLib_RKMath_h
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -143,4 +143,4 @@ RKMAtomicBool RKMath_AtomicRWC( RKMAtomicInt* read_val, int write_val, int* comp
 
 #endif
 
-#endif
+#endif /* RKLib_RKMath_h */

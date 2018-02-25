@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017 Jacob Gordon. All rights reserved.
+ Copyright (c) 2014-2018 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -18,8 +18,8 @@
 //File: RKTasks.h
 //Header file for RKTasks.
 
-#ifndef RKTasks4_h
-#define RKTasks4_h
+#ifndef RKLib_RKTasks_h
+#define RKLib_RKTasks_h
 
 #include <RKLib/RKMem.h>
 
@@ -52,7 +52,7 @@ static void modname##_##RKTasks_ModuleDestructor( RKTasks_Module  module )
 
 #define RKTasks_AddTasks( taskgroup, num_of_tasks, taskfunc, module ) RKTasks_AddTasks_Func(taskgroup,num_of_tasks,taskfunc##_TaskFunc,module)
 
-RKTasks_Module RKTasks_NewModule( RKTasks_Module_NewDataFunc_Type module_newdatafunc, RKTasks_ModuleDestructor_Type moduledestructor) ;
+RKTasks_Module RKTasks_NewModule( RKTasks_Module_NewDataFunc_Type module_newdata_func, RKTasks_ModuleDestructor_Type module_destructor) ;
 
 void RKTAsks_AddToModuleRefCount( RKTasks_Module module ) ;
 
@@ -124,4 +124,4 @@ int RKTasks_GetTaskID( RKTasks_ThisTask thistask ) ;
 
 int RKTasks_GetThreadID( RKTasks_ThisTask thistask ) ;
 
-#endif /* RKTasks4_h */
+#endif /* RKLib_RKTasks_h */

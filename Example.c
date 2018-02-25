@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017 Jacob Gordon. All rights reserved.
+ Copyright (c) 2014-2017 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -152,7 +152,7 @@ int main(int argc, const char * argv[]) {
                             "Hi!\n") ;
     rkstrprint(string) ;
     
-    RKString string2 = rkstr32( "12345678\n"
+    RKString string2 = rkstrU8( "12345678\n"
                                "Hi😀!\n"
                                "😀, and 😀?!!!!\n") ;
     
@@ -219,7 +219,7 @@ int main(int argc, const char * argv[]) {
     
     RKMath_Equal(RKTasks_GetModuleData(TestMod,module)->Vec2, MyVec2, 3) ;
     
-    RKTasks_AddTasks(TaskGroup, 2000, TestTask, module) ; //can not be called on a bound taskgroup
+    RKTasks_AddTasks(TaskGroup, 20000, TestTask, module) ; //can not be called on a bound taskgroup
     
     RKTasks_BindTaskGroupToThreadGroup(TaskGroup, ThreadGroup) ;
    

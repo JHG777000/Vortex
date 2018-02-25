@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017 Jacob Gordon. All rights reserved.
+ Copyright (c) 2014-2018 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -33,7 +33,7 @@
     
      randstate->init = 1 ;
      
-     randstate->state_a = (unsigned)time(NULL) + seed ;
+     randstate->state_a = (long)time(NULL) + seed ;
  }
 
  int RKMath_ARandomNumber( RKMath_RandState* randstate, int randmin, int randmax ) {
@@ -50,7 +50,7 @@
     
     if (!randstate->init) {
         
-        randstate->state_a = (unsigned)time(NULL) ;
+        randstate->state_a = (long)time(NULL) ;
         
         randstate->init = 1 ;
     }
@@ -87,24 +87,24 @@ int RKMath_AMoreRandomNumber( RKMath_RandState* randstate, int randmin, int rand
         
         randstate->update = 10 ;
         
-        randstate->seconds = (unsigned)time(NULL) ;
+        randstate->seconds = (long)time(NULL) ;
         
         randstate->gate = RKMath_ARandomNumber(randstate, 0, 1) ;
         
-        randstate->state_b = (unsigned)time(NULL) + RKMath_ARandomNumber(randstate, 0, 743276439) ;
+        randstate->state_b = (long)time(NULL) + RKMath_ARandomNumber(randstate, 0, 743276439) ;
     }
     
-    if ( ((unsigned)time(NULL) - randstate->seconds) >= randstate->update ) {
+    if ( ((long)time(NULL) - randstate->seconds) >= randstate->update ) {
         
         if (randstate->gate) {
             
-         randstate->seconds = (unsigned)time(NULL) ;
+         randstate->seconds = (long)time(NULL) ;
         
          randstate->gate = RKMath_ARandomNumber(randstate, 0, 1) ;
 
          randstate->update = RKMath_ARandomNumber(randstate, 0, 350) ;
             
-         randstate->state_b = (unsigned)time(NULL) + RKMath_ARandomNumber(randstate, 0, 743276439) ;
+         randstate->state_b = (long)time(NULL) + RKMath_ARandomNumber(randstate, 0, 743276439) ;
             
         } else {
           
@@ -112,7 +112,7 @@ int RKMath_AMoreRandomNumber( RKMath_RandState* randstate, int randmin, int rand
             
          randstate->gate = RKMath_ARandomNumber(randstate, 0, 1) ;
           
-         randstate->seconds = (unsigned)time(NULL) ;
+         randstate->seconds = (long)time(NULL) ;
             
          RKMath_ARandomNumber(randstate, 0, -1) ;
             

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017 Jacob Gordon. All rights reserved.
+ Copyright (c) 2016-2018 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -17,8 +17,8 @@
 
 //File: RKArgs.h
 
-#ifndef RKArgs_h
-#define RKArgs_h
+#ifndef RKLib_RKArgs_h
+#define RKLib_RKArgs_h
 
 typedef enum { RKArgs_Dynamic_type, RKArgs_Proxy_type } RKArgsBaseType ;
 
@@ -124,4 +124,4 @@ RKArgs RKArgs_CloneArgs( RKArgs args ) ;
 
 int RKArgs_DestroyClonedArgs( RKArgs args ) ;
 
-#endif /* RKArgs_h */
+#endif /* RKLib_RKArgs_h */

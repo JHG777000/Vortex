@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2018 Jacob Gordon. All rights reserved.
+ Copyright (c) 2014-2018 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -69,7 +69,7 @@ typedef unsigned long RKULong ;
 
 #define rkstr( string ) RKString_NewString(string)
 
-#define rkstr32( string ) RKString_NewString(u8##string)
+#define rkstrU8( string ) RKString_NewString(u8##string)
 
 #define rkstrfree( string ) RKString_DestroyString(string)
 
@@ -245,4 +245,4 @@ RKList RKStack_GetList( RKStack stack ) ;
 
 RKList_node RKStack_GetListNode( RKStack stack ) ;
 
-#endif
+#endif /* RKLib_RKMem_h */

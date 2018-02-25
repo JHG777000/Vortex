@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017-2018 Jacob Gordon. All rights reserved.
+ Copyright (c) 2018 Jacob Gordon. All rights reserved.
  
  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  
@@ -15,35 +15,9 @@
  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//File: RKFile.h
+#ifndef RKLib_threads_h
+#define RKLib_threads_h
 
-#ifndef RKLib_RKFile_h
-#define RKLib_RKFile_h
+#include <RKLib/tinycthread.h>
 
-typedef struct RKFile_s* RKFile ;
-
-typedef enum { rk_read_mode, rk_write_mode } RKFileMode ;
-
-void* RKFile_LoadLibraryFromFile( const char* filepath ) ;
-
-int RKFile_FreeLibrary( void* lib ) ;
-
-void* RKFile_GetFunction( void* lib, const char* name ) ;
-
-RKFile RKFile_OpenFile( const char* filepath, RKFileMode mode ) ;
-
-void RKFile_CloseFile( RKFile file ) ;
-
-FILE* RKFile_GetPtrToFile( RKFile file ) ;
-
-RKUInt RKFile_Read32BitInt( RKFile file, RKInt* error ) ;
-
-int RKFile_Write32BitInt( RKFile file, int num ) ;
-
-float RKFile_Read32BitFloat( RKFile file, RKInt* error ) ;
-
-int RKFile_Write32BitFloat( RKFile file, float num ) ;
-
-int RKFile_GetUTF32Character( RKFile file ) ;
-
-#endif /* RKLib_RKFile_h */
+#endif /* RKLib_threads_h */
