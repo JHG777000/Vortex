@@ -1480,6 +1480,8 @@ RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) {
     
     RKULong str2_size = 0 ;
     
+    RKString retstring = NULL ;
+    
     int* str = RKString_GetUTF32String(string, &str_size) ;
     
     int* str2 = NULL ;
@@ -1539,9 +1541,11 @@ RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) {
     
     RKString_DestroyString(string) ;
     
-    if ( str2 == NULL ) str2_size = str_size ;
+    retstring = RKString_NewStringFromUTF32(str, (int)str_size) ;
     
-    return RKString_NewStringFromUTF32(str, (int)str_size) ;
+    free(str) ;
+    
+    return retstring ;
 }
 
 void* RKAny_NewAny( void* any, RKULong size ) {
