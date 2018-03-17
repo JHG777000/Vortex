@@ -40,6 +40,8 @@
     
     int randval = 0 ;
     
+    int oldmax = randmax ;
+     
     if ( randmin < 0 ) randmin = 0 ;
      
     if ( randmax == -1 ) randstate->init = 0 ;
@@ -65,7 +67,7 @@
     
     randval = (randval < 0) ? -randval : randval ;
     
-    randval = (randval < randmin) ? RKMath_ARandomNumber(randstate, randmin, randmax) : randval ;
+    randval = (randval < randmin) ? RKMath_ARandomNumber(randstate, randmin, oldmax) : randval ;
     
     return randval ;
     
@@ -77,7 +79,11 @@ int RKMath_AMoreRandomNumber( RKMath_RandState* randstate, int randmin, int rand
     
     int randval = 0 ;
     
+    int oldmax = randmax ;
+    
     if ( randmin < 0 ) randmin = 0 ;
+    
+     randmax++ ;
     
     if ( randmax <= 0 ) randmax = 1 ;
     
@@ -129,7 +135,7 @@ int RKMath_AMoreRandomNumber( RKMath_RandState* randstate, int randmin, int rand
     
     randval = (randval < 0) ? -randval : randval ;
     
-    randval = (randval < randmin) ? RKMath_AMoreRandomNumber(randstate, randmin, randmax) : randval ;
+    randval = (randval < randmin) ? RKMath_AMoreRandomNumber(randstate, randmin, oldmax) : randval ;
     
     return randval ;
 
