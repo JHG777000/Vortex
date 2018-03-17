@@ -54,7 +54,7 @@ static void modname##_##RKTasks_ModuleDestructor( RKTasks_Module  module )
 
 RKTasks_Module RKTasks_NewModule( RKTasks_Module_NewDataFunc_Type module_newdata_func, RKTasks_ModuleDestructor_Type module_destructor) ;
 
-void RKTAsks_AddToModuleRefCount( RKTasks_Module module ) ;
+void RKTasks_AddToModuleRefCount( RKTasks_Module module ) ;
 
 void RKTasks_DestroyModule( RKTasks_Module module, int tid ) ;
 

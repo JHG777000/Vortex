@@ -69,7 +69,7 @@ RKTasks_Module RKTasks_NewModule( RKTasks_Module_NewDataFunc_Type module_newdata
     return module ;
 }
 
-void RKTAsks_AddToModuleRefCount( RKTasks_Module module ) {
+void RKTasks_AddToModuleRefCount( RKTasks_Module module ) {
     
     module->refcount++ ;
 }
@@ -329,7 +329,7 @@ void RKTasks_AddTasks_Func( RKTasks_TaskGroup taskgroup, int num_of_tasks, int (
         
         task->task_func = task_func ;
         
-        RKTAsks_AddToModuleRefCount(module) ;
+        RKTasks_AddToModuleRefCount(module) ;
         
         task->module = module ;
         
