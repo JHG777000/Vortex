@@ -126,7 +126,6 @@ int RKTasks_IsModuleLocked( RKTasks_Module module ) {
     return 1 ;
 }
 
-
 int RKTasks_UnLockModule( RKTasks_Module module ) {
     
     return mtx_unlock(&(module->mutex))  ;
