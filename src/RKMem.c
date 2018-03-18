@@ -179,6 +179,10 @@ void RKList_InsertNodeAToNodeB( RKList list, RKList_node node_a, RKList_node nod
     
     if ( node_a->after == NULL ) list->last = node_a->before ;
     
+    if ( node_b->before == NULL ) list->first = node_a ;
+    
+    if ( node_b->after == NULL ) list->last = node_a ;
+    
     node_a->before = node_b->before ;
     
     node_a->after = node_b ;
