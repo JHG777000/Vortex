@@ -82,13 +82,19 @@ RKList RKList_NewList( void ) {
 
 }
 
-RKList RKList_NewListFromArray( void* array, RKList_GetDataFromArrayFuncType GetDataFromArrayFunc, int size ) {
+RKList_node RKList_NewNode(  RKList_node before, RKList_node after, void* data ) {
     
-    RKList newlist = RKList_NewList() ;
+    RKList_node node = RKMem_NewMemOfType(struct RKList_node_s) ;
     
-    RKList_CopyToListFromArray(newlist, array, GetDataFromArrayFunc, size) ;
+    node->before = before ;
     
-    return newlist ;
+    node->after = after ;
+    
+    node->data = data ;
+    
+    node->string = NULL ;
+    
+    return node ;
 }
 
 RKList_node RKList_AddToList( RKList list, void* data ) {
@@ -130,13 +136,13 @@ RKList_node RKList_AddNodeToList( RKList_node node, RKList list ) {
 
 void RKList_NodeSwap( RKList list, RKList_node node_a, RKList_node node_b ) {
     
-    RKList_node Before = node_a->before ;
+    RKList_node before = (node_a->before == node_b) ? node_a : node_a->before ;
     
-    RKList_node After = node_a->after ;
+    RKList_node after = (node_a->after == node_b) ? node_a : node_a->after ;
     
-    node_a->before = node_b->before ;
+    node_a->before = (node_b->before == node_a) ? node_b : node_b->before ;
     
-    node_a->after = node_b->after ;
+    node_a->after = (node_b->after == node_a) ? node_b : node_b->after ;
     
     if ( node_a->before != NULL ) node_a->before->after = node_a ;
     
@@ -146,9 +152,9 @@ void RKList_NodeSwap( RKList list, RKList_node node_a, RKList_node node_b ) {
     
     if ( node_a->after == NULL ) list->last = node_a ;
     
-    node_b->before = Before ;
+    node_b->before = before ;
     
-    node_b->after = After ;
+    node_b->after = after ;
     
     if ( node_b->before != NULL ) node_b->before->after = node_b ;
     
@@ -253,7 +259,6 @@ static RKString RKList_GetString(RKList_node node) {
     
     return node->string ;
 }
-
 
 RKList_node RKList_GetNextNode(RKList_node node) {
     
@@ -379,6 +384,22 @@ RKList_node RKList_GetNextNodeAfterN( RKList_node node, int n ) {
         if ( node == NULL ) return NULL ;
         
         node = node->after ;
+        
+        i++ ;
+    }
+    
+    return node ;
+}
+
+RKList_node RKList_GetPreviousNodeAfterN( RKList_node node, int n ) {
+    
+    int i = 0 ;
+    
+    while ( i < n ) {
+        
+        if ( node == NULL ) return NULL ;
+        
+        node = node->before ;
         
         i++ ;
     }
