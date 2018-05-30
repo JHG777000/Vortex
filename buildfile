@@ -37,7 +37,7 @@ build RKLibBuild.
 
  compiler RKLibCompilerFlags("-Wall","-I " + include_path).
 
- toolchain RKLibToolChain("clang",RKLibCompilerFlags).
+ toolchain RKLibToolChain(toolchain_select,RKLibCompilerFlags).
 
  output RKLib("library",RKLibSource,RKLibToolChain).
 
