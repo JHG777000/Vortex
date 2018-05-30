@@ -13,9 +13,19 @@ build RKLibBuild.
 
   on test_enable("-t", "--test", "Enable RKLib test.").
 
+  on toolchain_select("-s", "--select_toolchain=tool", "Select toolchain, clang or gcc.").
+
  end options.
 
  get test_enable.
+
+ get toolchain_select.
+
+ if ( toolchain_select != "clang" && toolchain_select != "gcc" ).
+
+  var toolchain_select := "gcc".
+
+ end if.
 
  message("Building RKLib...\n").
 
@@ -33,6 +43,8 @@ build RKLibBuild.
 
  if ( test_enable ).
 
+  message("Running RKLibTest...\n").
+
   files RKLibTestFiles("Example.c").
 
   sources RKLibTestSource(RKLibTestFiles,RKLib).
@@ -40,6 +52,8 @@ build RKLibBuild.
   output RKLibTest("application",RKLibTestSource,RKLibToolChain).
 
   launch(RKLibTest).
+
+  message("Ran RKLibTest.\n").
 
  end if.
 
