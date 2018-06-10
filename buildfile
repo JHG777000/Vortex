@@ -27,7 +27,7 @@ build RKLibBuild.
 
  end if.
 
- message("Building RKLib...\n").
+ message("Building RKLib...").
 
  make filepath include_path from "resources" to "include".
 
@@ -43,7 +43,7 @@ build RKLibBuild.
 
  if ( test_enable ).
 
-  message("Running RKLibTest...\n").
+  message("Running RKLibTest...").
 
   files RKLibTestFiles("Example.c").
 
@@ -53,7 +53,7 @@ build RKLibBuild.
 
   launch(RKLibTest).
 
-  message("Ran RKLibTest.\n").
+  message("Ran RKLibTest.").
 
  end if.
 
@@ -61,7 +61,7 @@ end build.
 
 build clean_build.
 
- message("Cleaning RKLib...\n").
+ message("Cleaning RKLib...").
 
  clean("build").
 
