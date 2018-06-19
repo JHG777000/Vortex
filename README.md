@@ -47,3 +47,18 @@ RKTasks, a thread pool library. Uses tinycthread as a backend.
 Uses: 
 
  -TinyCThread https://github.com/tinycthread/tinycthread
+
+## Building
+
+RKLib uses [builder][1] for its build system.
+
+[1]:https://github.com/JHG777000/builder
+
+To download and build use this command:
+
+
+	builder -u https://raw.githubusercontent.com/JHG777000/RKLib/master/buildfile
+	
+To run tests, add -i __t:
+
+	builder -i __t -u https://raw.githubusercontent.com/JHG777000/RKLib/master/buildfile
