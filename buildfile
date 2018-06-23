@@ -13,7 +13,7 @@ build RKLibBuild.
 
   on test_enable("-t", "--test", "Enable RKLib test.").
 
-  on toolchain_select("-s", "--select_toolchain=tool", "Select toolchain, clang or gcc.").
+  on toolchain_select("-s", "--select_toolchain=tool", "Select toolchain.").
 
  end options.
 
@@ -21,7 +21,7 @@ build RKLibBuild.
 
  get toolchain_select.
 
- if ( toolchain_select != "clang" && toolchain_select != "gcc" ).
+ if ( toolchain_select == nil ).
 
   var toolchain_select := "gcc".
 
