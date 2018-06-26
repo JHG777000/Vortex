@@ -332,6 +332,7 @@ void RKMath_Norm(float outvec[], float vec[], const int size) {
 }
 
 //The Quake 3 InvSqrt
+//https://betterexplained.com/articles/understanding-quakes-fast-inverse-square-root/
 
 static float InvSqrt(float x) {
     

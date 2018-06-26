@@ -171,6 +171,8 @@ RKString RKStore_GetStoreLabelFromListNode( RKList_node node ) ;
 
 void RKStore_IterateStoreWith( RKMemIteratorFuncType iterator, RKStore store ) ;
 
+int RKStore_IsStoreEmpty( RKStore store ) ;
+
 void RKStore_DestroyStore( RKStore store ) ;
 
 RKIndex RKIndex_NewIndex( int max_num_of_items ) ;
@@ -186,6 +188,8 @@ void* RKIndex_GetItem( RKIndex rkindex, int index ) ;
 int RKIndex_GetMaxNumOfItems( RKIndex rkindex ) ;
 
 int RKIndex_GetNumOfItems( RKIndex rkindex ) ;
+
+int RKIndex_IsIndexEmpty( RKIndex rkindex ) ;
 
 RKString RKString_NewEmptyString( size_t size_in_bytes ) ;
 

@@ -640,6 +640,11 @@ void RKStore_IterateStoreWith( RKMemIteratorFuncType iterator, RKStore store ) {
     if (store->items != NULL) RKList_IterateListWith(iterator, store->items) ;
 }
 
+int RKStore_IsStoreEmpty( RKStore store ) {
+    
+    return (RKList_GetNumOfNodes(store->items) == 0) ? 1 : 0 ;
+}
+
 static void RKS_DestroyBinaryNodes( RKStore_letter* alphabet ) {
     
     int i = 0 ;
@@ -770,6 +775,11 @@ int RKIndex_GetMaxNumOfItems( RKIndex rkindex ) {
 int RKIndex_GetNumOfItems( RKIndex rkindex ) {
     
     return rkindex->num_of_items ;
+}
+
+int RKIndex_IsIndexEmpty( RKIndex rkindex ) {
+    
+    return RKStore_IsStoreEmpty(rkindex->store) ;
 }
 
 RKString RKString_NewEmptyString( size_t size_in_bytes ) {
