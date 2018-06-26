@@ -31,9 +31,15 @@ build RKLibBuild.
 
  make filepath include_path from "resources" to "include".
 
+ if (!is_win).
+
+  library_names RKLibLibraries("pthreads").
+
+ end if.
+
  files RKLibFiles("src.directory").
 
- sources RKLibSource(RKLibFiles).
+ sources RKLibSource(RKLibFiles,RKLibLibraries).
 
  compiler RKLibCompilerFlags("-Wall","-I " + include_path).
 
