@@ -697,7 +697,7 @@ int RKIndex_AddItem( RKIndex rkindex, void *item ) {
     
     char string[100] ;
     
-    int index = rkindex->num_of_items + 1 ;
+    int index = rkindex->num_of_items ;
     
     if ( rkindex->max_num_of_items > 0 ) {
         
