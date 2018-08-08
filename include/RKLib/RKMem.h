@@ -227,7 +227,7 @@ char* RKString_ConvertToCString( RKString string ) ;
 
 void RKString_PrintString( RKString string ) ;
 
-int* RKString_GetUTF32String( RKString string, RKULong* size ) ;
+int* RKString_GetUTF32String( RKString string, RKULong* length ) ;
 
 RKString RKString_GetStringForASCII( RKString string ) ;
 

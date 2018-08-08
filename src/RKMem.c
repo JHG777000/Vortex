@@ -1288,7 +1288,7 @@ void RKString_PrintString( RKString string ) {
     printf("%s", string->string) ;
 }
 
-int* RKString_GetUTF32String( RKString string, RKULong* size ) {
+int* RKString_GetUTF32String( RKString string, RKULong* length ) {
     
     int i = 0 ;
     
@@ -1313,7 +1313,7 @@ int* RKString_GetUTF32String( RKString string, RKULong* size ) {
     
     utf32string[size_of_string] = '\0' ;
     
-    *size = size_of_string ;
+    *length = RKString_GetLength(string) ;
     
     return utf32string ;
 }
@@ -1537,6 +1537,8 @@ RKString RKString_SwapEscapeSequencesWithCharacters( RKString string ) {
             str2_size = str_size+2 ;
             
             str2 = RKMem_CArray(str2_size, int) ;
+            
+            str2[str2_size-1] = '\0' ;
             
             while ( j < str2_size ) {
                 
