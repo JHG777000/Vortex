@@ -588,7 +588,7 @@ int RKStore_AddItem( RKStore store, void* item, const char* label ) {
 
 int RKStore_RemoveItem( RKStore store, const char* label ) {
     
-    RKList_node node = RKS_GetSetNode(store, label, NULL, 1, 0) ;
+    RKList_node node = RKS_GetSetNode(store, label, NULL, 1, 1) ;
     
     if ( node == NULL ) return 0 ;
     
