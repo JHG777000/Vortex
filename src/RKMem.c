@@ -453,7 +453,7 @@ static RKStore_letter* RKS_NewBinaryNode( void ) {
     
 }
 
-static RKList_node RKS_GetSetNode( RKStore store, const char* label, RKList_node node, int flag ) {
+static RKList_node RKS_GetSetNode( RKStore store, const char* label, RKList_node node, int flag, int find ) {
     
     int i = 0 ;
     
@@ -522,7 +522,9 @@ static RKList_node RKS_GetSetNode( RKStore store, const char* label, RKList_node
                 
             } else {
                 
-                if ( current_alphabet[value].next_alphabet == NULL ) current_alphabet[value].next_alphabet = RKS_NewBinaryNode() ;
+                if ( !find ) if ( current_alphabet[value].next_alphabet == NULL ) current_alphabet[value].next_alphabet = RKS_NewBinaryNode() ;
+                
+                if ( find ) if ( current_alphabet[value].next_alphabet == NULL ) return NULL ;
                 
                 current_alphabet = current_alphabet[value].next_alphabet ;
                 
@@ -557,7 +559,7 @@ static RKList_node RKS_AddItem( RKStore store, void* item ) {
 
 static int RKS_StoreItem( RKStore store, void* item, const char* label ) {
     
-    RKList_node node = RKS_GetSetNode(store, label, NULL, 0) ;
+    RKList_node node = RKS_GetSetNode(store, label, NULL, 0, 0) ;
     
     if ( node == NULL ) return 0 ;
     
@@ -572,7 +574,7 @@ int RKStore_AddItem( RKStore store, void* item, const char* label ) {
     
         RKList_node node = RKS_AddItem(store, item) ;
     
-        node = RKS_GetSetNode(store, label, node, 0) ;
+        node = RKS_GetSetNode(store, label, node, 0, 0) ;
         
         if ( node == NULL ) return 0 ;
         
@@ -586,7 +588,7 @@ int RKStore_AddItem( RKStore store, void* item, const char* label ) {
 
 int RKStore_RemoveItem( RKStore store, const char* label ) {
     
-    RKList_node node = RKS_GetSetNode(store, label, NULL, 1) ;
+    RKList_node node = RKS_GetSetNode(store, label, NULL, 1, 0) ;
     
     if ( node == NULL ) return 0 ;
     
@@ -597,7 +599,7 @@ int RKStore_RemoveItem( RKStore store, const char* label ) {
 
 void* RKStore_GetItem( RKStore store, const char* label ) {
     
-    RKList_node node = RKS_GetSetNode(store, label, NULL, 0) ;
+    RKList_node node = RKS_GetSetNode(store, label, NULL, 0, 1) ;
     
     if ( node == NULL ) return NULL ;
     
@@ -606,7 +608,7 @@ void* RKStore_GetItem( RKStore store, const char* label ) {
 
 int RKStore_ItemExists( RKStore Store, const char* label ) {
     
-    RKList_node node = RKS_GetSetNode(Store, label, NULL, 0) ;
+    RKList_node node = RKS_GetSetNode(Store, label, NULL, 0, 1) ;
     
     if ( node != NULL ) return 1 ;
     
