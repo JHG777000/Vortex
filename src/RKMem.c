@@ -629,6 +629,8 @@ int RKStore_AddItemToList( RKStore store, void *item ) {
 
 RKList RKStore_GetList( RKStore store ) {
     
+    if ( store->items == NULL ) store->items = RKList_NewList() ;
+    
     return store->items ;
 }
 
