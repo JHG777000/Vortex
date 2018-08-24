@@ -101,6 +101,8 @@ typedef void* RKAny ;
 
 RKList RKList_NewList( void ) ;
 
+RKList_node RKList_NewNode(  RKList_node before, RKList_node after, void* data ) ;
+
 RKList RKList_NewListFromArray( void* array, RKList_GetDataFromArrayFuncType GetDataFromArrayFunc, int size ) ;
 
 RKList_node RKList_AddToList( RKList list, void* data ) ;

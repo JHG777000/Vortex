@@ -97,6 +97,15 @@ RKList_node RKList_NewNode(  RKList_node before, RKList_node after, void* data )
     return node ;
 }
 
+RKList RKList_NewListFromArray( void* array, RKList_GetDataFromArrayFuncType GetDataFromArrayFunc, int size ) {
+    
+    RKList newlist = RKList_NewList() ;
+    
+    RKList_CopyToListFromArray(newlist, array, GetDataFromArrayFunc, size) ;
+    
+    return newlist ;
+}
+
 RKList_node RKList_AddToList( RKList list, void* data ) {
     
     if ( list->num_of_nodes == 0 ) {
@@ -276,15 +285,21 @@ RKList_node RKList_GetPreviousNode(RKList_node node) {
 
 RKList_node RKList_GetFirstNode(RKList list) {
     
+    if ( list == NULL ) return NULL ;
+    
     return list->first ;
 }
 
 RKList_node RKList_GetLastNode(RKList list) {
     
+    if ( list == NULL ) return NULL ;
+    
     return list->last ;
 }
 
 int RKList_GetNumOfNodes(RKList list) {
+    
+    if ( list == NULL ) return -1 ;
     
     return list->num_of_nodes ;
 }
@@ -635,6 +650,8 @@ RKList RKStore_GetList( RKStore store ) {
 }
 
 RKString RKStore_GetStoreLabelFromListNode( RKList_node node ) {
+    
+    if ( node == NULL ) return NULL ;
     
     return RKList_GetString(node) ;
 }
