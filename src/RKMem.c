@@ -400,7 +400,7 @@ int RKList_GetIndex( RKList list, RKList_node node ) {
         
         if ( node == node2 ) break ;
         
-        node = node->after ;
+        node2 = node2->after ;
         
         i++ ;
     }
