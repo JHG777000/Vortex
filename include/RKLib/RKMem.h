@@ -145,6 +145,8 @@ void RKList_DeleteAllNodesInList( RKList list ) ;
 
 RKList_node RKList_GetNode( RKList list, int index ) ;
 
+int RKList_GetIndex( RKList list, RKList_node node ) ;
+
 RKList_node RKList_GetNextNodeAfterN( RKList_node node, int n ) ;
 
 RKList_node RKList_GetPreviousNodeAfterN( RKList_node node, int n ) ;

@@ -390,6 +390,24 @@ RKList_node RKList_GetNode( RKList list, int index ) {
     return node ;
 }
 
+int RKList_GetIndex( RKList list, RKList_node node ) {
+    
+    int i = 0 ;
+    
+    RKList_node node2 = list->first ;
+    
+    while ( node2 != NULL ) {
+        
+        if ( node == node2 ) break ;
+        
+        node = node->after ;
+        
+        i++ ;
+    }
+    
+    return i ;
+}
+
 RKList_node RKList_GetNextNodeAfterN( RKList_node node, int n ) {
     
     int i = 0 ;
