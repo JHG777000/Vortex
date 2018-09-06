@@ -342,6 +342,8 @@ void RKList_DeleteNode( RKList list, RKList_node node ) {
     
     list->num_of_nodes-- ;
     
+    if ( node->string != NULL ) RKString_DestroyString(node->string) ;
+    
     free(node) ;
 }
 
