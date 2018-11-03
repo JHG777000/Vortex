@@ -36,7 +36,8 @@ struct RKTasks_Module_s { RKTasks_ModuleDestructor_Type destructor ; mtx_t mutex
 
 struct RKTasks_ThisTask_s { int active ; int delete ; int task_id ; int thread_id ; } ;
 
-struct RKTasks_Task_s { RKTasks_ThisTask this_task ; int done ; int run_id ; int (*task_func)(RKTasks_Module, struct RKTasks_ThisTask_s *) ; RKTasks_Module module ; } ;
+struct RKTasks_Task_s { RKTasks_ThisTask this_task ; int done ; int run_id ; int (*task_func)(RKTasks_Module,
+                                                                                              struct RKTasks_ThisTask_s *) ; RKTasks_Module module ; } ;
 
 struct RKThread_s { thrd_t thread ; int alive ; int dead ; int awake ; int sleep ; int num_of_done_tasks ; int num_of_dead_tasks ; } ;
 
@@ -490,9 +491,18 @@ static int RKTasks_SpawnThreads( RKTasks_ThreadGroup threadgroup ) {
     
 }
 
-void RKTasks_StartThreadGroup( RKTasks_ThreadGroup threadgroup ) {
+int RKTasks_StartThreadGroup( RKTasks_ThreadGroup threadgroup ) {
     
-    if ( !threadgroup->init ) RKTasks_SpawnThreads(threadgroup) ;
+    int error = 0 ;
+    
+    if ( !threadgroup->init ) {
+        
+        error = RKTasks_SpawnThreads(threadgroup) ;
+        
+        if ( error != thrd_success ) return -1 ;
+    }
+    
+    return 0 ;
 }
 
 

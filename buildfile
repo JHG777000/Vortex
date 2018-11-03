@@ -1,7 +1,7 @@
 
 project := "RKLibProject".
 
-project_version := "1.0.12".
+project_version := "1.0.13".
 
 buildfile_version := "1.0".
 

@@ -90,7 +90,7 @@ RKTasks_ThreadGroup RKTasks_NewThreadGroup( int max_num_of_threads ) ;
 
 void RKTasks_DestroyThreadGroup( RKTasks_ThreadGroup threadgroup ) ;
 
-void RKTasks_StartThreadGroup( RKTasks_ThreadGroup threadgroup ) ;
+int RKTasks_StartThreadGroup( RKTasks_ThreadGroup threadgroup ) ;
 
 void RKTasks_WaitForTasksToBeDone( RKTasks_TaskGroup taskgroup ) ;
 
