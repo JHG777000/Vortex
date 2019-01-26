@@ -1,7 +1,7 @@
 
 project := "RKLibProject".
 
-project_version := "1.0.13".
+project_version := "1.0.14".
 
 buildfile_version := "1.0".
 
@@ -88,6 +88,3 @@ build clean_build.
 end build.
 
 default RKLibBuild.
-
-
-
