@@ -594,7 +594,7 @@ static RKList_node RKS_AddItem( RKStore store, void* item ) {
 
 static int RKS_StoreItem( RKStore store, void* item, const char* label ) {
 
-    RKList_node node = RKS_GetSetNode(store, label, NULL, 0, 0) ;
+    RKList_node node = RKS_GetSetNode(store, label, NULL, 0, 1) ;
 
     if ( node == NULL ) return 0 ;
 
