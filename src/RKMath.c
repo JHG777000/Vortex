@@ -331,29 +331,30 @@ void RKMath_Norm(float outvec[], float vec[], const int size) {
     }
 }
 
-//The Quake 3 InvSqrt
-//https://betterexplained.com/articles/understanding-quakes-fast-inverse-square-root/
+//Fast inverse square root(Quake III)
 
-static float InvSqrt(float x) {
+#define toInt(var) *(int*)&var
 
-    float xhalf = 0.5f * x ;
+#define toFloat(var) *(float*)&var
 
-    int i = *(int*)&x ;
+static float fast_inverse_square_root(float num) {
 
-    i = 0x5f3759df - (i>>1) ;
+    int z = toInt(num) ;
 
-    x = *(float*)&i ;
+    z = 0x5f3759df - (z>>1) ;
 
-    x = x * (1.5f - xhalf * x * x) ;
+    float q = toFloat(z) ;
 
-    return x ;
+    q = q * ( 1.5f - ( (0.5f * num) * ( q * q ) ) )  ;
+
+    return q ;
 }
 
 //Maybe, sometimes faster on some machines?
 
 float RKMath_Sqrt( float x ) {
 
-    return x * InvSqrt(x) ;
+    return x * fast_inverse_square_root(x) ;
 }
 
  float RKMath_Distance(const float vec_a[], const float vec_b[], const int size) {

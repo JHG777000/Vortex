@@ -175,6 +175,12 @@ int main(int argc, const char * argv[]) {
 
     rkstrprint(rkget(RKString,any1)) ;
 
+    if ( RKMath_Sqrt(2.f) == 1.41386008f ) {
+
+      puts("yes!!!") ;
+      
+    }
+
     int z = 0 ;
 
     z = 37482 ;
