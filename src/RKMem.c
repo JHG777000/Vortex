@@ -1358,8 +1358,7 @@ int* RKString_GetUTF32String( RKString string, RKULong* length ) {
 }
 
 //For systems and environments that still don't support unicode
-//mangles unicode characters into UNICODE_<<binary(0 and 1's) of the unicode character>>
-//better system would be turn unicode characters into hex not binary
+//mangles unicode characters into utf_<<bytes of the unicode character>>
 
 RKString RKString_GetStringForASCII( RKString string ) {
 
@@ -1373,7 +1372,11 @@ RKString RKString_GetStringForASCII( RKString string ) {
 
     int str_size = 1 ;
 
+    char string_num[100] ;
+
     signed char byte = 0 ;
+
+    unsigned char ubyte = 0 ;
 
     RKString ascii_string = NULL ;
 
@@ -1381,27 +1384,27 @@ RKString RKString_GetStringForASCII( RKString string ) {
 
     str[0] = '\0' ;
 
+    string_num[0] = '0' ;
+
+    string_num[1] = '0' ;
+
+    string_num[2] = '0' ;
+
+    string_num[3] = '\0' ;
+
     while ( i < string->size_in_bytes  ) {
 
         if ( string->string[i] < 0 ) {
 
-            str = RKMem_Realloc(str, str_size+8, str_size, char, 1) ;
+            str = RKMem_Realloc(str, str_size+4, str_size, char, 1) ;
 
-            str_size += 8 ;
+            str_size += 4 ;
 
-            str[str_size-9] = 'U' ;
+            str[str_size-5] = 'u' ;
 
-            str[str_size-8] = 'N' ;
+            str[str_size-4] = 't' ;
 
-            str[str_size-7] = 'I' ;
-
-            str[str_size-6] = 'C' ;
-
-            str[str_size-5] = 'O' ;
-
-            str[str_size-4] = 'D' ;
-
-            str[str_size-3] = 'E' ;
+            str[str_size-3] = 'f' ;
 
             str[str_size-2] = '_' ;
 
@@ -1420,38 +1423,26 @@ RKString RKString_GetStringForASCII( RKString string ) {
 
             x = 0 ;
 
-            byte = string->string[i] ;
+            ubyte = byte = string->string[i] ;
 
             while ( x < n ) {
 
+                snprintf(string_num, sizeof(string_num), "%u", ubyte) ;
+
                 j = 0 ;
 
-                while ( j < (sizeof(char) * CHAR_BIT) ) {
+                while ( j < strlen(string_num) ) {
 
-                    str = RKMem_Realloc(str, str_size+1, str_size, char, 1) ;
+                 str = RKMem_Realloc(str, str_size+1, str_size, char, 1) ;
 
-                    str_size++ ;
+                 str_size++ ;
 
-                    if ( byte == 0 ) {
+                 str[str_size-2] = string_num[j] ;
 
-                        str[str_size-2] = '0' ;
-                    }
+                 str[str_size-1] = '\0' ;
 
-                    if ( byte > 0 ) {
+                 j++ ;
 
-                        str[str_size-2] = '0' ;
-                    }
-
-                    if ( byte < 0 ){
-
-                        str[str_size-2] = '1' ;
-                    }
-
-                    str[str_size-1] = '\0' ;
-
-                    byte = byte << 1 ;
-
-                    j++ ;
                 }
 
                 i++ ;
@@ -1461,7 +1452,7 @@ RKString RKString_GetStringForASCII( RKString string ) {
                     break ;
                 }
 
-                byte = string->string[i] ;
+                ubyte = byte = string->string[i] ;
 
                 x++ ;
             }

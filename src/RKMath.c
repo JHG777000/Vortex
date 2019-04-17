@@ -337,7 +337,7 @@ void RKMath_Norm(float outvec[], float vec[], const int size) {
 
 #define toFloat(var) *(float*)&var
 
-static float fast_inverse_square_root(float num) {
+static float fast_inverse_square_root( float num ) {
 
     int z = toInt(num) ;
 
@@ -345,7 +345,7 @@ static float fast_inverse_square_root(float num) {
 
     float q = toFloat(z) ;
 
-    q = q * ( 1.5f - ( (0.5f * num) * ( q * q ) ) )  ;
+    q = q * ( 1.5f - ( (0.5f * num) * ( q * q ) ) ) ;
 
     return q ;
 }
