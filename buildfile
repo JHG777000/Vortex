@@ -1,7 +1,7 @@
 
 project := "RKLibProject".
 
-project_version := "1.0.17".
+project_version := "1.0.18".
 
 buildfile_version := "1.0".
 
@@ -35,7 +35,7 @@ build RKLibBuild.
 
  if (is_mac).
 
-  library_names RKLibLibraries("pthread").
+  library_names RKLibLibraries("pthread","lm").
 
   sources RKLibSource(RKLibFiles,RKLibLibraries).
 
@@ -43,7 +43,7 @@ build RKLibBuild.
 
  if (is_linux).
 
-  library_names RKLibLibraries("pthread","lrt").
+  library_names RKLibLibraries("pthread","lrt","lm").
 
   sources RKLibSource(RKLibFiles,RKLibLibraries).
 
