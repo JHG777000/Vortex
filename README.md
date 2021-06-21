@@ -57,8 +57,8 @@ RKLib uses [builder][1] for its build system.
 To download and build use this command:
 
 
-	builder -u https://raw.githubusercontent.com/JHG777000/RKLib/master/buildfile
+	builder -u https://raw.githubusercontent.com/JHG777000/RKLib/main/buildfile
 	
 To run tests, add -i __t:
 
-	builder -i __t -u https://raw.githubusercontent.com/JHG777000/RKLib/master/buildfile
+	builder -i __t -u https://raw.githubusercontent.com/JHG777000/RKLib/main/buildfile
