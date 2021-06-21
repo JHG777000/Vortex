@@ -1,11 +1,11 @@
 
 project := "RKLibProject".
 
-project_version := "1.0.18".
+project_version := "1.0.19".
 
 buildfile_version := "1.0".
 
-url_to_src := "https://github.com/JHG777000/RKLib/archive/master.zip".
+url_to_src := "https://github.com/JHG777000/RKLib/archive/main.zip".
 
 build RKLibBuild.
 
