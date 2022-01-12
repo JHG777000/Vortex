@@ -140,6 +140,46 @@ RKArgs rkargs_example1(void) {
 
 int main(int argc, const char * argv[]) {
 
+    RKArray array = RKArray_NewArray() ;
+
+    RKArray_AddItem(array,rkstr("Hello World!!! 1\n")) ;
+
+    RKArray_AddItem(array,rkstr("Hello World!!! 2\n")) ;
+
+    RKArray_AddItem(array,rkstr("Hello World!!! 3\n")) ;
+
+    rkstrprint(RKArray_GetItem(array,0)) ;
+
+    rkstrprint(RKArray_GetItem(array,1)) ;
+
+    rkstrprint(RKArray_GetItem(array,2)) ;
+
+    RKString_DestroyString(RKArray_GetItem(array,2)) ;
+
+    RKArray_SetItem(array,2,rkstr("Hello World!!! 4\n")) ;
+
+    rkstrprint(RKArray_GetItem(array,2)) ;
+
+    RKArray_DestroyArray(array) ;
+
+    RKULong numbers[] = {1,2,3,4,5} ;
+
+    RKArray Numbers = RKArray_NewArray() ;
+
+    RKArray_AddArray(Numbers,numbers,sizeof(numbers)) ;
+
+    printf("%d\n",RKArray_GetItem(Numbers,0)) ;
+
+    RKArray_DestroyArray(Numbers) ;
+
+    RKArray Numbers2 = RKMem_NewArray(numbers) ;
+
+    RKArray_AddArray(Numbers2,numbers,sizeof(numbers)) ;
+
+    printf("%d\n",RKArray_GetItem(Numbers2,0)) ;
+
+    RKArray_DestroyArray(Numbers2) ;
+
     RKArgs args = rkargs_example1() ;
 
     rkargs_example3(args) ;
@@ -178,7 +218,7 @@ int main(int argc, const char * argv[]) {
     if ( RKMath_Sqrt(2.f) == 1.41386008f ) {
 
       puts("yes!!!") ;
-      
+
     }
 
     int z = 0 ;
@@ -225,7 +265,7 @@ int main(int argc, const char * argv[]) {
 
     RKMath_Equal(RKTasks_GetModuleData(TestMod,module)->Vec2, MyVec2, 3) ;
 
-    RKTasks_AddTasks(TaskGroup, 20000, TestTask, module) ; //can not be called on a bound taskgroup
+    RKTasks_AddTasks(TaskGroup, 2000, TestTask, module) ; //can not be called on a bound taskgroup
 
     RKTasks_BindTaskGroupToThreadGroup(TaskGroup, ThreadGroup) ;
 

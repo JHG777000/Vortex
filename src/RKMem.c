@@ -25,6 +25,8 @@
 #include <string.h>
 #include <RKLib/RKMem.h>
 
+ struct RKArray_s { void** items ; RKULong num_of_items ; size_t size_of_type ; } ;
+
  struct RKStack_s { RKList list ; } ;
 
  struct RKString_s { RKLong size_in_characters ; RKULong size_in_bytes ; char* string ; } ;
@@ -39,7 +41,7 @@
 
  struct RKList_s { int num_of_nodes ; RKList_node first ; RKList_node last ; } ;
 
- void* RKMem_Realloc_Func(void* data, size_t newsize, size_t oldsize, int NULLonError0No1Yes) {
+ void* RKMem_Realloc_Func( void* data, size_t newsize, size_t oldsize, int NULLonError0No1Yes ) {
 
     void* newdata ;
 
@@ -68,6 +70,118 @@
     }
 }
 
+RKArray RKArray_NewArray( void ) {
+
+  RKArray array = RKMem_NewMemOfType(struct RKArray_s) ;
+
+  array->num_of_items = 0 ;
+
+  array->items = NULL ;
+
+  return array ;
+}
+
+RKArray RKArray_NewArrayWithBaseSize( int base_size ) {
+
+  RKArray array = RKMem_NewMemOfType(struct RKArray_s) ;
+
+  array->items = RKMem_CArray(base_size, void*) ;
+
+  array->num_of_items = base_size ;
+
+  return array ;
+}
+
+RKArray RKArray_NewArrayFromBuffer( void* buffer[], int size ) {
+
+  RKArray array = RKArray_NewArrayWithBaseSize(size) ;
+
+  memcpy(array->items,buffer,array->num_of_items) ;
+
+  return array ;
+}
+
+void RKArray_DestroyArray( RKArray array ) {
+
+  free(array->items) ;
+
+  free(array) ;
+}
+
+void RKArray_AddItem( RKArray array, void* item ) {
+
+  array->num_of_items++ ;
+
+  if ( array->items == NULL ) {
+
+   array->items = RKMem_CArray(array->num_of_items, void*) ;
+
+  } else {
+
+   array->items = RKMem_Realloc(array->items,
+    array->num_of_items,
+    array->num_of_items-1,
+    void*,
+    1) ;
+
+ }
+
+ array->items[array->num_of_items-1] = item ;
+
+}
+
+void RKArray_AddArray( RKArray array, void* items[], int num_of_items_to_add ) {
+
+  RKArray_AddSpace(array,num_of_items_to_add) ;
+
+  memcpy(array->items+(array->num_of_items-num_of_items_to_add),items,array->num_of_items) ;
+
+}
+
+void RKArray_AddSpace( RKArray array, int space_to_add ) {
+
+  if ( array->items == NULL ) {
+
+   array->num_of_items = space_to_add ;
+
+   array->items = RKMem_CArray(array->num_of_items, void*) ;
+
+  } else {
+
+   array->num_of_items += space_to_add ;
+
+   array->items = RKMem_Realloc(array->items,
+    array->num_of_items,
+    array->num_of_items-space_to_add,
+    void*,
+    1) ;
+
+ }
+
+}
+
+void* RKArray_GetItem( RKArray array, int index ) {
+
+  if ( index >= 0 && index < array->num_of_items ) {
+
+    return array->items[index] ;
+  }
+
+  return NULL ;
+}
+
+int RKArray_SetItem( RKArray array, int index, void* item ) {
+
+  if ( index >= 0 && index < array->num_of_items ) {
+
+    array->items[index] = item ;
+
+    return 1 ;
+  }
+
+  return 0 ;
+}
+
 RKList RKList_NewList( void ) {
 
     RKList newlist = RKMem_NewMemOfType(struct RKList_s) ;
@@ -79,7 +193,6 @@ RKList RKList_NewList( void ) {
     newlist->last = NULL ;
 
     return newlist ;
-
 }
 
 RKList_node RKList_NewNode(  RKList_node before, RKList_node after, void* data ) {

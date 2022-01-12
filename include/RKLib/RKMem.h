@@ -62,6 +62,8 @@ typedef unsigned long RKULong ;
 
 #define RKMem_AddToArray(array_a,array_b,array_a_size,array_b_size,type) array_a = RKMem_Realloc(array_a,(array_a_size+array_b_size),array_a_size,type,1) ; memcpy(array_a[array_a_size+1],array_b,(array_b_size*sizeof(type)))
 
+#define RKMem_NewArray( array ) RKArray_NewArrayFromBuffer(array,sizeof(array))
+
 
 #define RKString_NewString( string ) RKString_NewStringFromBuffer(string,sizeof(string))
 
@@ -87,6 +89,8 @@ typedef void* (*RKList_GetDataFromArrayFuncType)(void* array, int index) ;
 
 typedef struct RKList_node_s* RKList_node ;
 
+typedef struct RKArray_s* RKArray ;
+
 typedef struct RKList_s* RKList ;
 
 typedef struct RKStore_s* RKStore ;
@@ -98,6 +102,24 @@ typedef struct RKStack_s* RKStack ;
 typedef struct RKString_s* RKString ;
 
 typedef void* RKAny ;
+
+RKArray RKArray_NewArray( void ) ;
+
+RKArray RKArray_NewArrayWithBaseSize( int base_size ) ;
+
+RKArray RKArray_NewArrayFromBuffer( void* buffer[], int size ) ;
+
+void RKArray_DestroyArray( RKArray array ) ;
+
+void RKArray_AddItem( RKArray array, void* item ) ;
+
+void RKArray_AddArray( RKArray array, void* items[], int num_of_items_to_add ) ;
+
+void RKArray_AddSpace( RKArray array, int space_to_add ) ;
+
+void* RKArray_GetItem( RKArray array, int index ) ;
+
+int RKArray_SetItem( RKArray array, int index, void* item ) ;
 
 RKList RKList_NewList( void ) ;
 
