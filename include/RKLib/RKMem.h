@@ -121,6 +121,8 @@ void* RKArray_GetItem( RKArray array, int index ) ;
 
 int RKArray_SetItem( RKArray array, int index, void* item ) ;
 
+void RKArray_IterateArrayWith( RKMemIteratorFuncType iterator, RKArray array ) ;
+
 RKList RKList_NewList( void ) ;
 
 RKList_node RKList_NewNode(  RKList_node before, RKList_node after, void* data ) ;

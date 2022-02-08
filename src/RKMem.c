@@ -25,7 +25,7 @@
 #include <string.h>
 #include <RKLib/RKMem.h>
 
- struct RKArray_s { void** items ; RKULong num_of_items ; size_t size_of_type ; } ;
+ struct RKArray_s { void** items ; RKULong num_of_items ; } ;
 
  struct RKStack_s { RKList list ; } ;
 
@@ -180,6 +180,19 @@ int RKArray_SetItem( RKArray array, int index, void* item ) {
   }
 
   return 0 ;
+}
+
+void RKArray_IterateArrayWith( RKMemIteratorFuncType iterator, RKArray array ) {
+
+    int i = 0 ;
+
+    while ( i < array->num_of_items ) {
+
+     iterator(array->items[i]) ;
+
+     i++ ;
+
+    }
 }
 
 RKList RKList_NewList( void ) {

@@ -12,7 +12,7 @@ RKLib is currently a work in progress so lack of documentation, a multitude of b
 
 RKLib’s goal is to provide a framework for performance and cross-platform support. Yet, it already has some caveats here:
 
--No extensive testing has taken place, so whether it makes code actually run faster or not or even perhaps slower at least compared to alternatives, is still open. 
+-No extensive testing has taken place, so whether it makes code actually run faster or not or even perhaps slower at least compared to alternatives, is still open.
 
 RKLib is currently composed of the following libraries:
 
@@ -44,7 +44,7 @@ RKTasks, a thread pool library. Uses tinycthread as a backend.
 
 —More advanced thread creation algorithm allowing for the dynamic adjustment of the number of threads during runtime.
 
-Uses: 
+Uses:
 
  -TinyCThread https://github.com/tinycthread/tinycthread
 
@@ -58,7 +58,7 @@ To download and build use this command:
 
 
 	builder -u https://raw.githubusercontent.com/JHG777000/RKLib/main/buildfile
-	
+
 To run tests, add -i __t:
 
 	builder -i __t -u https://raw.githubusercontent.com/JHG777000/RKLib/main/buildfile
