@@ -1,90 +1,68 @@
 
-project := "RKLibProject".
-
-project_version := "1.0.22".
-
+project := "VortexProject".
+project_version := "1.0".
 buildfile_version := "1.0".
+url_to_src := "https://github.com/JHG777000/Vortex/archive/main.zip".
 
-url_to_src := "https://github.com/JHG777000/RKLib/archive/main.zip".
-
-build RKLibBuild.
-
+build main_build.
+ 
  options.
-
-  on test_enable("-t", "--test", "Enable RKLib test.").
-
+  on test_enable("-t", "--test", "Enable Vortex test.").
   on toolchain_select("-s", "--select_toolchain=tool", "Select toolchain.").
-
  end options.
-
+ 
  get test_enable.
-
  get toolchain_select.
 
  if ( toolchain_select == nil ).
-
   var toolchain_select := "gcc".
-
  end if.
 
- message("Building RKLib...").
+ message("Building Vortex...").
+ 
+ make filepath threads_buildfile_path from "resources" to "threads/buildfile".
+ files ThreadsBuildFile(threads_buildfile_path).
+ subproject ThreadsProject("local",ThreadsBuildFile,"-d").
+ 
 
  make filepath include_path from "resources" to "include".
-
- files RKLibFiles("src.directory").
-
+ make filepath threads_include_path from "resources" to "source" from ThreadsProject.
+ make filepath threads_source_path from "resources" to "source/tinycthread.c" from ThreadsProject.
+ files VortexFiles("src.directory").
+ files ThreadsFiles(threads_source_path).
+ 
  if (is_mac).
-
-  library_names RKLibLibraries("pthread","lm").
-
-  sources RKLibSource(RKLibFiles,RKLibLibraries).
-
+  library_names VortexLibraries("pthread","lm").
+  sources VortexSource(ThreadsFiles,VortexFiles,VortexLibraries).
  end if.
 
  if (is_linux).
-
-  library_names RKLibLibraries("pthread","lrt","lm").
-
-  sources RKLibSource(RKLibFiles,RKLibLibraries).
-
+  library_names VortexLibraries("pthread","lrt","lm").
+  sources VortexSource(ThreadsFiles,VortexFiles,VortexLibraries).
  end if.
 
  if (is_win).
-
-  sources RKLibSource(RKLibFiles).
-
+  sources VortexSource(ThreadsFiles,VortexFiles).
  end if.
 
- compiler RKLibCompilerFlags("-Wall","-I " + include_path).
-
- toolchain RKLibToolChain(toolchain_select,RKLibCompilerFlags).
-
- output RKLib("library",RKLibSource,RKLibToolChain).
+ compiler VortexCompilerFlags("-Wall","-I " + threads_include_path, "-I " + include_path).
+ toolchain VortexToolChain(toolchain_select,VortexCompilerFlags).
+ output Vortex("library",VortexSource,VortexToolChain).
 
  if ( test_enable ).
-
-  message("Running RKLibTest...").
-
-  files RKLibTestFiles("Example.c").
-
-  sources RKLibTestSource(RKLibTestFiles,RKLib).
-
-  output RKLibTest("application",RKLibTestSource,RKLibToolChain).
-
-  launch(RKLibTest).
-
-  message("Ran RKLibTest.").
-
+  message("Running VortexTest...").
+  files VortexTestFiles("Example.c").
+  sources VortexTestSource(VortexTestFiles,Vortex).
+  output VortexTest("application",VortexTestSource,VortexToolChain).
+  launch(VortexTest).
+  message("Ran VortexTest.").
  end if.
 
 end build.
 
 build clean_build.
-
- message("Cleaning RKLib...").
-
+ message("Cleaning Vortex...").
  clean("build").
-
 end build.
 
-default RKLibBuild.
+default main_build.
