@@ -4,6 +4,39 @@ buildfile_version := "1.0".
 url_to_src := "https://github.com/tinycthread/tinycthread/archive/6957fc8383d6c7db25b60b8c849b29caab1caaee.zip".
 
 build main_build.
+
+ options.
+  on toolchain_select("-s", "--select_toolchain=tool", "Select toolchain.").
+ end options.
+ 
+ get toolchain_select.
+
+ if ( toolchain_select == nil ).
+  var toolchain_select := "gcc".
+ end if.
+
+ message("Building Threads...").
+ make filepath include_path from "resources" to "source".
+ files ThreadsFiles("source.directory").
+ 
+ if (is_mac).
+  library_names ThreadsLibraries("pthread","lm").
+  sources ThreadsSource(ThreadsFiles,ThreadsLibraries).
+ end if.
+
+ if (is_linux).
+  library_names ThreadsLibraries("pthread","lrt","lm").
+  sources ThreadsSource(ThreadsFiles,ThreadsLibraries).
+ end if.
+
+ if (is_win).
+  sources ThreadsSource(ThreadsFiles).
+ end if.
+ 
+ compiler ThreadsCompilerFlags("-Wall", "-I " + include_path).
+ toolchain ThreadsToolChain(toolchain_select,ThreadsCompilerFlags).
+ output Threads("library",ThreadsSource,ThreadsToolChain).
+ 
 end build.
 
 build clean_build.

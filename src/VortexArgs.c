@@ -78,7 +78,7 @@ VortexAny VortexArgs_GetArgWithIndexFunc(VortexArgs args, vortex_ulong index,
     return NULL;
 }
 
-static void* CloneArg(VortexArgs args, vortex_ulong* index_ptr, vortex_int* error) {
+static void* Vortex_CloneArg(VortexArgs args, vortex_ulong* index_ptr, vortex_int* error) {
     vortex_ulong index = *index_ptr;
     vortex_ulong index2 = *index_ptr;
     vortex_ulong num_of_args = args->array->num_of_bytes / args->array->size_in_bytes;
@@ -159,7 +159,7 @@ VortexArgs VortexArgs_CloneArgs(VortexArgs args) {
     newargs->array->size_in_bytes = args->array->size_in_bytes;
     newargs->array->array = vortex_c_array(args->array->num_of_bytes, vortex_byte);
     while ( retptr != NULL ) {
-        retptr = CloneArg(args, &index, &error);
+        retptr = Vortex_CloneArg(args, &index, &error);
         if ( retptr != NULL ) ((VortexArgsBase*)newargs->array->array)[i] = ((VortexArgsBase)retptr);
         i++;
     }
@@ -173,7 +173,7 @@ VortexArgs VortexArgs_CloneArgs(VortexArgs args) {
     return newargs;
 }
 
-static vortex_int DestroyArg(VortexArgs args, vortex_ulong index) {
+static vortex_int Vortex_DestroyArg(VortexArgs args, vortex_ulong index) {
     if (args->verify != 17345432) return 1;
     vortex_ulong num_of_args = args->array->num_of_bytes / args->array->size_in_bytes;
     if ( num_of_args > 0 ) {
@@ -209,7 +209,7 @@ vortex_int VortexArgs_DestroyClonedArgs(VortexArgs args) {
     if ( !args->cloned ) return 0;
     vortex_int retval = 0;
     while ((!retval) && (retval >= 0)) {
-        retval = DestroyArg(args, 0);
+        retval = Vortex_DestroyArg(args, 0);
     }
     if ( retval == 1 ) return 0;
     free(args->array->array);

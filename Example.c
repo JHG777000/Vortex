@@ -86,7 +86,7 @@ VortexArgs vortex_args_example1(void) {
                args(double,3.141592653589793238),shorts(3)) );
 }
 
-int main(int argc, const char * argv[]) {
+int main(int argc, const char *argv[]) {
     VortexArray array = VortexArray_New();
     VortexArray_AddItem(array,vortex_str("Hello World!!! 1\n"));
     VortexArray_AddItem(array,vortex_str("Hello World!!! 2\n"));
@@ -129,7 +129,7 @@ int main(int argc, const char * argv[]) {
     vortex_strprint(VortexString_GetStringForASCII(string2));
     VortexAny any1 = vortex_any(string);
 
-    vortex_strprint(vortex_get(VortexString,any1)) ;
+    vortex_strprint(vortex_get(VortexString,any1));
 
     if ( VortexMath_Sqrt(2.f) == 1.41386008f ) {
       puts("yes!!!");

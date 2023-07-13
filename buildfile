@@ -1,6 +1,6 @@
 
 project := "VortexProject".
-project_version := "1.0".
+project_version := "1.01".
 buildfile_version := "1.0".
 url_to_src := "https://github.com/JHG777000/Vortex/archive/main.zip".
 
@@ -23,27 +23,15 @@ build main_build.
  make filepath threads_buildfile_path from "resources" to "threads/buildfile".
  files ThreadsBuildFile(threads_buildfile_path).
  subproject ThreadsProject("local",ThreadsBuildFile,"-d").
+ return_output ThreadsProject.
  
-
  make filepath include_path from "resources" to "include".
  make filepath threads_include_path from "resources" to "source" from ThreadsProject.
- make filepath threads_source_path from "resources" to "source/tinycthread.c" from ThreadsProject.
  files VortexFiles("src.directory").
- files ThreadsFiles(threads_source_path).
  
- if (is_mac).
-  library_names VortexLibraries("pthread","lm").
-  sources VortexSource(ThreadsFiles,VortexFiles,VortexLibraries).
- end if.
-
- if (is_linux).
-  library_names VortexLibraries("pthread","lrt","lm").
-  sources VortexSource(ThreadsFiles,VortexFiles,VortexLibraries).
- end if.
-
- if (is_win).
-  sources VortexSource(ThreadsFiles,VortexFiles).
- end if.
+ grab Threads from ThreadsProject.
+ 
+ sources VortexSource(Threads,VortexFiles).
 
  compiler VortexCompilerFlags("-Wall","-I " + threads_include_path, "-I " + include_path).
  toolchain VortexToolChain(toolchain_select,VortexCompilerFlags).
@@ -52,7 +40,7 @@ build main_build.
  if ( test_enable ).
   message("Running VortexTest...").
   files VortexTestFiles("Example.c").
-  sources VortexTestSource(VortexTestFiles,Vortex).
+  sources VortexTestSource(VortexTestFiles,Threads,Vortex).
   output VortexTest("application",VortexTestSource,VortexToolChain).
   launch(VortexTest).
   message("Ran VortexTest.").
