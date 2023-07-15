@@ -79,7 +79,7 @@ vortex_int VortexArray_SetItem(VortexArray array, vortex_ulong index, VortexAny 
 vortex_ulong VortexArray_GetNumofItems(VortexArray array);
 void VortexArray_IterateWith(VortexMemIteratorFuncType iterator, VortexArray array);
 
-VortexList VortexList_NewList(void);
+VortexList VortexList_New(void);
 VortexListNode VortexList_NewNode(VortexListNode before, VortexListNode after, VortexAny item);
 VortexList VortexList_NewListFromArray(VortexAny array, VortexListGetDataFromArrayFuncType GetDataFromArrayFunc, vortex_ulong size);
 void VortexList_Destroy(VortexList list);
