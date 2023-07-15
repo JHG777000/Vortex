@@ -108,7 +108,7 @@ VortexListNode VortexList_GetNextNodeAfterN(VortexListNode node, vortex_ulong n)
 VortexListNode VortexList_GetPreviousNodeAfterN(VortexListNode node, vortex_ulong n);
 void VortexList_IterateWith(VortexMemIteratorFuncType iterator, VortexList list);
 
-VortexStore VortexStore_NewStore(void);
+VortexStore VortexStore_New(void);
 void VortexStore_Destroy(VortexStore store);
 vortex_int VortexStore_AddItem(VortexStore store, void* item, const char* label );
 vortex_int VortexStore_RemoveItem(VortexStore store, const char* label);

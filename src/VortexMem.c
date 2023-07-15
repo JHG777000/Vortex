@@ -436,6 +436,24 @@ static VortexStoreLetter* Vortex_NewStoreLetter(void) {
     return alphabet;
 }
 
+static void Vortex_DestroyStoreLetters(VortexStoreLetter* alphabet) {
+    vortex_int i = 0 ;
+    while ( i < 2 ) {
+        if (alphabet[i].next_alphabet != NULL)  {
+            Vortex_DestroyStoreLetters(alphabet[i].next_alphabet);
+            alphabet[i].next_alphabet = NULL ;
+        }
+        i++ ;
+    }
+    free(alphabet) ;
+}
+
+void VortexStore_Destroy(VortexStore store) {
+    if (store->dictionary != NULL) Vortex_DestroyStoreLetters(store->dictionary);
+    if (store->items != NULL) VortexList_Destroy(store->items);
+    free(store) ;
+}
+
 static VortexListNode Vortex_GetSetNodeForStore(VortexStore store, const char* label, 
       VortexListNode node, vortex_int flag, vortex_int find ) {
     vortex_int i = 0;
@@ -560,24 +578,6 @@ void VortexStore_IterateWith( VortexMemIteratorFuncType iterator, VortexStore st
 
 vortex_int VortexStore_IsEmpty( VortexStore store ) {
     return (VortexList_GetNumOfNodes(store->items) == 0) ? 1 : 0;
-}
-
-static void Vortex_DestroyStoreLetters(VortexStoreLetter* alphabet) {
-    vortex_int i = 0 ;
-    while ( i < 2 ) {
-        if (alphabet[i].next_alphabet != NULL)  {
-            Vortex_DestroyStoreLetters(alphabet[i].next_alphabet);
-            alphabet[i].next_alphabet = NULL ;
-        }
-        i++ ;
-    }
-    free(alphabet) ;
-}
-
-void VortexStore_Destroy(VortexStore store) {
-    if (store->dictionary != NULL) Vortex_DestroyStoreLetters(store->dictionary);
-    if (store->items != NULL) VortexList_Destroy(store->items);
-    free(store) ;
 }
 
 VortexArrayStore VortexArrayStore_New(vortex_ulong max_num_of_items) {
