@@ -118,7 +118,7 @@ vortex_ulong VortexStore_GetNumOfItems(VortexStore store);
 vortex_int VortexStore_AddItemToList(VortexStore store, void *item);
 VortexList VortexStore_GetList(VortexStore store);
 VortexString VortexStore_GetLabelFromListNode(VortexListNode node);
-void VortexStore_IterateStoreWith(VortexMemIteratorFuncType iterator, VortexStore store);
+void VortexStore_IterateWith(VortexMemIteratorFuncType iterator, VortexStore store);
 vortex_int VortexStore_IsEmpty(VortexStore store);
 
 
