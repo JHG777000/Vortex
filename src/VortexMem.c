@@ -792,6 +792,14 @@ void VortexString_Destroy(VortexString string) {
     free(string);
 }
 
+void VortexString_FormatToString(VortexString string, const char* format,...) {
+    va_list args;
+    va_start(args, format);
+    vsnprintf(VortexString_GetBuffer(string),
+         VortexString_GetSizeInBytes(string), format, args);
+    va_end(args);
+}
+
 vortex_ulong VortexString_GetSize(VortexString string) {
     return string->size_in_bytes;
 }
@@ -826,7 +834,7 @@ vortex_ulong VortexString_GetLength(VortexString string) {
     return string->size_in_characters;
 }
 
-char* VortexString_GetString(VortexString string) {
+char* VortexString_GetBuffer(VortexString string) {
     if ( string == NULL ) return NULL;
     return string->buffer;
 }
@@ -921,11 +929,11 @@ VortexString VortexString_AppendString(VortexString BaseString, VortexString App
 
 VortexString VortexString_Copy(VortexString string) {
     if ( string == NULL ) return NULL;
-    return VortexString_NewFromCString(VortexString_GetString(string));
+    return VortexString_NewFromCString(VortexString_GetBuffer(string));
 }
 
 vortex_int VortexString_AreStringsEqual(VortexString a, VortexString b) {
-    return ( strcmp(VortexString_GetString(a), VortexString_GetString(b)) == 0 );
+    return ( strcmp(VortexString_GetBuffer(a), VortexString_GetBuffer(b)) == 0 );
 }
 
 char* VortexString_ConvertToCString(VortexString string) {

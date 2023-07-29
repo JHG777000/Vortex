@@ -165,6 +165,10 @@ int main(int argc, const char *argv[]) {
     VortexTasks_WaitForTasksToBeDone(TaskGroup);
     VortexTasks_DestroyThreadGroup(ThreadGroup);
     VortexTasks_DestroyTaskGroup(TaskGroup, VortexTasks_MainThreadID);
+    VortexString format_output = VortexString_NewEmptyString(36);
+    VortexString_FormatToString(format_output,"%s, and %f, and %d!\n","Hello World",1.2345f,34);
+    VortexString_Print(format_output);
+    VortexString_Destroy(format_output);
     printf("Hello World!!!!!\n");
     return 0;
 }

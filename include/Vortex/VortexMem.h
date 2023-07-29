@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include <limits.h>
+#include <stdarg.h>
 
 typedef float vortex_float;
 typedef double vortex_double;
@@ -138,6 +139,7 @@ VortexString VortexString_NewFromBuffer(const char* text, vortex_ulong size_in_b
 VortexString VortexString_NewFromCString(const char* text);
 VortexString VortexString_NewFromTwoStrings(VortexString a, VortexString b);
 void VortexString_Destroy(VortexString string);
+void VortexString_FormatToString(VortexString string, const char* format,...);
 vortex_ulong VortexString_GetSize(VortexString string);
 vortex_ulong VortexString_GetSizeInBytes(VortexString string);
 vortex_ulong VortexString_GetLength(VortexString string);
