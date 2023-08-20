@@ -30,24 +30,24 @@ struct VortexFile_s {
  #ifdef _WIN32
   #include <windows.h>
   #define vortex_dlopen(file) LoadLibrary(file)
-  #define vortex_dlclose(lib) FreeLibrary((HMODULE)lib)
-  #define vortex_dlsym(lib, name) GetProcAddress((HMODULE)lib,name)
+  #define vortex_dlclose(library) FreeLibrary((HMODULE)library)
+  #define vortex_dlsym(library, name) GetProcAddress((HMODULE)library,name)
  #else
   #define vortex_dlopen(file) dlopen(file, RTLD_LAZY | RTLD_LOCAL)
-  #define vortex_dlclose(lib) dlclose(lib)
-  #define vortex_dlsym(lib, name) dlsym(lib, name)
+  #define vortex_dlclose(library) dlclose(library)
+  #define vortex_dlsym(library, name) dlsym(library, name)
  #endif
 
-void* VortexFile_LoadLibraryFromFile(const char* filepath) {
+VortexAny VortexFile_LoadLibraryFromFile(const char* filepath) {
     return vortex_dlopen(filepath);
 }
 
-vortex_int VortexFile_FreeLibrary(VortexAny lib) {
-    return vortex_dlclose(lib) ;
+vortex_int VortexFile_FreeLibrary(VortexAny library) {
+    return vortex_dlclose(library) ;
 }
 
-VortexAny VortexFile_GetFunction(VortexAny lib, const char* name) {
-     return vortex_dlsym(lib, name);
+VortexAny VortexFile_GetFunction(VortexAny library, const char* name) {
+     return vortex_dlsym(library, name);
 }
 
 VortexFile VortexFile_OpenFile(const char* filepath, VortexFileMode mode) {

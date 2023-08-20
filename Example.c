@@ -169,6 +169,8 @@ int main(int argc, const char *argv[]) {
     VortexString_FormatToString(format_output,"%s, and %f, and %d!\n","Hello World",1.2345f,34);
     VortexString_Print(format_output);
     VortexString_Destroy(format_output);
+    void Vortex_LexerExample(void);
+    Vortex_LexerExample();
     printf("Hello World!!!!!\n");
     return 0;
 }

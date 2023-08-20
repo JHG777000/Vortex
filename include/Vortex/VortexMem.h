@@ -45,6 +45,9 @@ typedef void* VortexAny;
 #define vortex_add_to_array(array_a,array_b,array_a_size,array_b_size,type) array_a = vortex_realloc(array_a,(array_a_size+array_b_size),array_a_size,type,1) ; memcpy(array_a[array_a_size+1],array_b,(array_b_size*sizeof(type)))
 #define vortex_new_array(array) VortexArray_NewFromBuffer(array,sizeof(array))
 
+#define vortex_array_foreach(index,array) for (vortex_ulong index = 0; index < VortexArray_GetNumofItems(array); index++)
+#define vortex_list_foreach(node,list) for (VortexListNode node = VortexList_GetFirstNode(list); node != NULL; node = VortexList_GetNextNode(node))
+#define vortex_store_foreach(node,store) vortex_list_foreach(node,VortexStore_GetList(store))
 
 #define VortexString_New(string) VortexString_NewFromBuffer(string,sizeof(string))
 #define VortexString_AddStrings(a, b) VortexString_NewFromTwoStrings(a,b)
@@ -75,6 +78,7 @@ void VortexArray_Destroy(VortexArray array);
 void VortexArray_AddItem(VortexArray array, VortexAny item);
 void VortexArray_AddArray(VortexArray array, VortexAny items[], vortex_ulong num_of_items_to_add);
 void VortexArray_AddSpace(VortexArray array, vortex_ulong space_to_add);
+void* VortexArray_GetBuffer(VortexArray array);
 void* VortexArray_GetItem(VortexArray array, vortex_ulong index);
 vortex_int VortexArray_SetItem(VortexArray array, vortex_ulong index, VortexAny item);
 vortex_ulong VortexArray_GetNumofItems(VortexArray array);
@@ -111,7 +115,7 @@ void VortexList_IterateWith(VortexMemIteratorFuncType iterator, VortexList list)
 
 VortexStore VortexStore_New(void);
 void VortexStore_Destroy(VortexStore store);
-vortex_int VortexStore_AddItem(VortexStore store, void* item, const char* label );
+vortex_int VortexStore_AddItem(VortexStore store, void* item, const char* label);
 vortex_int VortexStore_RemoveItem(VortexStore store, const char* label);
 VortexAny VortexStore_GetItem(VortexStore store, const char* label);
 vortex_int VortexStore_ItemExists(VortexStore store, const char* label);

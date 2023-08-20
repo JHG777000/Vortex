@@ -143,6 +143,10 @@ void VortexArray_AddSpace(VortexArray array, vortex_ulong space_to_add) {
 
 }
 
+void* VortexArray_GetBuffer(VortexArray array) {
+  return array->items;  
+}
+
 VortexAny VortexArray_GetItem(VortexArray array, vortex_ulong index) {
   if ( index >= 0 && index < array->num_of_items ) {
     return array->items[index];
@@ -526,12 +530,12 @@ static vortex_int Vortex_StoreItem(VortexStore store, VortexAny item, const char
 vortex_int VortexStore_AddItem(VortexStore store, VortexAny item, const char* label) {
     if ( !(VortexStore_ItemExists(store, label)) ) {
         VortexListNode node = Vortex_AddItemToStore(store, item);
-        node = Vortex_GetSetNodeForStore(store, label, node, 0, 0) ;
+        node = Vortex_GetSetNodeForStore(store, label, node, 0, 0);
         if ( node == NULL ) return 0;
     } else {
-        return Vortex_StoreItem(store, item, label) ;
+        return Vortex_StoreItem(store, item, label);
     }
-    return 0 ;
+    return 1;
 }
 
 vortex_int VortexStore_RemoveItem(VortexStore store, const char* label) {

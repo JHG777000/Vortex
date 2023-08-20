@@ -24,8 +24,8 @@ typedef enum {
 } VortexFileMode;
 
 VortexAny VortexFile_LoadLibraryFromFile(const char* filepath);
-vortex_int VortexFile_FreeLibrary(void* lib);
-VortexAny VortexFile_GetFunction(void* lib, const char* name);
+vortex_int VortexFile_FreeLibrary(VortexAny library);
+VortexAny VortexFile_GetFunction(VortexAny library, const char* name);
 VortexFile VortexFile_OpenFile(const char* filepath, VortexFileMode mode);
 void VortexFile_CloseFile(VortexFile file);
 FILE* VortexFile_GetPtrToFile(VortexFile file);
