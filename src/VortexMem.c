@@ -143,7 +143,7 @@ void VortexArray_AddSpace(VortexArray array, vortex_ulong space_to_add) {
 
 }
 
-void* VortexArray_GetBuffer(VortexArray array) {
+VortexAny VortexArray_GetBuffer(VortexArray array) {
   return array->items;  
 }
 
@@ -160,6 +160,11 @@ vortex_int VortexArray_SetItem(VortexArray array, vortex_ulong index, VortexAny 
     return 1;
   }
   return 0;
+}
+
+VortexArray VortexArray_CopyArray(VortexArray array) {
+    return VortexArray_NewFromBuffer(
+        VortexArray_GetBuffer(array),array->num_of_items);
 }
 
 vortex_ulong VortexArray_GetNumofItems(VortexArray array) {
@@ -283,11 +288,11 @@ void VortexList_CopyToListFromArray(VortexList list, VortexAny array,
 
 }
 
-void VortexList_SetData(VortexListNode node, VortexAny data) {
+void VortexList_SetItem(VortexListNode node, VortexAny data) {
     node->data = data;
 }
 
-VortexAny VortexList_GetData(VortexListNode node) {
+VortexAny VortexList_GetItem(VortexListNode node) {
     if ( node == NULL ) return NULL;
     return node->data;
 }
@@ -421,7 +426,7 @@ void VortexList_IterateWith(VortexMemIteratorFuncType iterator, VortexList list)
     VortexListNode node = list->first;
     VortexAny data = NULL;
     while ( node != NULL ) {
-        data = VortexList_GetData(node);
+        data = VortexList_GetItem(node);
         iterator(data);
         node = VortexList_GetNextNode(node) ;
     }
@@ -523,7 +528,7 @@ static VortexListNode Vortex_AddItemToStore(VortexStore store, VortexAny item) {
 static vortex_int Vortex_StoreItem(VortexStore store, VortexAny item, const char* label) {
     VortexListNode node = Vortex_GetSetNodeForStore(store, label, NULL, 0, 1);
     if ( node == NULL ) return 0;
-    VortexList_SetData(node, item);
+    VortexList_SetItem(node, item);
     return 1 ;
 }
 
@@ -548,7 +553,7 @@ vortex_int VortexStore_RemoveItem(VortexStore store, const char* label) {
 VortexAny VortexStore_GetItem(VortexStore store, const char* label) {
     VortexListNode node = Vortex_GetSetNodeForStore(store, label, NULL, 0, 1);
     if ( node == NULL ) return NULL;
-    return VortexList_GetData(node);
+    return VortexList_GetItem(node);
 }
 
 vortex_int VortexStore_ItemExists(VortexStore Store, const char* label) {
@@ -605,7 +610,6 @@ vortex_int VortexArrayStore_AddItem(VortexArrayStore array_store, VortexAny item
     }
     if ( index < 0 ) return 0;
     snprintf(string, 100, "%llu", index);
-    if ( VortexStore_ItemExists(array_store->store, string) ) return 0;
     array_store->num_of_items++;
     return VortexStore_AddItem(array_store->store, item, string);
 }
@@ -617,7 +621,6 @@ vortex_int VortexArrayStore_SetItem(VortexArrayStore array_store, void *item, vo
     }
     if ( index < 0 ) return 0;
     snprintf(string, 100, "%llu", index);
-    if ( !VortexStore_ItemExists(array_store->store, string) ) return 0;
     return VortexStore_AddItem(array_store->store, item, string);
 }
 
@@ -1134,13 +1137,13 @@ void VortexStack_Push(VortexStack stack, VortexAny data) {
 
 VortexAny VartexStack_Pop(VortexStack stack) {
     if ( VortexStack_IsEmpty(stack) ) return NULL;
-    VortexAny data = VortexList_GetData(VortexList_GetLastNode(stack->list));
+    VortexAny data = VortexList_GetItem(VortexList_GetLastNode(stack->list));
     VortexList_DestroyNode(stack->list, VortexList_GetLastNode(stack->list));
     return data;
 }
 
 VortexAny VortexStack_Peek(VortexStack stack) {
-    return VortexList_GetData(VortexList_GetLastNode(stack->list));
+    return VortexList_GetItem(VortexList_GetLastNode(stack->list));
 }
 
 vortex_int VortexStack_IsEmpty(VortexStack stack) {

@@ -1,5 +1,5 @@
 project := "VortexProject".
-project_version := "1.07".
+project_version := "1.08".
 buildfile_version := "1.0".
 url_to_src := "https://github.com/JHG777000/Vortex/archive/main.zip".
 

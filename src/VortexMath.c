@@ -22,6 +22,15 @@
 #include <Vortex/VortexMem.h>
 #include <Vortex/VortexMath.h>
 
+
+vortex_ulong VortexMath_GetInt64MaxVal(void) {
+  #ifdef _WIN32
+    return ULLONG_MAX;
+  #else
+    return ULONG_MAX;
+  #endif  
+}
+
 //ARandomNumber from:https://stackoverflow.com/questions/13213395/adjusting-xorshift-generator-to-return-a-number-within-a-maximum
  void VortexMath_SeedRandomState(VortexMath_RandState* randstate, vortex_int seed) {
      randstate->init = 1;

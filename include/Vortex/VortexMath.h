@@ -65,6 +65,7 @@ vec_a[2] = vec_b[2]
   vortex_long seconds;
  }  VortexMath_RandState;
 
+ vortex_ulong VortexMath_GetInt64MaxVal(void);
  void VortexMath_SeedRandomState(VortexMath_RandState* randstate, vortex_int seed);
  vortex_int VortexMath_ARandomNumber(VortexMath_RandState* randstate, vortex_int randmin, vortex_int randmax);
  vortex_int VortexMath_AMoreRandomNumber(VortexMath_RandState* randstate, vortex_int randmin, vortex_int randmax);

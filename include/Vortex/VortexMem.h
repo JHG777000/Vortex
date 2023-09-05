@@ -78,9 +78,10 @@ void VortexArray_Destroy(VortexArray array);
 void VortexArray_AddItem(VortexArray array, VortexAny item);
 void VortexArray_AddArray(VortexArray array, VortexAny items[], vortex_ulong num_of_items_to_add);
 void VortexArray_AddSpace(VortexArray array, vortex_ulong space_to_add);
-void* VortexArray_GetBuffer(VortexArray array);
-void* VortexArray_GetItem(VortexArray array, vortex_ulong index);
+VortexAny VortexArray_GetBuffer(VortexArray array);
+VortexAny VortexArray_GetItem(VortexArray array, vortex_ulong index);
 vortex_int VortexArray_SetItem(VortexArray array, vortex_ulong index, VortexAny item);
+VortexArray VortexArray_CopyArray(VortexArray array);
 vortex_ulong VortexArray_GetNumofItems(VortexArray array);
 void VortexArray_IterateWith(VortexMemIteratorFuncType iterator, VortexArray array);
 
@@ -100,8 +101,8 @@ void VortexList_InsertNodeAToNodeB(VortexList list, VortexListNode node_a, Vorte
 VortexListNode VortexList_MoveNodeFromListToList(VortexListNode node, VortexList list_a, VortexList list_b);
 void VortexList_CopyList(VortexList list_a, VortexList list_b) ;
 void VortexList_CopyToListFromArray(VortexList list, VortexAny array, VortexListGetDataFromArrayFuncType GetDataFromArrayFunc, vortex_ulong size);
-void VortexList_SetData(VortexListNode node, VortexAny item);
-void* VortexList_GetData(VortexListNode node);
+void VortexList_SetItem(VortexListNode node, VortexAny item);
+VortexAny VortexList_GetItem(VortexListNode node);
 VortexListNode VortexList_GetNextNode(VortexListNode node);
 VortexListNode VortexList_GetPreviousNode(VortexListNode node);
 VortexListNode VortexList_GetFirstNode(VortexList list);
