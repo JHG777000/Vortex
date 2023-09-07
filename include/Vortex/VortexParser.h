@@ -22,7 +22,7 @@ typedef enum {
 } VortexLexerEvalMode;
 
 typedef struct VortexToken_s* VortexToken;
-typedef struct VortexParserTreeNode_s* VortexParserTreeNode;
+typedef struct VortexParseTreeNode_s* VortexParseTreeNode;
 typedef struct VortexLexer_s* VortexLexer;
 typedef struct VortexParser_s* VortexParser;
 
@@ -45,6 +45,9 @@ typedef void (*VortexLexerTokenizer)(VortexLexer lexer);
 typedef void (*VortexParserProcessor)
  (VortexParser parser,
    vortex_ulong line_number);
+typedef VortexAny (*VortexTokenDataToNodeData)
+ (VortexToken token,
+   VortexAny token_data);   
 
 #define vortex_parser_processor(name)\
  static VortexAny name_##processor(VortexParser parser, vortex_ulong line_number)
@@ -103,7 +106,18 @@ void VortexParser_SetProcessorDispatch(VortexParser parser,
 void VortexParser_DispatchProcessor(VortexParser parser, 
   vortex_ulong dispatch_id, vortex_ulong line_number);    
 void VortexParser_ParseLine(VortexParser parser,
-  vortex_ulong line_number);   
+  vortex_ulong line_number);  
+VortexParseTreeNode VortexParseTreeNode_New(
+  VortexTokenDataToNodeData token_data_to_node_data,
+  VortexToken token);
+void VortexParseTreeNode_Destroy(VortexParseTreeNode node);
+void VortexParseTreeNode_SetData(VortexParseTreeNode node,
+  VortexAny data);
+VortexAny VortexParseTreeNode_GetData(VortexParseTreeNode node);
+VortexString VortexParseTreeNode_GetParsedString(VortexParseTreeNode node); 
+void VortexParseTreeNode_SetID(VortexParseTreeNode node,
+  vortex_ulong id);
+vortex_ulong VortexParseTreeNode_GetID(VortexParseTreeNode node);          
 VortexToken VortexToken_New(void);
 VortexToken VortexToken_NewFromCharacters(VortexLexer lexer);
 void VortexToken_Destroy(VortexToken token);

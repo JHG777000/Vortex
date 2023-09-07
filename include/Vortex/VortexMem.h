@@ -153,7 +153,7 @@ vortex_int VortexString_GetCharacter(VortexString string, vortex_ulong index, vo
 vortex_byte VortexString_GetByte(VortexString string, vortex_ulong index);
 void VortexString_SetByte(VortexString string, vortex_ulong index, vortex_byte byte);
 VortexString VortexString_AppendString(VortexString BaseString, VortexString AppendingString);
-VortexString VortexString_CopyString(VortexString string);
+VortexString VortexString_Copy(VortexString string);
 vortex_int VortexString_AreStringsEqual(VortexString a, VortexString b);
 char* VortexString_ConvertToCString(VortexString string);
 void VortexString_Print(VortexString string);

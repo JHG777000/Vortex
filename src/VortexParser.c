@@ -26,9 +26,10 @@ struct VortexToken_s {
  VortexAny data;
 };
 
-struct VortexParserTreeNode_s {
+struct VortexParseTreeNode_s {
  VortexString parsed_string;
- VortexAny node_data;
+ VortexAny data;
+ vortex_ulong id;
  VortexAny A;
  VortexAny B;
 };
@@ -151,6 +152,45 @@ void VortexParser_DispatchProcessor(VortexParser parser,
 void VortexParser_ParseLine(VortexParser parser,
   vortex_ulong line_number) {
   parser->main_processor(parser,line_number);
+}
+
+VortexParseTreeNode VortexParseTreeNode_New(
+  VortexTokenDataToNodeData token_data_to_node_data,
+  VortexToken token) {
+  VortexParseTreeNode node = vortex_new_mem_of_type(struct VortexParseTreeNode_s);
+  node->parsed_string = VortexString_Copy(token->token_string);
+  node->id = token->id;
+  node->data = NULL;
+  if (token_data_to_node_data != NULL)
+   node->data = token_data_to_node_data(token,token->data);
+  return node;
+}
+
+void VortexParseTreeNode_Destroy(VortexParseTreeNode node) {
+  VortexString_Destroy(node->parsed_string);
+  free(node);
+}
+
+void VortexParseTreeNode_SetData(VortexParseTreeNode node,
+  VortexAny data) {
+  node->data = data;  
+}
+
+VortexAny VortexParseTreeNode_GetData(VortexParseTreeNode node) {
+  return node->data;  
+}
+
+VortexString VortexParseTreeNode_GetParsedString(VortexParseTreeNode node) {
+  return node->parsed_string;  
+}
+
+void VortexParseTreeNode_SetID(VortexParseTreeNode node,
+  vortex_ulong id) {
+  return node->id = id;  
+}
+
+vortex_ulong VortexParseTreeNode_GetID(VortexParseTreeNode node) {
+  return node->id;  
 }
 
 VortexToken VortexToken_New(void) {
