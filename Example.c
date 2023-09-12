@@ -171,6 +171,8 @@ int main(int argc, const char *argv[]) {
     VortexString_Destroy(format_output);
     void Vortex_LexerExample(void);
     Vortex_LexerExample();
+    void Vortex_ParserExample(void);
+    Vortex_ParserExample();
     printf("Hello World!!!!!\n");
     return 0;
 }

@@ -16,12 +16,15 @@
 #ifndef Vortex_VortexParser_h
 #define Vortex_VortexParser_h
 
+#include <ctype.h>
+
 typedef enum {
  EvalModeHold,
  EvalModeRelease
 } VortexLexerEvalMode;
 
 typedef struct VortexToken_s* VortexToken;
+typedef struct VortexParseTree_s* VortexParseTree;
 typedef struct VortexParseTreeNode_s* VortexParseTreeNode;
 typedef struct VortexLexer_s* VortexLexer;
 typedef struct VortexParser_s* VortexParser;
@@ -30,9 +33,9 @@ typedef void (*VortexLexerEvaluator)(VortexLexer lexer, vortex_int character);
 typedef void (*VortexLexerTokenizer)(VortexLexer lexer);
 
 #define vortex_lexer_evaluator(name)\
- void name(VortexLexer lexer, vortex_int character)
+ static void name(VortexLexer lexer, vortex_int character)
 #define vortex_lexer_tokenizer(name)\
- void name(VortexLexer lexer)
+ static void name(VortexLexer lexer)
 #define vortex_lexer_define_first_tokenizer_filter_id(name)\
  const vortex_ulong name##_tokenizer_filter_id = 1; 
 #define vortex_lexer_define_tokenizer_filter_id(name,last_id)\
@@ -44,15 +47,16 @@ typedef void (*VortexLexerTokenizer)(VortexLexer lexer);
 
 typedef void (*VortexParserProcessor)
  (VortexParser parser,
-   vortex_ulong line_number);
+   VortexParseTree parse_tree, 
+    vortex_ulong line_number);
 typedef VortexAny (*VortexTokenDataToNodeData)
  (VortexToken token,
    VortexAny token_data);   
 
 #define vortex_parser_processor(name)\
- static VortexAny name_##processor(VortexParser parser, vortex_ulong line_number)
+ static VortexAny name##_##processor(VortexParser parser, VortexParseTree parse_tree, vortex_ulong line_number)
 #define vortex_parser_process(name)\
- name_##processor(parser,line_number)
+ name##_##processor(parser,parse_tree,line_number)
 #define vortex_parser_accept(symbol)\
  VortexParser_AcceptOrExpect(VortexParser_GetToken(parser),#symbol,vortex_token_id(symbol),0,line_number)
 #define vortex_parser_expect(symbol)\
@@ -78,10 +82,13 @@ typedef VortexAny (*VortexTokenDataToNodeData)
 #define vortex_parser_get_token\
  VortexParser_GetToken(parser)
 #define vortex_parser_get_token_with_index(index)\
- VortexParser_GetTokenWithIndex(parser,index)   
+ VortexParser_GetTokenWithIndex(parser,index)
+#define  vortex_parser_foreach(node,tree)\
+ for (VortexListNode node = VortexParseTree_GetRootNode(tree); node != NULL; node = VortexParseTreeNode_GetNextNode(node))
  
 VortexParser VortexParser_New(VortexLexer lexer);
 void VortexParser_Destroy(VortexParser parser);
+VortexParseTree VortexParser_GetParseTree(VortexParser parser);
 void VortexParser_SetDefaultToken(VortexParser parser,
   VortexToken default_token); 
 void VortexParser_SetMainProcessor(VortexParser parser,
@@ -98,6 +105,7 @@ vortex_ulong VortexParser_GetTokenIndex(VortexParser parser);
 VortexToken VortexParser_GetTokenWithIndex(VortexParser parser,
   vortex_ulong index);    
 VortexToken VortexParser_GetToken(VortexParser parser);
+VortexLexer VortexParser_GetLexer(VortexParser parser);
 vortex_int VortexParser_AcceptOrExpect(VortexToken token,
   const char* symbol_name, vortex_ulong symbol_id, 
   vortex_int expect, vortex_ulong line_number);  
@@ -106,7 +114,26 @@ void VortexParser_SetProcessorDispatch(VortexParser parser,
 void VortexParser_DispatchProcessor(VortexParser parser, 
   vortex_ulong dispatch_id, vortex_ulong line_number);    
 void VortexParser_ParseLine(VortexParser parser,
-  vortex_ulong line_number);  
+  vortex_ulong line_number);
+VortexParseTree VortexParseTree_New(void);
+void VortexParseTree_Destroy(VortexParseTree tree);
+vortex_ulong VortexParseTree_AddToTheLeft(VortexParseTree tree,
+  VortexParseTreeNode node);
+vortex_ulong VortexParseTree_AdvanceToTheLeft(VortexParseTree tree);
+vortex_ulong VortexParseTree_AddToTheRight(VortexParseTree tree,
+  VortexParseTreeNode node);
+vortex_ulong VortexParseTree_AdvanceToTheRight(VortexParseTree tree);
+void VortexParseTree_SetActiveNode(VortexParseTree tree,
+  VortexParseTreeNode node);  
+VortexParseTreeNode VortexParseTree_GetActiveNode(VortexParseTree tree);
+VortexParseTreeNode VortexParseTree_GetRootNode(VortexParseTree tree);
+vortex_ulong VortexParseTree_GetNumOfNodes(VortexParseTree tree);
+VortexParseTreeNode VortexParseTree_GetNodeWithIndex(
+  VortexParseTree tree,
+  vortex_ulong index);
+VortexParseTreeNode VortexParseTree_GetNextNode(VortexParseTree tree);  
+void VortexParseTree_ResetIndex(VortexParseTree tree);
+vortex_ulong VortexParseTree_GetIndex(VortexParseTree tree);          
 VortexParseTreeNode VortexParseTreeNode_New(
   VortexTokenDataToNodeData token_data_to_node_data,
   VortexToken token);
@@ -117,7 +144,19 @@ VortexAny VortexParseTreeNode_GetData(VortexParseTreeNode node);
 VortexString VortexParseTreeNode_GetParsedString(VortexParseTreeNode node); 
 void VortexParseTreeNode_SetID(VortexParseTreeNode node,
   vortex_ulong id);
-vortex_ulong VortexParseTreeNode_GetID(VortexParseTreeNode node);          
+vortex_ulong VortexParseTreeNode_GetID(VortexParseTreeNode node); 
+void VortexParseTreeNode_SetLeftSubNode(VortexParseTreeNode node,
+  VortexParseTreeNode left);
+VortexParseTreeNode VortexParseTreeNode_GetLeftSubNode(VortexParseTreeNode node);
+void VortexParseTreeNode_SetRightSubNode(VortexParseTreeNode node,
+  VortexParseTreeNode right);
+VortexParseTreeNode VortexParseTreeNode_GetRightSubNode(VortexParseTreeNode node);  
+VortexParseTreeNode VortexParseTreeNode_GetNodeWithIndex(
+  VortexParseTreeNode tree,
+  vortex_ulong index);
+VortexParseTreeNode VortexParseTreeNode_GetNextNode(
+  VortexParseTreeNode tree, 
+  vortex_ulong* index);             
 VortexToken VortexToken_New(void);
 VortexToken VortexToken_NewFromCharacters(VortexLexer lexer);
 void VortexToken_Destroy(VortexToken token);
@@ -136,8 +175,10 @@ VortexToken VortexToken_SetTokenStringFromCharacters(VortexLexer lexer,
 VortexString VortexToken_GetTokenString(VortexToken token);      
 VortexLexer VortexLexer_New(VortexFile file);
 void VortexLexer_Destroy(VortexLexer lexer);
+void VortexLexer_ResetLexer(VortexLexer lexer);
 void VortexLexer_SetLexerData(VortexLexer lexer, VortexAny lexer_data);
 VortexAny VortexLexer_GetLexerData(VortexLexer lexer);
+void VortexLexer_SetParser(VortexLexer lexer, VortexParser parser) ;
 vortex_ulong VortexLexer_GetLineNumber(VortexLexer lexer);
 void VortexLexer_AddToken(VortexLexer lexer, VortexToken token);
 void VortexLexer_PrintTokenArray(VortexLexer lexer);
@@ -165,6 +206,9 @@ vortex_int VortexLexer_AddEvaluator(VortexLexer lexer,
 void VortexLexer_SetEvalMode(VortexLexer lexer,
   VortexLexerEvalMode eval_mode);
 VortexLexerEvalMode VortexLexer_GetEvalMode(VortexLexer lexer);
+void VortexLexer_SetEndOfLineCharacter(VortexLexer lexer,
+  vortex_int character);
+vortex_int VortexLexer_GetEndOfLineCharacter(VortexLexer lexer);  
 void VortexLexer_Dispatch(VortexLexer lexer);             
 void VortexLexer_Redispatch(VortexLexer lexer, vortex_int character);
 

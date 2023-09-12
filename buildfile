@@ -1,5 +1,5 @@
 project := "VortexProject".
-project_version := "1.09".
+project_version := "1.10".
 buildfile_version := "1.0".
 url_to_src := "https://github.com/JHG777000/Vortex/archive/main.zip".
 
@@ -38,7 +38,7 @@ build main_build.
 
  if ( test_enable ).
   message("Running VortexTest...").
-  files VortexTestFiles("Example.c","LexerExample.c").
+  files VortexTestFiles("Example.c","LexerExample.c","ParserExample.c").
   sources VortexTestSource(VortexTestFiles,Threads,Vortex).
   output VortexTest("application",VortexTestSource,VortexToolChain).
   launch(VortexTest).
