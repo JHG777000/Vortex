@@ -464,7 +464,7 @@ void VortexStore_Destroy(VortexStore store) {
 }
 
 static VortexListNode Vortex_GetSetNodeForStore(VortexStore store, const char* label, 
-      VortexListNode node, vortex_int flag, vortex_int find ) {
+      VortexListNode node, vortex_int flag, vortex_int find) {
     vortex_int i = 0;
     vortex_int j = 0;
     vortex_int value = 0;
@@ -554,6 +554,15 @@ VortexAny VortexStore_GetItem(VortexStore store, const char* label) {
     VortexListNode node = Vortex_GetSetNodeForStore(store, label, NULL, 0, 1);
     if ( node == NULL ) return NULL;
     return VortexList_GetItem(node);
+}
+
+VortexAny VortexStore_GetItemWithCharacter(VortexStore store, vortex_int character) {
+    const vortex_int* text = &character;
+    VortexString string = VortexString_NewFromUTF32(text,1);
+    char* c_string = VortexString_ConvertToCString(string);
+    VortexAny item = VortexStore_GetItem(store,c_string);
+    free(c_string);
+    return item;
 }
 
 vortex_int VortexStore_ItemExists(VortexStore Store, const char* label) {
@@ -1135,7 +1144,7 @@ void VortexStack_Push(VortexStack stack, VortexAny data) {
     VortexList_AddToList(stack->list, data);
 }
 
-VortexAny VartexStack_Pop(VortexStack stack) {
+VortexAny VortexStack_Pop(VortexStack stack) {
     if ( VortexStack_IsEmpty(stack) ) return NULL;
     VortexAny data = VortexList_GetItem(VortexList_GetLastNode(stack->list));
     VortexList_DestroyNode(stack->list, VortexList_GetLastNode(stack->list));

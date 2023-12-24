@@ -28,9 +28,7 @@ struct VortexToken_s {
 
 struct VortexParseTree_s {
   VortexParseTreeNode root_node;
-  VortexParseTreeNode active_node;
-  vortex_ulong index;
-  vortex_ulong num_of_nodes;
+  VortexStack active_stack;
 };
 
 struct VortexParseTreeNode_s {
@@ -38,8 +36,8 @@ struct VortexParseTreeNode_s {
   VortexAny data;
   vortex_ulong id;
   VortexParseTreeNode super;
-  VortexParseTreeNode left;
-  VortexParseTreeNode right;
+  VortexArray array;
+  VortexStore store;
 };
 
 struct VortexLexer_s {
@@ -48,6 +46,7 @@ struct VortexLexer_s {
   VortexParser parser;
   vortex_int* character_array;
   vortex_ulong num_of_characters;
+  vortex_ulong dispatch_id;
   VortexArray token_array;
   VortexLexerTokenizer tokenizer;
   VortexStore tokenizer_filters;
@@ -55,6 +54,7 @@ struct VortexLexer_s {
   VortexStore evaluator_store;
   VortexLexerEvaluator last_evaluator;
   VortexLexerEvalMode eval_mode;
+  VortexLexerDeterminer determiner;
   vortex_int eol_character;
   vortex_int eol_lock;
 };
@@ -74,7 +74,7 @@ VortexParser VortexParser_New(VortexLexer lexer) {
   VortexParser parser = vortex_new_mem_of_type(struct VortexParser_s);
   parser->parse_tree = VortexParseTree_New();
   parser->default_token = NULL;
-  parser->token_array = lexer->token_array;
+  parser->token_array = NULL;
   parser->token_index = 0;
   parser->dispatch_array = VortexArrayStore_New(VortexMath_GetInt64MaxVal());
   parser->lexer = lexer;
@@ -166,15 +166,18 @@ void VortexParser_SetProcessorDispatch(VortexParser parser,
     processor,dispatch_id);
 }
 
-void VortexParser_DispatchProcessor(VortexParser parser, 
+VortexAny VortexParser_DispatchProcessor(VortexParser parser, 
   vortex_ulong dispatch_id, vortex_ulong line_number) {
   VortexParserProcessor processor = 
    VortexArrayStore_GetItem(parser->dispatch_array,dispatch_id);
-  processor(parser,parser->parse_tree,line_number); 
+  if (processor != NULL)
+   return processor(parser,parser->parse_tree,line_number); 
+  return NULL; 
 }
 
 void VortexParser_ParseLine(VortexParser parser,
   vortex_ulong line_number) {
+  parser->token_array = parser->lexer->token_array;  
   parser->main_processor(parser,parser->parse_tree,line_number);
   parser->token_index = 0;
   VortexLexer_ResetLexer(parser->lexer);
@@ -184,102 +187,74 @@ VortexParseTree VortexParseTree_New(void) {
   VortexParseTree tree = 
    vortex_new_mem_of_type(struct VortexParseTree_s);
   tree->root_node = NULL;
-  tree->active_node = NULL;
-  tree->index = 0;
-  tree->num_of_nodes = 0;
+  tree->active_stack = VortexStack_New();
   return tree;
 }
 
 void VortexParseTree_Destroy(VortexParseTree tree) {
+  VortexStack_Destroy(tree->active_stack);
   free(tree);
 }
 
-vortex_ulong VortexParseTree_AddToTheLeft(VortexParseTree tree,
+void VortexParseTree_SetRootNode(VortexParseTree tree,
   VortexParseTreeNode node) {
-  if ( tree->root_node == NULL ) {
-    tree->root_node = node;
-    tree->active_node = node;
-    return 1;
-  } 
-  if ( tree->active_node->left != NULL )
-   return 0;  
-  tree->active_node->left = node;
-  node->super = tree->active_node;
-  tree->num_of_nodes++;
-  return 1;
-}
-
-vortex_ulong VortexParseTree_AdvanceToTheLeft(VortexParseTree tree) {
-  if ( tree->active_node == NULL )
-   return 0;
-  if ( tree->active_node->left == NULL )
-   return 0;  
-  tree->active_node = tree->active_node->left;
-  return 1;
-}
-
-vortex_ulong VortexParseTree_AddToTheRight(VortexParseTree tree,
-  VortexParseTreeNode node) {
-  if ( tree->root_node == NULL ) {
-    tree->root_node = node;
-    tree->active_node = node;
-    return 1;
-  }   
-  if ( tree->active_node->right != NULL )
-   return 0;   
-  tree->active_node->right = node;
-  node->super = tree->active_node;
-  tree->num_of_nodes++;
-  return 1; 
-}
-
-vortex_ulong VortexParseTree_AdvanceToTheRight(VortexParseTree tree) {
-  if ( tree->active_node == NULL )
-   return 0;
-  if ( tree->active_node->right == NULL )
-   return 0;  
-  tree->active_node = tree->active_node->right;
-  return 1;
-}
-
-void VortexParseTree_SetActiveNode(VortexParseTree tree,
-  VortexParseTreeNode node) {
-  tree->active_node = node;
-}
-
-VortexParseTreeNode VortexParseTree_GetActiveNode(VortexParseTree tree) {
-  return tree->active_node;
+  tree->root_node = node;
 }
 
 VortexParseTreeNode VortexParseTree_GetRootNode(VortexParseTree tree) {
   return tree->root_node;
 }
 
-vortex_ulong VortexParseTree_GetNumOfNodes(VortexParseTree tree) {
-  return tree->num_of_nodes;
+void VortexParseTree_PushActiveNode(VortexParseTree tree,
+  VortexParseTreeNode node) {
+  VortexStack_Push(tree->active_stack,node);
 }
 
-VortexParseTreeNode VortexParseTree_GetNodeWithIndex(
-  VortexParseTree tree,
-  vortex_ulong index) {
-  return 
-   VortexParseTreeNode_GetNodeWithIndex(tree->root_node,index);
+VortexParseTreeNode VortexParseTree_PopActiveNode(VortexParseTree tree) {
+  return VortexStack_Pop(tree->active_stack);
 }
 
-VortexParseTreeNode VortexParseTree_GetNextNode(VortexParseTree tree) {
-  if (tree->index == tree->num_of_nodes)
-   tree->index = 0;
-  tree->index++;
-  if (tree->index == tree->num_of_nodes) return NULL;
-  return VortexParseTree_GetNodeWithIndex(tree,tree->index); 
+VortexParseTreeNode VortexParseTree_GetActiveNode(VortexParseTree tree) {
+  return VortexStack_Peek(tree->active_stack);
 }
 
-void VortexParseTree_ResetIndex(VortexParseTree tree) {
-  tree->index = 0;
+VortexStack VortexParseTree_GettActiveStack(VortexParseTree tree) {
+  return tree->active_stack;
 }
 
-vortex_ulong VortexParseTree_GetIndex(VortexParseTree tree) {
-  return tree->index;
+void VortexParseTree_Print(VortexParseTree tree) {
+  if (tree->root_node == NULL) {
+    printf("No nodes. Parse tree is empty.\n"); 
+    return;
+  }
+  //TODO
+}
+
+void VortexParseTree_IterateWith(
+  VortexMemIteratorFuncType iterator,
+   VortexParseTree tree) {
+  if (tree == NULL) {
+    return;
+  }
+  //VortexParseTreeNode_IterateWith(iterator,tree->root_node);
+}
+
+static void print_tree(VortexAny data) {
+  VortexParseTreeNode node = data;
+  printf("Node: "); 
+  vortex_strprint(node->parsed_string);
+  printf("\n"); 
+}
+
+void VortexParseTree_PrintWithIterator(VortexParseTree tree) {
+  if (tree == NULL) {
+    return;
+  }
+  if (tree->root_node == NULL) {
+    printf("No nodes. Parse tree is empty.\n"); 
+    return;
+  }
+  //VortexParseTree_IterateWith(print_tree,tree);
 }
 
 VortexParseTreeNode VortexParseTreeNode_New(
@@ -287,20 +262,46 @@ VortexParseTreeNode VortexParseTreeNode_New(
   VortexToken token) {
   VortexParseTreeNode node =
    vortex_new_mem_of_type(struct VortexParseTreeNode_s);
-  node->parsed_string = VortexString_Copy(token->token_string);
-  node->id = token->id;
+  node->parsed_string = NULL; 
+  if (token != NULL)
+   node->parsed_string = VortexString_Copy(token->token_string);
+  if (node->parsed_string == NULL)
+   node->parsed_string = vortex_str("NODE");
+  node->id = 0; 
+  if (token != NULL) 
+   node->id = token->id;
   node->data = NULL;
   if (token_data_to_node_data != NULL)
    node->data = token_data_to_node_data(token,token->data);
   node->super = NULL; 
-  node->left = NULL;
-  node->right = NULL; 
   return node;
 }
 
 void VortexParseTreeNode_Destroy(VortexParseTreeNode node) {
   VortexString_Destroy(node->parsed_string);
+  VortexArray_Destroy(node->array);
+  VortexStore_Destroy(node->store);
   free(node);
+}
+
+void VortexParseTreeNode_AddToArray(VortexParseTreeNode node,
+  VortexParseTreeNode node_to_add) {
+  node_to_add->super = node;
+  VortexArray_AddItem(node->array,node_to_add);
+}
+
+VortexArray VortexParseTreeNode_GetArray(VortexParseTreeNode node) {
+  return node->array;
+}
+
+void VortexParseTreeNode_AddToStore(VortexParseTreeNode node,
+  VortexParseTreeNode node_to_add, char* label) {
+  node_to_add->super = node;
+  VortexStore_AddItem(node->store,node_to_add,label);
+}
+
+VortexStore VortexParseTreeNode_GetStore(VortexParseTreeNode node) {
+  return node->store;
 }
 
 void VortexParseTreeNode_SetData(VortexParseTreeNode node,
@@ -310,6 +311,11 @@ void VortexParseTreeNode_SetData(VortexParseTreeNode node,
 
 VortexAny VortexParseTreeNode_GetData(VortexParseTreeNode node) {
   return node->data;  
+}
+
+void VortexParseTreeNode_SetParsedString(VortexParseTreeNode node,
+  VortexString parsed_string) {
+  node->parsed_string = parsed_string;  
 }
 
 VortexString VortexParseTreeNode_GetParsedString(VortexParseTreeNode node) {
@@ -325,36 +331,17 @@ vortex_ulong VortexParseTreeNode_GetID(VortexParseTreeNode node) {
   return node->id;  
 }
 
-void VortexParseTreeNode_SetLeftSubNode(VortexParseTreeNode node,
-  VortexParseTreeNode left) {
-  node->left = left;
-  left->super = node;  
+VortexParseTreeNode VortexParseTreeNode_GetSuper(VortexParseTreeNode node) {
+  return node->super;
 }
 
-VortexParseTreeNode VortexParseTreeNode_GetLeftSubNode(VortexParseTreeNode node) {
-  return node->left;  
-}
-
-void VortexParseTreeNode_SetRightSubNode(VortexParseTreeNode node,
-  VortexParseTreeNode right) {
-  node->right = right;
-  right->super = node;  
-}
-
-VortexParseTreeNode VortexParseTreeNode_GetRightSubNode(VortexParseTreeNode node) {
-  return node->right;  
-}
-
-VortexParseTreeNode VortexParseTreeNode_GetNodeWithIndex(
-  VortexParseTreeNode active_node,
-  vortex_ulong index) {
-  VortexParseTreeNode node = NULL;   
-  if (index <= 0) return active_node;  
-  if (active_node->left != NULL)
-   node = VortexParseTreeNode_GetNodeWithIndex(active_node->left,index-1);
-  if (active_node->right != NULL && (index-1) > 0)
-   node = VortexParseTreeNode_GetNodeWithIndex(active_node->right,index-1);
-  return node;
+void VortexParseTreeNode_IterateWith(
+  VortexMemIteratorFuncType iterator,
+  VortexParseTreeNode node) {
+  if (node != NULL) {
+    VortexArray_IterateWith(iterator,node->array);
+    VortexStore_IterateWith(iterator,node->store);
+  } 
 }
 
 VortexToken VortexToken_New(void) {
@@ -420,6 +407,7 @@ VortexLexer VortexLexer_New(VortexFile file) {
   lexer->data = NULL;
   lexer->file = file;
   lexer->parser = NULL;
+  lexer->dispatch_id = 0;
   lexer->character_array = NULL;
   lexer->num_of_characters = 0;
   lexer->token_array = NULL;
@@ -429,6 +417,7 @@ VortexLexer VortexLexer_New(VortexFile file) {
   lexer->evaluator_store = NULL;
   lexer->last_evaluator = NULL;
   lexer->eval_mode = EvalModeRelease;
+  lexer->determiner = NULL;
   lexer->eol_character = 0;
   lexer->eol_lock = 0;
   return lexer;
@@ -541,6 +530,14 @@ void VortexLexer_RemoveAllCharacters(VortexLexer lexer) {
   lexer->character_array = NULL;
 }
 
+vortex_int* VortexLexer_GetCharacterArray(VortexLexer lexer) {
+  return lexer->character_array;
+}
+
+vortex_ulong VortexLexer_GetCharacterArrayIndex(VortexLexer lexer) {
+  return lexer->character_array - 1;
+}
+
 void VortexLexer_SetTokenizer(VortexLexer lexer,VortexLexerTokenizer tokenizer) {
   lexer->tokenizer = tokenizer;
 }
@@ -567,7 +564,8 @@ vortex_int VortexLexer_RemoveTokenizerFilter(VortexLexer lexer,
 vortex_int VortexLexer_AddFilterToTokenizerFilter(VortexLexer lexer,
   const char* filter_name, const char* filter) {
   if (lexer->tokenizer_filters == NULL) return 0;
-  VortexStore filter_strore = VortexStore_GetItem(lexer->tokenizer_filters,filter_name);
+  VortexStore filter_strore = 
+   VortexStore_GetItem(lexer->tokenizer_filters,filter_name);
   if (filter_strore == NULL) return 0;
    return 
   VortexStore_AddItem(filter_strore,NULL,filter);
@@ -576,7 +574,8 @@ vortex_int VortexLexer_AddFilterToTokenizerFilter(VortexLexer lexer,
 vortex_int VortexLexer_AddIDToFilter(VortexLexer lexer,
   const char* filter_name, const char* filter, vortex_ulong id) {
   if (lexer->tokenizer_filters == NULL) return 0;
-  VortexStore filter_strore = VortexStore_GetItem(lexer->tokenizer_filters,filter_name);
+  VortexStore filter_strore = 
+   VortexStore_GetItem(lexer->tokenizer_filters,filter_name);
   if (filter_strore == NULL) return 0;
    return 
   VortexStore_AddItem(filter_strore,vortex_any(id),filter);
@@ -596,6 +595,13 @@ vortex_ulong VortexLexer_GetFilterID(VortexLexer lexer,
   VortexStore filter_store = VortexStore_GetItem(lexer->tokenizer_filters,filter_name);
   if (filter == NULL) return 0;
   return vortex_get(vortex_ulong,VortexStore_GetItem(filter_store,filter));   
+}
+
+vortex_ulong VortexLexer_GetFilterIDWithCharacter(VortexLexer lexer,
+  const char* filter_name, vortex_int character) {
+  if (lexer->tokenizer_filters == NULL) return 0;
+  VortexStore filter_store = VortexStore_GetItem(lexer->tokenizer_filters,filter_name);
+  return vortex_get(vortex_ulong,VortexStore_GetItemWithCharacter(filter_store,character));   
 }
 
 vortex_int VortexLexer_AddEvaluator(VortexLexer lexer,
@@ -626,8 +632,18 @@ vortex_int VortexLexer_GetEndOfLineCharacter(VortexLexer lexer) {
   return lexer->eol_character;
 }
 
+void VortexLexer_SetDeterminer(VortexLexer lexer,
+  VortexLexerDeterminer determiner) {
+  lexer->determiner = determiner;
+}
+
+VortexLexerDeterminer VortexLexer_GetDeterminer(VortexLexer lexer) {
+  return lexer->determiner;
+}
+
 void VortexLexer_Dispatch(VortexLexer lexer) {
   vortex_int character = VortexFile_GetUTF32Character(lexer->file);
+  lexer->dispatch_id++;
   VortexLexer_Redispatch(lexer,character);
 }
 
@@ -639,28 +655,41 @@ void VortexLexer_Redispatch(VortexLexer lexer, vortex_int character) {
   }
   if (character == EOF) {
    if (lexer->tokenizer != NULL)
-    lexer->tokenizer(lexer);
+    lexer->tokenizer(lexer,lexer->dispatch_id);
    return;
   }
   if (character == '\n') 
    lexer->line_number++;
   VortexLexerEvaluator evaluator = NULL;
   if (lexer->eval_mode == EvalModeRelease) {
-    const vortex_int* text = &character;
-    VortexString string = VortexString_NewFromUTF32(text,1);
-    char* c_string = VortexString_ConvertToCString(string);
-    evaluator = VortexStore_GetItem(lexer->evaluator_store,c_string);
-    free(c_string);
+    evaluator = 
+     VortexStore_GetItemWithCharacter(
+       lexer->evaluator_store,character);
   }
   if (lexer->eval_mode == EvalModeHold) {
-   evaluator = lexer->last_evaluator;
+    evaluator = lexer->last_evaluator;
   }
   if (evaluator != lexer->last_evaluator)
-   if (lexer->tokenizer != NULL) lexer->tokenizer(lexer);
+   if (lexer->tokenizer != NULL) 
+    lexer->tokenizer(lexer,lexer->dispatch_id);
   lexer->last_evaluator = evaluator;
   lexer->tokenizer = NULL;
-  if (lexer->eol_character == character)
-   lexer->eol_lock++;
-  if (evaluator != NULL) evaluator(lexer,character);
+  if (lexer->eval_mode == EvalModeRelease) {
+    if (lexer->eol_character) {
+      if (lexer->eol_character == character) {
+         if (lexer->determiner == NULL) {
+           lexer->eol_lock++;
+         } else {
+           if (lexer->determiner(lexer,character,lexer->dispatch_id))
+            lexer->eol_lock++;
+         }
+      }
+    } else {
+      if (lexer->determiner != NULL)
+       if (lexer->determiner(lexer,character,lexer->dispatch_id))
+        lexer->eol_lock++;
+    }
+  }  
+  if (evaluator != NULL) evaluator(lexer,character,lexer->dispatch_id);
   if (evaluator == NULL) VortexLexer_Dispatch(lexer);
 }

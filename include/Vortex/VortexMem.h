@@ -119,6 +119,7 @@ void VortexStore_Destroy(VortexStore store);
 vortex_int VortexStore_AddItem(VortexStore store, void* item, const char* label);
 vortex_int VortexStore_RemoveItem(VortexStore store, const char* label);
 VortexAny VortexStore_GetItem(VortexStore store, const char* label);
+VortexAny VortexStore_GetItemWithCharacter(VortexStore store, vortex_int character);
 vortex_int VortexStore_ItemExists(VortexStore store, const char* label);
 vortex_ulong VortexStore_GetNumOfItems(VortexStore store);
 vortex_int VortexStore_AddItemToList(VortexStore store, void *item);

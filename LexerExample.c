@@ -6,9 +6,6 @@
 
 //((1+2)+3)
 
-vortex_lexer_define_first_tokenizer_filter_id(test);
-vortex_lexer_define_tokenizer_filter_id(test2,test);
-
 vortex_lexer_evaluator(symbol_evaluator) {
   VortexLexer_AddCharacter(lexer,character);
   VortexToken token = VortexToken_NewFromCharacters(lexer);
@@ -53,12 +50,4 @@ void Vortex_LexerExample(void) {
   VortexLexer_PrintTokenArray(lexer);
   VortexLexer_Destroy(lexer);
   VortexFile_CloseFile(file);
-  
-  if (vortex_token_id(test) == vortex_token_id(test))
-   puts("hi!");
-  if (vortex_token_id(test2) == vortex_token_id(test2))
-   puts("hi!2");
-  if (vortex_token_id(test) != vortex_token_id(test2))
-   puts("hi!3");
-  printf("test: %d, and test2: %d.\n",vortex_token_id(test),vortex_token_id(test2));  
 }
