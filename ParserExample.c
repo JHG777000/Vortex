@@ -13,6 +13,24 @@ main: () {
  #text.   
 }.
 
+var value : int = 900;
+var text : string = "Hello World";
+var my_array : int[5] = {1,2,3,4,5};
+struct {
+ var test : int;
+} my_struct_def;
+
+var my_struct : my_struct_def = {0};
+
+function main {
+ statement #text;
+ if true {
+  
+ } else {
+  
+ };
+};
+
 */
 
 typedef enum {
@@ -72,349 +90,6 @@ typedef struct lexer_data_s {
   vortex_ulong is_double;
 } *lexer_data;
 
-/*
-vortex_parser_processor(value);
-
-vortex_parser_processor(identifier) {
-  vortex_parser_expect(Identifier);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,vortex_parser_get_token);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  vortex_parser_advance;
-  return NULL;
-}
-
-vortex_parser_processor(literal) {
-  vortex_int is_literal = vortex_parser_accept(Integer) 
-  || vortex_parser_accept(Double) 
-  || vortex_parser_accept(String);
-  if (!is_literal) 
-   vortex_parser_expect(Literal);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,vortex_parser_get_token);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  vortex_parser_advance;
-  return NULL;
-}
-
-vortex_parser_processor(unary_operator) {
-   vortex_int is_unary_operator = vortex_parser_accept(Print) 
-  || vortex_parser_accept(Not)
-  || vortex_parser_accept(BNot);
-  if (!is_unary_operator) 
-   vortex_parser_expect(UnaryOperator);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,vortex_parser_get_token);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  vortex_parser_advance;
-  vortex_parser_process(value);
-  return NULL;
-}
-
-vortex_parser_processor(call) {
-  vortex_parser_expect(LParenthesis);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,NULL);
-  VortexParseTreeNode_SetID(node,Call);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  vortex_parser_advance;
-  end:
-  if (vortex_parser_accept(RParenthesis)) {
-    vortex_parser_advance;
-    return NULL;   
-  }
-  arg:
-  vortex_parser_process(value);
-  if (vortex_parser_accept(RParenthesis))
-   goto end;
-  if (vortex_parser_accept(Comma))
-   goto arg; 
-  return NULL;
-}
-
-vortex_parser_processor(index) {
-  vortex_parser_expect(LSquareBracket);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,NULL);
-  VortexParseTreeNode_SetID(node,Index);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  vortex_parser_advance;
-  end:
-  if (vortex_parser_accept(RSquareBracket)) {
-    vortex_parser_advance;
-    return NULL;   
-  }
-  vortex_parser_process(value);
-  if (vortex_parser_accept(RSquareBracket))
-   goto end;
-  vortex_parser_expect(RSquareBracket); 
-  return NULL;  
-}
-
-vortex_parser_processor(increment) {
-  vortex_parser_expect(Addition);
-  vortex_parser_advance;
-  vortex_parser_expect(Addition);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,NULL);
-  VortexParseTreeNode_SetID(node,Increment);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  vortex_parser_advance; 
-  return NULL;   
-}
-
-vortex_parser_processor(decrement) {
-  vortex_parser_expect(Subtraction);
-  vortex_parser_advance;
-  vortex_parser_expect(Subtraction);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,NULL);
-  VortexParseTreeNode_SetID(node,Decrement);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  vortex_parser_advance;
-  return NULL;    
-}
-
-vortex_parser_processor(post_operator) {
-   vortex_int is_post_operator = vortex_parser_accept(Addition) 
-  || vortex_parser_accept(Subtraction)
-  || vortex_parser_accept(LParenthesis)
-  || vortex_parser_accept(LSquareBracket);
-  if (!is_post_operator) 
-   vortex_parser_expect(PostOperator);
-  if (vortex_parser_accept(LParenthesis))
-   return vortex_parser_process(call);
-  if (vortex_parser_accept(LSquareBracket))
-   return vortex_parser_process(index);
-  if (vortex_parser_accept(Addition))
-   return vortex_parser_process(increment);
-  if (vortex_parser_accept(Subtraction))
-   return vortex_parser_process(decrement);  
-  return NULL;
-}
-
-vortex_parser_processor(binary_operator) {
-   vortex_int is_binary_operator = vortex_parser_accept(Addition) 
-  || vortex_parser_accept(Subtraction) 
-  || vortex_parser_accept(Multiplication)
-  || vortex_parser_accept(Division)
-  || vortex_parser_accept(Modulus)
-  || vortex_parser_accept(And)
-  || vortex_parser_accept(Band)
-  || vortex_parser_accept(Or)
-  || vortex_parser_accept(Bor)
-  || vortex_parser_accept(Xor)
-  || vortex_parser_accept(GreaterThan)
-  || vortex_parser_accept(GreaterThanOrEqual)
-  || vortex_parser_accept(LessThan)
-  || vortex_parser_accept(LessThanOrEqual)
-  || vortex_parser_accept(Equal);
-  if (!is_binary_operator) 
-   vortex_parser_expect(BinaryOperator);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,vortex_parser_get_token);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  //fix parse tree
-  VortexParseTreeNode_Swap(node,VortexParseTreeNode_GetSuper(node));
-  vortex_parser_advance;
-  return NULL;
-}
-
-vortex_parser_processor(assignment) {
-  vortex_parser_expect(Identifier);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,vortex_parser_get_token);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  node = 
-   VortexParseTreeNode_New(NULL,NULL);
-  VortexParseTreeNode_SetID(node,Assignment);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  //fix parse tree
-  puts("C");
-  //VortexParseTreeNode_Swap(node,VortexParseTreeNode_GetSuper(node));
-  vortex_parser_advance; 
-}
-
-vortex_parser_processor(post_operation) {
-  if (vortex_parser_accept(Identifier))
-   return 
-    vortex_parser_process(assignment);
-  return 
-   vortex_parser_process(post_operator);
-}
-
-vortex_parser_processor(collection);
-
-vortex_parser_processor(arguments) {
-  VortexToken token = VortexToken_New();
-  VortexToken_SetTokenID(token,Arguments);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,token);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  vortex_parser_expect(LParenthesis);
-   end:
-  if (vortex_parser_accept(RParenthesis)) {
-    vortex_parser_advance;
-    return NULL;   
-  }
-  arg:
-  vortex_parser_process(identifier);
-  if (vortex_parser_accept(RParenthesis))
-   goto end;
-  if (vortex_parser_accept(Comma))
-   goto arg; 
-}    
-
-vortex_parser_processor(lambda) {
-  vortex_int is_lambda =
-   Identifier == VortexToken_GetTokenID(vortex_parser_peek(1))
-   && RParenthesis == VortexToken_GetTokenID(vortex_parser_peek(2))
-   && LBracket == VortexToken_GetTokenID(vortex_parser_peek(3));
-  if (!is_lambda)
-   vortex_parser_expect(Lambda);
-  VortexToken token = VortexToken_New();
-  VortexToken_SetTokenID(token,Lambda);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,token);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  vortex_parser_process(arguments);
-  vortex_parser_process(collection);
-  return NULL;
-}
-
-vortex_parser_processor(group) {
-  vortex_parser_expect(LParenthesis);
-  vortex_int is_lambda =
-   Identifier == VortexToken_GetTokenID(vortex_parser_peek(1))
-   && RParenthesis == VortexToken_GetTokenID(vortex_parser_peek(2))
-   && LBracket == VortexToken_GetTokenID(vortex_parser_peek(3));
-  if (is_lambda)
-   return vortex_parser_process(lambda);
-  VortexToken token = VortexToken_New();
-  VortexToken_SetTokenID(token,Group);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,token);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  vortex_parser_advance;
-  vortex_int is_unary_operator = vortex_parser_accept(Print) 
-  || vortex_parser_accept(Not)
-  || vortex_parser_accept(BNot);
-  if (is_unary_operator)
-   return vortex_parser_process(unary_operator);
-  vortex_parser_process(value);
-  vortex_int is_post_operator = vortex_parser_accept(Addition) 
-  || vortex_parser_accept(Subtraction)
-  || vortex_parser_accept(LParenthesis)
-  || vortex_parser_accept(LSquareBracket);
-  if (is_post_operator)
-   return vortex_parser_process(post_operator);
-  vortex_parser_process(binary_operator);
-  vortex_parser_process(value);
-  return NULL;
-}
-
-vortex_parser_processor(collection_value) {
-  if (vortex_parser_accept(RBracket)) 
-   return NULL; 
-  vortex_parser_process(value);
-   vortex_int is_post_operator = vortex_parser_accept(Subtraction) 
-  || vortex_parser_accept(Subtraction)
-  || vortex_parser_accept(LParenthesis)
-  || vortex_parser_accept(LSquareBracket);
-  if (is_post_operator)
-   vortex_parser_process(post_operator);
-  if (vortex_parser_accept(Comma)
-      || vortex_parser_accept(EOL)) {
-    vortex_parser_advance;
-    return 
-     vortex_parser_process(collection_value);
-  } 
-  return NULL;
-}
-
-vortex_parser_processor(collection) {
-  vortex_parser_expect(LBracket);
-  VortexToken token = VortexToken_New();
-  VortexToken_SetTokenID(token,Collection);
-  VortexParseTreeNode node = 
-   VortexParseTreeNode_New(NULL,token);
-  VortexParseTree_Add(parse_tree,node);
-  VortexParseTree_Advance(parse_tree);
-  vortex_parser_advance;  
-  vortex_parser_process(collection_value);
-  vortex_parser_expect(RBracket);   
-}    
-
-vortex_parser_processor(value) {
-  if (vortex_parser_accept(Integer))
-   return vortex_parser_process(literal);
-  if (vortex_parser_accept(Double))
-   return vortex_parser_process(literal);
-  if (vortex_parser_accept(String))
-   return vortex_parser_process(literal);
-  if (vortex_parser_accept(LParenthesis))
-   return vortex_parser_process(group);
-  if (vortex_parser_accept(Identifier))
-   return vortex_parser_process(identifier);
-  if (vortex_parser_accept(LBracket))
-   return vortex_parser_process(collection);  
-  vortex_parser_expect(Value); 
-  return NULL;
-}
-
-vortex_parser_processor(if_operation) {
-  vortex_parser_expect(If);
-  vortex_parser_advance;
-  vortex_parser_expect(LParenthesis);
-  vortex_parser_process(value);
-  vortex_parser_expect(RParenthesis);
-  vortex_parser_advance;
-  if (vortex_parser_accept(LBracket)) {
-    vortex_parser_process(collection);
-    vortex_parser_expect(EOL);
-  }
-  return NULL;
-}
-
-vortex_parser_processor(unary_operation) {
-  puts("UnaryOperation!");
-  vortex_ulong symbol = 
-   VortexToken_GetTokenID(vortex_parser_peek(0));
-  if (symbol == If) 
-   return vortex_parser_process(if_operation);
-  if (symbol == Print 
-      || symbol == Not 
-      || symbol == BNot)
-    return vortex_parser_process(unary_operator);
-  vortex_int is_post_operator = vortex_parser_accept(Addition) 
-  || vortex_parser_accept(Subtraction)
-  || vortex_parser_accept(LParenthesis)
-  || vortex_parser_accept(LSquareBracket)
-  || vortex_parser_accept(Identifier);
-  if (is_post_operator)
-   return vortex_parser_process(post_operation);
-  puts("B"); 
-  return NULL;
-}
-*/
-
-
-/*
- Statement( :(value,900), Statement( :(text,"Hello World")))
-*/
 vortex_parser_processor(main) {
   printf("LINE# %d\n",line_number);
   VortexLexer_PrintTokenArray(VortexParser_GetLexer(parser));
@@ -426,11 +101,9 @@ vortex_parser_processor(main) {
   //VortexParser_SetProcessorDispatch(parser,unary_operation_processor,Identifier);
   VortexParseTreeNode node = VortexParseTreeNode_New(NULL,NULL);
   VortexParseTreeNode_SetParsedString(node,vortex_str("Statement"));
-  //VortexParseTree_AddToTheRight(parse_tree,node); 
   //VortexParser_DispatchProcessor(parser,
     //VortexToken_GetTokenID(vortex_parser_peek(0)),line_number);
-  //VortexParseTree_AdvanceToTheRight(parse_tree);
-  //VortexParseTree_PrintWithIterator(parse_tree);
+  //VortexParseTree_Print(parse_tree);
   //printf("NUM_OF_NODES: %d\n",VortexParseTree_GetNumOfNodes(parse_tree));  
   return NULL;  
 }

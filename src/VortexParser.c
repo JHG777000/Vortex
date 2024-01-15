@@ -32,6 +32,7 @@ struct VortexParseTree_s {
 };
 
 struct VortexParseTreeNode_s {
+  VortexDataStructureFlag flag;
   VortexString parsed_string;
   VortexAny data;
   vortex_ulong id;
@@ -222,39 +223,36 @@ VortexStack VortexParseTree_GettActiveStack(VortexParseTree tree) {
   return tree->active_stack;
 }
 
-void VortexParseTree_Print(VortexParseTree tree) {
-  if (tree->root_node == NULL) {
-    printf("No nodes. Parse tree is empty.\n"); 
-    return;
-  }
-  //TODO
-}
-
 void VortexParseTree_IterateWith(
   VortexMemIteratorFuncType iterator,
    VortexParseTree tree) {
   if (tree == NULL) {
     return;
   }
-  //VortexParseTreeNode_IterateWith(iterator,tree->root_node);
+  VortexParseTreeNode_IterateWith(iterator,tree->root_node);
+  VortexList_IterateWith(iterator,
+    VortexStack_GetList(tree->active_stack));
 }
 
 static void print_tree(VortexAny data) {
-  VortexParseTreeNode node = data;
+  VortexDataStructure ds = data;
+  VortexParseTreeNode node = 
+  (ds->flag == VortexListNodeFlag) 
+   ? VortexList_GetItem(ds) : ds;
   printf("Node: "); 
   vortex_strprint(node->parsed_string);
   printf("\n"); 
+  VortexParseTreeNode_IterateWith(node,print_tree);
 }
-
-void VortexParseTree_PrintWithIterator(VortexParseTree tree) {
+void VortexParseTree_Print(VortexParseTree tree) {
   if (tree == NULL) {
     return;
   }
   if (tree->root_node == NULL) {
-    printf("No nodes. Parse tree is empty.\n"); 
+    printf("No nodes. Parse tree is empty.\n");
     return;
   }
-  //VortexParseTree_IterateWith(print_tree,tree);
+  VortexParseTree_IterateWith(print_tree,tree);
 }
 
 VortexParseTreeNode VortexParseTreeNode_New(

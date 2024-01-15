@@ -38,6 +38,16 @@ typedef unsigned int vortex_uint;
 
 typedef void* VortexAny;
 
+typedef enum {
+ VortexArrayFlag,
+ VortexListFlag,
+ VotrtexStringFlag,
+ VortexStoreFlag,
+ VortexListNodeFlag,
+ VortexParseTreeFlag,
+ VortexParseTreeNodeFlag
+} VortexDataStructureFlag;
+
 #define vortex_c_array(size, type) (type*) malloc(sizeof(type) * (size))
 #define vortex_new_mem_of_type(type) vortex_c_array(1,type)
 
@@ -62,6 +72,10 @@ VortexAny VortexMem_Realloc(VortexAny data, vortex_ulong newsize, vortex_ulong o
 
 typedef void (*VortexMemIteratorFuncType)(VortexAny data);
 typedef VortexAny (*VortexListGetDataFromArrayFuncType)(VortexAny array, vortex_ulong index);
+
+typedef struct VortexDataStructure_s {
+ VortexDataStructureFlag flag;
+}* VortexDataStructure;
 
 typedef struct VortexListNode_s* VortexListNode;
 typedef struct VortexArray_s* VortexArray;

@@ -52,6 +52,7 @@ struct VortexStore_s {
 };
 
 struct VortexListNode_s { 
+  VortexDataStructureFlag flag;  
   struct VortexListNode_s* before;
   struct VortexListNode_s* after;
   VortexAny data; 
@@ -207,11 +208,13 @@ VortexList VortexList_NewFromArray(VortexAny array,
 VortexListNode VortexList_AddToList(VortexList list, VortexAny item) {
     if ( list->num_of_nodes == 0 ) {
         list->first = vortex_new_mem_of_type(struct VortexListNode_s);
+        list->first->flag = VortexListNodeFlag;
         list->first->before = NULL;
         list->first->after = NULL;
         list->last = list->first;
     } else {
-        list->last->after = vortex_new_mem_of_type(struct VortexListNode_s) ;
+        list->last->after = vortex_new_mem_of_type(struct VortexListNode_s);
+        list->last->after->flag = VortexListNodeFlag;
         list->last->after->before = list->last;
         list->last->after->after = NULL;
         list->last = list->last->after;
