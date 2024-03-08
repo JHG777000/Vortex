@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2023 Jacob Gordon. All rights reserved.
+ Copyright (c) 2023-2024 Jacob Gordon. All rights reserved.
 
  Permission to redistribution and use this software in source and binary forms, with or without modification is hereby granted.
 
@@ -126,11 +126,10 @@ void VortexParseTree_SetActiveNode(VortexParseTree tree,
   VortexParseTreeNode node);  
 VortexStack VortexParseTree_GettActiveStack(VortexParseTree tree);
 //vortex_ulong VortexParseTree_GetNumOfNodes(VortexParseTree tree);  
-void VortexParseTree_Print(VortexParseTree tree);
 void VortexParseTree_IterateWith(
   VortexMemIteratorFuncType iterator,
    VortexParseTree tree);
-void VortexParseTree_PrintWithIterator(VortexParseTree tree);     
+void VortexParseTree_Print(VortexParseTree tree);     
 VortexParseTreeNode VortexParseTreeNode_New(
   VortexTokenDataToNodeData token_data_to_node_data,
   VortexToken token);
@@ -153,7 +152,10 @@ vortex_ulong VortexParseTreeNode_GetID(VortexParseTreeNode node);
 VortexParseTreeNode VortexParseTreeNode_GetSuper(VortexParseTreeNode node);
 void VortexParseTreeNode_IterateWith(
   VortexMemIteratorFuncType iterator,
-  VortexParseTreeNode node);            
+  VortexParseTreeNode node);
+void VortexParseTreeNode_ReiterateWith(
+  VortexMemIteratorFuncType iterator,
+  VortexParseTreeNode node);             
 VortexToken VortexToken_New(void);
 VortexToken VortexToken_NewFromCharacters(VortexLexer lexer);
 void VortexToken_Destroy(VortexToken token);

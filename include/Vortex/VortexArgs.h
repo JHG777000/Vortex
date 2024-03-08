@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2016-2023 Jacob Gordon. All rights reserved.
+ Copyright (c) 2016-2024 Jacob Gordon. All rights reserved.
 
  Permission to redistribution and use this software in source and binary forms, with or without modification is hereby granted.
 
@@ -15,6 +15,8 @@
 
 #ifndef Vortex_VortexArgs_h
 #define Vortex_VortexArgs_h
+
+typedef VortexAny (*VortexArgsCallback)(VortexAny callback_object);
 
 typedef enum { 
  VortexArgs_Dynamic_type,
@@ -54,6 +56,8 @@ typedef struct VortexArgs_s {
 #define VortexArgs_CanGetArgWithIndex(args,type,index) VortexArgs_CanGetArgWithIndexFunc(args,index,#type,0)
 #define VortexArgs_CanGetNextItem(args,type) VortexArgs_CanGetNextArgFunc(args,#type,1)
 #define VortexArgs_CanGetItemWithIndex(args,type,index) VortexArgs_CanGetArgWithIndexFunc(args,index,#type,1)
+#define VortexArgs_GetNextArgFailable(args,type,callback_object,callback) *((type*)VortexArgs_GetNextArgWithCallback(args,#type,0,callback_object,callback))
+#define VortexArgs_GetNextItemFailable(args,type,callback_object,callback) *((type*)VortexArgs_GetNextArgWithCallback(args,#type,1,callback_object,callback))
 #define UseArgs(args) VortexArgs_UseArgs(args)
 #define GetNextArg(args,type) VortexArgs_GetNextArg(args,type)
 #define GetArgWithIndex(args,type,index) VortexArgs_GetArgWithIndex(args,type,index)
@@ -86,6 +90,7 @@ typedef struct VortexArgs_s {
 #define Floats(...) VortexArgs_NewArgSet(vortex_float,__VA_ARGS__)
 #define Doubles(...) VortexArgs_NewArgSet(vortex_double,__VA_ARGS__)
 
+VortexAny VortexArgs_GetNextArgWithCallback(VortexArgs args, const char* typestring, vortex_int is_item, VortexAny callback_object, VortexArgsCallback callback);
 vortex_int VortexArgs_CanGetNextArgFunc(VortexArgs args, const char* typestring, vortex_int is_item);
 vortex_int VortexArgs_CanGetArgWithIndexFunc(VortexArgs args, vortex_ulong index, const char* typestring, vortex_int is_item);
 VortexAny VortexArgs_GetNextArgFunc(VortexArgs args, const char* typestring, vortex_int is_item);

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2023 Jacob Gordon. All rights reserved.
+ Copyright (c) 2023-2024 Jacob Gordon. All rights reserved.
 
  Permission to redistribution and use this software in source and binary forms, with or without modification is hereby granted.
 
@@ -230,19 +230,20 @@ void VortexParseTree_IterateWith(
     return;
   }
   VortexParseTreeNode_IterateWith(iterator,tree->root_node);
-  VortexList_IterateWith(iterator,
-    VortexStack_GetList(tree->active_stack));
+  //VortexList_IterateWith(iterator,
+    //VortexStack_GetList(tree->active_stack));
 }
 
 static void print_tree(VortexAny data) {
+  if (data == NULL) return;
   VortexDataStructure ds = data;
   VortexParseTreeNode node = 
   (ds->flag == VortexListNodeFlag) 
    ? VortexList_GetItem(ds) : ds;
   printf("Node: "); 
   vortex_strprint(node->parsed_string);
-  printf("\n"); 
-  VortexParseTreeNode_IterateWith(node,print_tree);
+  printf("\n");
+  VortexParseTreeNode_ReiterateWith(print_tree,node);
 }
 void VortexParseTree_Print(VortexParseTree tree) {
   if (tree == NULL) {
@@ -271,7 +272,9 @@ VortexParseTreeNode VortexParseTreeNode_New(
   node->data = NULL;
   if (token_data_to_node_data != NULL)
    node->data = token_data_to_node_data(token,token->data);
-  node->super = NULL; 
+  node->super = NULL;
+  node->array = VortexArray_New();
+  node->store = VortexStore_New();
   return node;
 }
 
@@ -337,6 +340,16 @@ void VortexParseTreeNode_IterateWith(
   VortexMemIteratorFuncType iterator,
   VortexParseTreeNode node) {
   if (node != NULL) {
+    iterator(node);
+    VortexArray_IterateWith(iterator,node->array);
+    VortexStore_IterateWith(iterator,node->store);
+  } 
+}
+
+void VortexParseTreeNode_ReiterateWith(
+  VortexMemIteratorFuncType iterator,
+  VortexParseTreeNode node) {
+  if (node != NULL) {
     VortexArray_IterateWith(iterator,node->array);
     VortexStore_IterateWith(iterator,node->store);
   } 
@@ -397,7 +410,7 @@ VortexToken VortexToken_SetTokenStringFromCharacters(VortexLexer lexer, VortexTo
 }
 
 VortexString VortexToken_GetTokenString(VortexToken token) {
-  return token->data;
+  return token->token_string;
 }
 
 VortexLexer VortexLexer_New(VortexFile file) {
@@ -591,15 +604,20 @@ vortex_ulong VortexLexer_GetFilterID(VortexLexer lexer,
   const char* filter_name, const char* filter) {
   if (lexer->tokenizer_filters == NULL) return 0;
   VortexStore filter_store = VortexStore_GetItem(lexer->tokenizer_filters,filter_name);
-  if (filter == NULL) return 0;
-  return vortex_get(vortex_ulong,VortexStore_GetItem(filter_store,filter));   
+  if (filter == NULL || filter_store == NULL) return 0;
+  vortex_ulong* id = VortexStore_GetItem(filter_store,filter);
+  if (id == NULL) return 0;
+  return vortex_get(vortex_ulong,id);   
 }
 
 vortex_ulong VortexLexer_GetFilterIDWithCharacter(VortexLexer lexer,
   const char* filter_name, vortex_int character) {
   if (lexer->tokenizer_filters == NULL) return 0;
   VortexStore filter_store = VortexStore_GetItem(lexer->tokenizer_filters,filter_name);
-  return vortex_get(vortex_ulong,VortexStore_GetItemWithCharacter(filter_store,character));   
+  if (filter_store == NULL) return 0;
+  vortex_ulong* id = VortexStore_GetItemWithCharacter(filter_store,character);
+  if (id == NULL) return 0;
+  return vortex_get(vortex_ulong,id);   
 }
 
 vortex_int VortexLexer_AddEvaluator(VortexLexer lexer,

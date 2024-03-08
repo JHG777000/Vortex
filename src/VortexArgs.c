@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2016-2023 Jacob Gordon. All rights reserved.
+ Copyright (c) 2016-2024 Jacob Gordon. All rights reserved.
 
  Permission to redistribution and use this software in source and binary forms, with or without modification is hereby granted.
 
@@ -18,6 +18,15 @@
 #include <string.h>
 #include <Vortex/VortexMem.h>
 #include <Vortex/VortexArgs.h>
+
+VortexAny VortexArgs_GetNextArgWithCallback(VortexArgs args,
+     const char* typestring, vortex_int is_item,
+    VortexAny callback_object, VortexArgsCallback callback) {
+   if (!VortexArgs_CanGetNextArgFunc(args,typestring,is_item)) {
+       return callback(callback_object);
+   }
+   return VortexArgs_GetNextArgFunc(args,typestring,is_item);
+}
 
 vortex_int VortexArgs_CanGetNextArgFunc(VortexArgs args, const char* typestring, vortex_int is_item) {
    return VortexArgs_CanGetArgWithIndexFunc(args, args->index, typestring, is_item);

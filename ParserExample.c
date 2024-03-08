@@ -5,14 +5,6 @@
 #include <Vortex/VortexParser.h>
 
 /*
-value: 900.
-text: "Hello World".
-array: {1,2,3,4,5}.
-struct: {a: 1, b: 2}.
-main: () {
- #text.   
-}.
-
 var value : int = 900;
 var text : string = "Hello World";
 var my_array : int[5] = {1,2,3,4,5};
@@ -34,6 +26,16 @@ function main {
 */
 
 typedef enum {
+  None = 0,  
+  Var,
+  Statement,
+  Struct,
+  Function,
+  If,
+  Else
+} keywords;
+
+typedef enum {
   Literal,
   Value,
   BinaryOperator,
@@ -42,7 +44,7 @@ typedef enum {
 } high_level_symbols;
 
 typedef enum {
-  EOL,
+  EOL = 0,
   Assignment,
   Arguments,
   Identifier,
@@ -65,7 +67,8 @@ typedef enum {
   Division,
   Modulus,
   Print,
-  If,
+  Of,
+  Dot,
   Not,
   BNot,
   And,
@@ -90,20 +93,52 @@ typedef struct lexer_data_s {
   vortex_ulong is_double;
 } *lexer_data;
 
+vortex_parser_processor(var) {
+    vortex_parser_expect(Var);
+    VortexParseTree_PushActiveNode(parse_tree,VortexParseTreeNode_New(NULL,
+        vortex_parser_get_token));
+    VortexParseTreeNode_AddToArray(VortexParseTree_GetRootNode(parse_tree),
+        VortexParseTree_GetActiveNode(parse_tree));
+    vortex_parser_advance;
+    vortex_parser_expect(Identifier);
+    VortexParseTreeNode_AddToArray(
+         VortexParseTree_GetActiveNode(parse_tree),
+        VortexParseTreeNode_New(NULL,vortex_parser_get_token));
+    vortex_parser_advance;
+    vortex_parser_expect(Of);
+    VortexParseTreeNode_AddToArray(
+         VortexParseTree_GetActiveNode(parse_tree),
+        VortexParseTreeNode_New(NULL,vortex_parser_get_token));
+    vortex_parser_advance;
+    vortex_parser_accept(Identifier);
+    VortexParseTreeNode_AddToArray(
+         VortexParseTree_GetActiveNode(parse_tree),
+        VortexParseTreeNode_New(NULL,vortex_parser_get_token));
+    vortex_parser_advance;
+    vortex_parser_expect(EOL);
+    VortexParseTreeNode_AddToArray(
+         VortexParseTree_GetActiveNode(parse_tree),
+        VortexParseTreeNode_New(NULL,vortex_parser_get_token));
+    puts("Hello World;");
+    VortexParseTree_PopActiveNode(parse_tree);
+}
+
 vortex_parser_processor(main) {
   printf("LINE# %d\n",line_number);
   VortexLexer_PrintTokenArray(VortexParser_GetLexer(parser));
   puts("EOL");
+  VortexParser_SetProcessorDispatch(parser,var_processor,Var);
   //VortexParser_SetProcessorDispatch(parser,unary_operation_processor,If);
   //VortexParser_SetProcessorDispatch(parser,unary_operation_processor,Not);
   //VortexParser_SetProcessorDispatch(parser,unary_operation_processor,BNot);
   //VortexParser_SetProcessorDispatch(parser,unary_operation_processor,Print);
   //VortexParser_SetProcessorDispatch(parser,unary_operation_processor,Identifier);
   VortexParseTreeNode node = VortexParseTreeNode_New(NULL,NULL);
-  VortexParseTreeNode_SetParsedString(node,vortex_str("Statement"));
-  //VortexParser_DispatchProcessor(parser,
-    //VortexToken_GetTokenID(vortex_parser_peek(0)),line_number);
-  //VortexParseTree_Print(parse_tree);
+  VortexParseTreeNode_SetParsedString(node,vortex_str("ROOT"));
+  VortexParseTree_SetRootNode(parse_tree,node);
+  VortexParser_DispatchProcessor(parser,
+    VortexToken_GetTokenID(vortex_parser_peek(0)),line_number);
+  VortexParseTree_Print(parse_tree);
   //printf("NUM_OF_NODES: %d\n",VortexParseTree_GetNumOfNodes(parse_tree));  
   return NULL;  
 }
@@ -150,7 +185,10 @@ vortex_lexer_evaluator(identifier_evaluator) {
   }
   VortexToken token = VortexToken_NewFromCharacters(lexer);
   VortexLexer_AddToken(lexer,token);
-  VortexToken_SetTokenID(token,Identifier);
+  vortex_ulong id = 
+   VortexLexer_GetFilterID(lexer,"keywords",
+       VortexString_GetBuffer(VortexToken_GetTokenString(token)));
+  VortexToken_SetTokenID(token, (id == None) ? Identifier : id);
   VortexLexer_RemoveAllCharacters(lexer);
   VortexLexer_SetEvalMode(lexer,EvalModeRelease);
   VortexLexer_Redispatch(lexer,character);
@@ -293,8 +331,9 @@ void Vortex_ParserExample(void) {
   VortexLexer_AddEvaluator(lexer,identifier_evaluator,"Z");
   VortexLexer_AddEvaluator(lexer,string_evaluator,"\"");
   VortexLexer_AddTokenizerFilter(lexer,"symbols");
-  VortexLexer_AddIDToFilter(lexer,"symbols",":",Assignment);
-  VortexLexer_AddIDToFilter(lexer,"symbols",".",EOL);
+  VortexLexer_AddIDToFilter(lexer,"symbols",":",Of);
+  VortexLexer_AddIDToFilter(lexer,"symbols",";",EOL);
+  VortexLexer_AddIDToFilter(lexer,"symbols",".",Dot);
   VortexLexer_AddIDToFilter(lexer,"symbols","(",LParenthesis);
   VortexLexer_AddIDToFilter(lexer,"symbols",")",RParenthesis);
   VortexLexer_AddIDToFilter(lexer,"symbols","[",LSquareBracket);
@@ -308,20 +347,25 @@ void Vortex_ParserExample(void) {
   VortexLexer_AddIDToFilter(lexer,"symbols","/",Division);
   VortexLexer_AddIDToFilter(lexer,"symbols","%",Modulus);
   VortexLexer_AddIDToFilter(lexer,"symbols","#",Print);
-  VortexLexer_AddIDToFilter(lexer,"symbols","?",If);
   VortexLexer_AddIDToFilter(lexer,"symbols","!",Not);
   VortexLexer_AddIDToFilter(lexer,"symbols","~",BNot);
   VortexLexer_AddIDToFilter(lexer,"symbols","@",And);
   VortexLexer_AddIDToFilter(lexer,"symbols","&",Band);
-  VortexLexer_AddIDToFilter(lexer,"symbols",";",Or);
+  VortexLexer_AddIDToFilter(lexer,"symbols","?",Or);
   VortexLexer_AddIDToFilter(lexer,"symbols","|",Bor);
   VortexLexer_AddIDToFilter(lexer,"symbols","^",Xor);
   VortexLexer_AddIDToFilter(lexer,"symbols",">",GreaterThan);
   VortexLexer_AddIDToFilter(lexer,"symbols","$",GreaterThanOrEqual);
   VortexLexer_AddIDToFilter(lexer,"symbols","<",LessThan);
   VortexLexer_AddIDToFilter(lexer,"symbols","µ",LessThanOrEqual);
-  VortexLexer_AddIDToFilter(lexer,"symbols","=",Equal);
-  VortexLexer_SetDeterminer(lexer,end_of_line_determiner);
+  VortexLexer_AddIDToFilter(lexer,"symbols","=",Assignment);
+  VortexLexer_AddTokenizerFilter(lexer,"keywords");
+  VortexLexer_AddIDToFilter(lexer,"keywords","var",Var);
+  VortexLexer_AddIDToFilter(lexer,"keywords","statement",Statement);
+  VortexLexer_AddIDToFilter(lexer,"keywords","function",Function);
+  VortexLexer_AddIDToFilter(lexer,"keywords","if",If);
+  VortexLexer_AddIDToFilter(lexer,"keywords","else",Else);
+  VortexLexer_SetEndOfLineCharacter(lexer,';');
   VortexParser parser = VortexParser_New(lexer);
   VortexToken token = VortexToken_New();
   VortexToken_SetTokenString(token,vortex_str("."));
@@ -333,5 +377,6 @@ void Vortex_ParserExample(void) {
   VortexLexer_PrintTokenArray(lexer);
   VortexParser_Destroy(parser);
   VortexLexer_Destroy(lexer);
+  puts("Hello");
   VortexFile_CloseFile(file);
 }
