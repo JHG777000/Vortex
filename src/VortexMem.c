@@ -71,7 +71,7 @@ VortexAny VortexMem_Realloc(VortexAny data, vortex_ulong newsize,
   newdata = malloc(newsize);
   if (newdata != NULL) {
     memcpy(newdata, data, oldsize);
-     free(data);
+    free(data);
     return newdata;
     } else {
         if (NULLonError0No1Yes) {
@@ -81,6 +81,12 @@ VortexAny VortexMem_Realloc(VortexAny data, vortex_ulong newsize,
             return data;
         }
     }
+}
+
+VortexAny VortexMem_Copy(VortexAny data, vortex_ulong size_in_bytes) {
+    VortexAny copy = malloc(size_in_bytes);
+    memcpy(copy, data, size_in_bytes);
+    return copy;
 }
 
 VortexArray VortexArray_New(void) {
@@ -663,6 +669,10 @@ vortex_ulong VortexArrayStore_GetMaxNumOfItems(VortexArrayStore array_store) {
 
 vortex_ulong VortexArrayStore_GetNumOfItems(VortexArrayStore array_store) {
     return array_store->num_of_items;
+}
+
+VortexList VortexArrayStore_GetList(VortexArrayStore array_store) {
+    return VortexStore_GetList(array_store->store);
 }
 
 vortex_int VortexArrayStore_IsEmpty(VortexArrayStore array_store) {

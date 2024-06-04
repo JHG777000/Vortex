@@ -1,1 +1,5 @@
-var test : test_type;
+(HelloWorld = ("Hello " + ("World" + "!!!!!")));
+(1+1);
+(sum=(1+1));
+(sum2=(40+sum));
+(HelloWorld + "!!!!!");

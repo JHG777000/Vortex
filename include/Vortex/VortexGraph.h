@@ -18,66 +18,94 @@
 
 #include <Vortex/VortexArgs.h>
 
-struct VortexJumpBuffer_s {
-   jmp_buf env;
-};
+#define VORTEX_GRAPH_START_TYPE_ENUM(offset) 100 + offset
+#define VORTEX_GRAPH_START_ACTION_ENUM(offset) 100 + offset
 
-typedef struct VortexJumpBuffer_s VortexJumpBuffer;
-typedef VortexJumpBuffer* VortexJumpBufferPtr;
-typedef struct VortexGraphProfile_s* VortexGraphProfile;
-typedef void (*VortexGraphProfileDefinition)(VortexGraphProfile profile);
+#define VORTEX_GRAPH_VAS_SIZE 100000
 
-#define vortex_graph_method_start(name,ret_type,method_parameters)\
- typedef ret_type (*name##_method_type)(VortexGraphProfile,vortex_int,VortesxArgs);\
- ret_type vortex_graph_method_##name##_callable0(VortexGraphProfile profile, vortex_int is_lookup, VortexArgs method_arglist) {\
-    vortex_ulong index = 0;\
-    if (is_lookup) {\
-        if (setjmp(VortexGraph_GetJumpBuffer(profile)->env)) index++;\
-        VortextAny method = VortexGraph_LookUpMethod(profile,#name,index);\
-        if (method == NULL) {\
-           printf("Type ERROR in method: %s!\n",#name);\
-           abort();\
-        }\
-        return method(profile,0,method_arglist);\
-    } else {\
-        return vortex_graph_method_##name##_callable1(profile,method_arglist);\
-    }\
- }\
- ret_type vortex_graph_method_##name##_callable1(VortexGraphProfile profile, VortexArgs method_arglist) {\
-    ret_type ret_value;\
-    vortex_graph_method_##name##_callable2(profile,args(&retvalue,ret_type*),method_arglist);\
-    return ret_value;\
- }\
- void vortex_graph_method_##name##_callable2(VortexGraphProfile profile,VortexArgs retarg, VortexArgs method_arglist) {\
-    ret_type* ret_value = vortex_graph_getarg(retarg);\
-    *ret_value = vortex_graph_method_##name##_callable3(profiles,method_arglist);\
-}\
-ret_type vortex_graph_method_##name##_callable3(VortexGraphProfile profile, VortexArgs method_arglist) {\
-method_parameters\
+#define VORTEX_GRAPH_EMPTY_TYPE 0
+#define VORTEX_GRAPH_BYTE_TYPE 1
+#define VORTEX_GRAPH_SBYTE_TYPE 2
+#define VORTEX_GRAPH_SHORT_TYPE 3
+#define VORTEX_GRAPH_USHORT_TYPE 4
+#define VORTEX_GRAPH_INT_TYPE 5
+#define VORTEX_GRAPH_UINT_TYPE 6
+#define VORTEX_GRAPH_LONG_TYPE 7
+#define VORTEX_GRAPH_ULONG_TYPE 8
+#define VORTEX_GRAPH_FLOAT_TYPE 9
+#define VORTEX_GRAPH_DOUBLE_TYPE 10
+#define VORTEX_GRAPH_ANY_TYPE 11
 
-#define vortex_graph_method_end }
+#define GRAPH_ARGS(...) NewArgs(__VA_ARGS__)
+#define GRAPH_TYPES(...) Ints(__VA_ARGS__)
+#define GRAPH_INTS(...) Ints(__VA_ARGS__)
+#define GRAPH_DOUBLES(...) Doubles(__VA_ARGS__)
+#define GRAPH_ANY(...) VortexArgs_NewArgSet(VortexAny,__VA_ARGS__)
+#define GRAPH_NODES(...) GRAPH_ANY(__VA_ARGS__)
 
-#define vortex_graph_getarg(arglist,type)\
- *((type*)VortexGraph_GetArg(profile,arglist,#type))
- 
-#define getarg(arglist,type)\
- vortex_graph_getarg(arglist,type)
- 
-#define param(name,type)\
- type name;\
- if (method_arglist == NULL) {\
-    printf("method_arglist is NULL, in method: %s\n",#name);\
-    abort();\
- }\
- name = getarg(method_arglist,type);
- 
+#define VORTEX_GRAPH_ACTION_DESTROY_GRAPH 0
+#define VORTEX_GRAPH_ACTION_DESTROY_NODE 1
 
-#define vortex_graph_invoke(profile,name,ret_type,...)\
- ((name_##method_type)VortexGraph_LookUpMethod(profile,name,0))(profile,1,_VA_ARGS_)
+#define VORTEX_GRAPH_DEFINE_ACTION(name)\
+void name(VortexGraphNode node, vortex_int action_id)
 
-VortexJumpBufferPtr VortexGraph_GetJumpBuffer(VortexGraphProfile profile);
-VortexAny VortexGraph_LookUpMethod(VortexGraphProfile profile, const char* name, vortex_ulong index);
-VortexAny VortexGraph_GetArg(VortexGraphProfile profile, VortexArgs args, const char* typestring);
-vortex_int VortexGraph_AddMethod(VortexGraphProfile profile, const char* name, VortexAny method);
+typedef struct VortexGraph_s* VortexGraph;
+typedef struct VortexGraphType_s* VortexGraphType;
+typedef struct VortexGraphAction_s* VortexGraphAction;
+typedef struct VortexGraphNode_s* VortexGraphNode;
+typedef void (*VorextGraphCallBack)(VortexGraphNode node, vortex_int action_id);
+
+VortexGraph VortexGraph_New(void);
+void VortexGraph_Destroy(VortexGraph graph);
+void VortexGraph_SetRoot(VortexGraph graph, VortexGraphNode node);
+VortexGraphNode VortexGraph_GetRoot(VortexGraph graph);
+VortexGraphNode VortexGraph_NewNode(VortexGraph graph, vortex_ulong type_id, VortexArgs elements);
+VortexGraphNode VortexGraph_NewNodeNoElements(VortexGraph graph, vortex_ulong type_id);
+void VortexGraph_DestroyNode(VortexGraphNode node);
+VortexGraph VortexGraph_GetGraphFromNode(VortexGraphNode node);
+vortex_ulong VortexGraph_GetNodeTypeId(VortexGraphNode node);
+void VortexGraph_AllocNodeData(VortexGraphNode node);
+void VortexGraph_AllocNodeDataFromSuperTypeId(VortexGraphNode node, vortex_int id);
+VortexAny VortexGraph_GetNodeData(VortexGraphNode node);
+void VortexGraph_NodeAddElements(VortexGraphNode node, VortexArgs elements);
+vortex_int VortexGraph_AddNodeToGraph(VortexGraph graph, VortexGraphNode node_to_add);
+vortex_int VortexGraph_AddNodeToNode(VortexGraphNode node, VortexGraphNode node_to_add);
+void VortexGraph_AddType(VortexGraph graph, vortex_int id);
+void VortexGraph_TypeInput(VortexGraph graph, vortex_int id, VortexArgs elements);
+void VortexGraph_TypeExtends(VortexGraph graph, vortex_int id, VortexArgs extends);
+void VortexGraph_SetBaseData(VortexGraph graph, vortex_int id, 
+    VortexAny base_data, vortex_ulong base_data_size);
+VortexAny VortexGraph_GetBaseData(VortexGraph graph, vortex_int id, 
+    vortex_ulong* base_data_size_ptr);    
+void VortexGraph_AddAction(VortexGraph graph, vortex_int type_id, vortex_int action_id,VorextGraphCallBack callback);
+void VortexGraph_ApplyAction(VortexGraph graph, vortex_int action_id);
+void VortexGraph_InvokeAction(VortexGraphNode node, VortexGraphAction action);
+void VortexGraph_InvokeSuper(VortexGraphNode node, vortex_int action_id);
+void VortexGraph_InvokeSuperWithIndex(VortexGraphNode node, vortex_ulong index, vortex_int action_id);
+VortexGraphAction VortexGraph_GetActionfromSuper(VortexGraphType super, vortex_int action_id);
+void VortexGraph_InvokeAllSupers(VortexGraphNode node, vortex_int action_id);
+void VortexGraph_InvokeNode(VortexGraphNode node, vortex_int action_id);
+void VortexGraph_InvokeNextNode(VortexGraphNode node, vortex_int action_id);
+void VortexGraph_InvokeAllSubNodes(VortexGraphNode node, vortex_int action_id);
+VortexGraphAction VortexGraph_GetActionfromNode(VortexGraphNode node, vortex_int action_id);
+VortexGraphAction VortexGraph_GetActionfromSuper(VortexGraphType super, vortex_int action_id);
+VortexGraphType VortexGraph_GetSuper(VortexGraphNode node, vortex_ulong index);
+VortexGraphType VortexGraph_GetSuperWithTypeId(VortexGraphNode node, vortex_int id);
+VortexAny VortexGraph_GetElement(VortexGraphNode node);
+VortexAny VortexGraph_GetNextElement(VortexGraphNode node);
+VortexAny VortexGraph_GetPreviousElement(VortexGraphNode node);
+void VortexGraph_SetElement(VortexGraphNode node, VortexAny element);
+VortexGraphNode VortexGraph_GetNode(VortexGraphNode node);
+VortexGraphNode VortexGraph_GetNextNode(VortexGraphNode node);
+VortexGraphNode VortexGraph_GetPreviousNode(VortexGraphNode node);
+void VortexGraph_AdvanceNodeIndex(VortexGraphNode node);
+void VortexGraph_RetreatNodeIndex(VortexGraphNode node);
+void VortexGraph_SetNodeIndex(VortexGraphNode node, vortex_ulong index);
+vortex_ulong VortexGraph_GetNodeIndex(VortexGraphNode node);
+void VortexGraph_AdvanceElementIndex(VortexGraphNode node);
+void VortexGraph_RetreatElementIndex(VortexGraphNode node);
+void VortexGraph_SetElementIndex(VortexGraphNode node, vortex_ulong index);
+vortex_ulong VortexGraph_GetElementIndex(VortexGraphNode node);
+
 
 #endif /* Vortex_VortexGraph_h */

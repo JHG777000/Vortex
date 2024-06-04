@@ -44,6 +44,7 @@ typedef enum {
  VotrtexStringFlag,
  VortexStoreFlag,
  VortexListNodeFlag,
+ VortexGraphNodeFlag,
  VortexParseTreeFlag,
  VortexParseTreeNodeFlag
 } VortexDataStructureFlag;
@@ -58,6 +59,7 @@ typedef enum {
 #define vortex_array_foreach(index,array) for (vortex_ulong index = 0; index < VortexArray_GetNumofItems(array); index++)
 #define vortex_list_foreach(node,list) for (VortexListNode node = VortexList_GetFirstNode(list); node != NULL; node = VortexList_GetNextNode(node))
 #define vortex_store_foreach(node,store) vortex_list_foreach(node,VortexStore_GetList(store))
+#define vortex_array_store_foreach(node,store) vortex_list_foreach(node,VortexArrayStore_GetList(store))
 
 #define VortexString_New(string) VortexString_NewFromBuffer(string,sizeof(string))
 #define VortexString_AddStrings(a, b) VortexString_NewFromTwoStrings(a,b)
@@ -65,10 +67,12 @@ typedef enum {
 #define vortex_strU8(string) VortexString_New(u8##string)
 #define vortex_strfree(string) VortexString_Destroy(string)
 #define vortex_strprint(string) VortexString_Print(string)
+
 #define vortex_any(any) VortexAny_New(&any,sizeof(any))
 #define vortex_get(type,any) *((type*)any)
 
 VortexAny VortexMem_Realloc(VortexAny data, vortex_ulong newsize, vortex_ulong oldsize, vortex_int NULLonError0No1Yes);
+VortexAny VortexMem_Copy(VortexAny data, vortex_ulong size_in_bytes);
 
 typedef void (*VortexMemIteratorFuncType)(VortexAny data);
 typedef VortexAny (*VortexListGetDataFromArrayFuncType)(VortexAny array, vortex_ulong index);
@@ -151,6 +155,7 @@ VortexAny VortexArrayStore_GetItem(VortexArrayStore array_store, vortex_ulong in
 vortex_int VortexArrayStore_RemoveItem(VortexArrayStore array_store, vortex_ulong index);
 vortex_ulong VortexArrayStore_GetMaxNumOfItems(VortexArrayStore array_store);
 vortex_ulong VortexArrayStore_GetNumOfItems(VortexArrayStore array_store);
+VortexList VortexArrayStore_GetList(VortexArrayStore array_store);
 vortex_int VortexArrayStore_IsEmpty(VortexArrayStore array_store);
 
 VortexString VortexString_NewEmptyString(vortex_ulong size_in_bytes);

@@ -32,7 +32,7 @@ build main_build.
  
  sources VortexSource(Threads,VortexFiles).
 
- compiler VortexCompilerFlags("-Wall","-I " + threads_include_path, "-I " + include_path).
+ compiler VortexCompilerFlags("-Wall","-I " + threads_include_path, "-I " + include_path). //,"-E"
  toolchain VortexToolChain(toolchain_select,VortexCompilerFlags).
  output Vortex("library",VortexSource,VortexToolChain).
 

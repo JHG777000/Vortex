@@ -48,7 +48,7 @@ VortexAny VortexArgs_GetNextArgFunc(VortexArgs args, const char* typestring, vor
 }
 
 VortexAny VortexArgs_GetArgWithIndexFunc(VortexArgs args, vortex_ulong index, 
-      const char* typestring, vortex_int is_item ) {
+      const char* typestring, vortex_int is_item) {
     if (args->verify != 17345432) return NULL;
     vortex_int num_of_args = args->array->num_of_bytes / args->array->size_in_bytes;
     vortex_int arg_index = 0;

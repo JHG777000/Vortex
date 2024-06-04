@@ -19,6 +19,7 @@
 #include <Vortex/VortexArgs.h>
 #include <Vortex/VortexMath.h>
 #include <Vortex/VortexTasks.h>
+#include <Vortex/VortexGraph.h>
 
 VortexTasks_DefineModule(TestMod, int value; int value2; int counter; 
       VortexMath_NewVector(Vec,3); VortexMath_NewVector(Vec2,3);) {
@@ -84,6 +85,124 @@ VortexArgs vortex_args_example1(void) {
     return vortex_args_example2( newargs(ints(347342,62,754),args(char*,"Hello")), 
              newargs(args(char*,"World!!!!","and stuff"),args(float,3.141592653589793238),
                args(double,3.141592653589793238),shorts(3)) );
+}
+
+enum {
+ Expression = VORTEX_GRAPH_START_TYPE_ENUM(0),
+ Literal,
+ Addition
+};
+
+enum {
+ Print = VORTEX_GRAPH_START_ACTION_ENUM(0),
+ Eval 
+};
+
+VORTEX_GRAPH_DEFINE_ACTION(expr_print) {
+  puts("expr_print");  
+}
+
+VORTEX_GRAPH_DEFINE_ACTION(literal_print) {
+  VortexGraph_InvokeSuper(node,action_id);  
+  puts("literal_print");
+  VortexGraph_SetElementIndex(node,0);
+  VortexAny val_ptr = VortexGraph_GetElement(node);
+  vortex_int val = vortex_get(vortex_int,val_ptr);
+  printf("literal value is: %d\n",val);
+}
+
+VORTEX_GRAPH_DEFINE_ACTION(add_print) {
+  VortexGraph_InvokeSuper(node,action_id);  
+  puts("add_print");
+  puts("printing add...");
+  VortexGraph_InvokeAllSubNodes(node,action_id);
+  puts("printed add.");
+}
+
+VORTEX_GRAPH_DEFINE_ACTION(expr_eval) {
+  puts("expr_eval");  
+}
+
+VORTEX_GRAPH_DEFINE_ACTION(literal_eval) {
+  VortexGraph_InvokeSuper(node,action_id);  
+  puts("literal_eval");
+}
+
+VORTEX_GRAPH_DEFINE_ACTION(add_eval) {
+  VortexGraph_InvokeSuper(node,action_id);  
+  puts("add_eval");
+  vortex_int lhs_val, rhs_val;
+  VortexGraph_SetElementIndex(node,0);
+  VortexGraphNode lhs = VortexGraph_GetElement(node);
+  VortexGraph_SetElementIndex(node,1);
+  VortexGraphNode rhs = VortexGraph_GetElement(node); 
+  if (VortexGraph_GetNodeTypeId(lhs) == Literal) {
+        VortexGraph_InvokeNode(lhs,action_id);
+        VortexGraph_SetElementIndex(lhs,0);
+        VortexAny val_ptr = VortexGraph_GetElement(lhs);
+        vortex_int val = vortex_get(vortex_int,val_ptr);
+        lhs_val = val; 
+  }
+  
+  if (VortexGraph_GetNodeTypeId(lhs) == Addition) {
+        VortexGraph_InvokeNode(lhs,action_id);
+        VortexGraph_SetElementIndex(lhs,2);
+        VortexAny val_ptr = VortexGraph_GetElement(lhs);
+        vortex_int val = vortex_get(vortex_int,val_ptr);
+        lhs_val = val; 
+  }
+  
+  if (VortexGraph_GetNodeTypeId(rhs) == Literal) {
+        VortexGraph_InvokeNode(rhs,action_id);
+        VortexGraph_SetElementIndex(rhs,0);
+        VortexAny val_ptr = VortexGraph_GetElement(rhs);
+        vortex_int val = vortex_get(vortex_int,val_ptr);
+        rhs_val = val; 
+  }
+  
+  if (VortexGraph_GetNodeTypeId(rhs) == Addition) {
+        VortexGraph_InvokeNode(rhs,action_id);
+        VortexGraph_SetElementIndex(rhs,2);
+        VortexAny val_ptr = VortexGraph_GetElement(rhs);
+        vortex_int val = vortex_get(vortex_int,val_ptr);
+        rhs_val = val; 
+  }
+ 
+  vortex_int sum = lhs_val + rhs_val;
+  VortexGraph_SetElementIndex(node,2);
+  VortexGraph_SetElement(node,vortex_any(sum));
+  printf("Sum of %d and %d is: %d.\n",lhs_val,rhs_val,sum);
+}
+
+void graph_test(void) {
+    puts("Hello Graph!");
+    VortexGraph graph = VortexGraph_New();
+    
+    VortexGraph_AddType(graph,Expression);
+    VortexGraph_AddType(graph,Literal);
+    VortexGraph_TypeExtends(graph,Literal,GRAPH_ARGS(GRAPH_TYPES(Expression)));
+    VortexGraph_TypeInput(graph,Literal,GRAPH_ARGS(GRAPH_TYPES(VORTEX_GRAPH_INT_TYPE)));
+    VortexGraph_AddType(graph,Addition);
+    VortexGraph_TypeExtends(graph,Addition,GRAPH_ARGS(GRAPH_TYPES(Expression)));
+    VortexGraph_TypeInput(graph,Addition,GRAPH_ARGS(GRAPH_TYPES(Expression,Expression,VORTEX_GRAPH_INT_TYPE)));
+    
+    VortexGraph_AddAction(graph,Expression,Print,expr_print);
+    VortexGraph_AddAction(graph,Literal,Print,literal_print);
+    VortexGraph_AddAction(graph,Addition,Print,add_print);
+   
+    VortexGraph_AddAction(graph,Expression,Eval,expr_eval);
+    VortexGraph_AddAction(graph,Literal,Eval,literal_eval);
+    VortexGraph_AddAction(graph,Addition,Eval,add_eval);
+   
+    VortexGraphNode A = VortexGraph_NewNode(graph,Literal,GRAPH_ARGS(GRAPH_INTS(42)));
+    VortexGraphNode B = VortexGraph_NewNode(graph,Literal,GRAPH_ARGS(GRAPH_INTS(1)));
+   
+    VortexGraph_SetRoot(graph,VortexGraph_NewNode(graph,Addition,GRAPH_ARGS(GRAPH_NODES(A,B),GRAPH_INTS(0))));
+   
+    VortexGraph_ApplyAction(graph,Print);
+    VortexGraph_ApplyAction(graph,Eval);
+   
+    VortexGraph_Destroy(graph);
 }
 
 int main(int argc, const char *argv[]) {
@@ -169,6 +288,7 @@ int main(int argc, const char *argv[]) {
     VortexString_FormatToString(format_output,"%s, and %f, and %d!\n","Hello World",1.2345f,34);
     VortexString_Print(format_output);
     VortexString_Destroy(format_output);
+    graph_test();
     void Vortex_LexerExample(void);
     Vortex_LexerExample();
     void Vortex_ParserExample(void);
