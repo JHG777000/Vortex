@@ -81,8 +81,7 @@ typedef VortexAny (*VortexTokenDataToNodeData)
  VortexParser_GetToken(parser)
 #define vortex_parser_get_token_with_index(index)\
  VortexParser_GetTokenWithIndex(parser,index)
-//#define  vortex_parser_foreach(node,tree)\
- //for (VortexParseTreeNode node = VortexParseTree_GetRootNode(tree); node != NULL; node = VortexParseTree_GetNextNode(tree))
+
  
 VortexParser VortexParser_New(VortexLexer lexer);
 void VortexParser_Destroy(VortexParser parser);
@@ -124,12 +123,7 @@ VortexParseTreeNode VortexParseTree_PopActiveNode(VortexParseTree tree);
 VortexParseTreeNode VortexParseTree_GetActiveNode(VortexParseTree tree);  
 void VortexParseTree_SetActiveNode(VortexParseTree tree,
   VortexParseTreeNode node);  
-VortexStack VortexParseTree_GettActiveStack(VortexParseTree tree);
-//vortex_ulong VortexParseTree_GetNumOfNodes(VortexParseTree tree);  
-void VortexParseTree_IterateWith(
-  VortexMemIteratorFuncType iterator,
-   VortexParseTree tree);
-void VortexParseTree_Print(VortexParseTree tree);     
+VortexStack VortexParseTree_GettActiveStack(VortexParseTree tree); 
 VortexParseTreeNode VortexParseTreeNode_New(
   VortexTokenDataToNodeData token_data_to_node_data,
   VortexToken token);

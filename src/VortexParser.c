@@ -223,39 +223,6 @@ VortexStack VortexParseTree_GettActiveStack(VortexParseTree tree) {
   return tree->active_stack;
 }
 
-void VortexParseTree_IterateWith(
-  VortexMemIteratorFuncType iterator,
-   VortexParseTree tree) {
-  if (tree == NULL) {
-    return;
-  }
-  VortexParseTreeNode_IterateWith(iterator,tree->root_node);
-  //VortexList_IterateWith(iterator,
-    //VortexStack_GetList(tree->active_stack));
-}
-
-static void print_tree(VortexAny data) {
-  if (data == NULL) return;
-  VortexDataStructure ds = data;
-  VortexParseTreeNode node = 
-  (ds->flag == VortexListNodeFlag) 
-   ? VortexList_GetItem(ds) : ds;
-  printf("Node: "); 
-  vortex_strprint(node->parsed_string);
-  printf("\n");
-  VortexParseTreeNode_ReiterateWith(print_tree,node);
-}
-void VortexParseTree_Print(VortexParseTree tree) {
-  if (tree == NULL) {
-    return;
-  }
-  if (tree->root_node == NULL) {
-    printf("No nodes. Parse tree is empty.\n");
-    return;
-  }
-  VortexParseTree_IterateWith(print_tree,tree);
-}
-
 VortexParseTreeNode VortexParseTreeNode_New(
   VortexTokenDataToNodeData token_data_to_node_data,
   VortexToken token) {
