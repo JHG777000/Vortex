@@ -32,6 +32,14 @@ Uses:
 
  -TinyCThread https://github.com/tinycthread/tinycthread
 
+-VortexGraph-
+
+A libary that is designed to make working with graph based data structures easier.
+
+-VortexParser-
+
+A lexer and parser libary, including a parse tree implementation.
+
 ## Building
 
 Vortex uses [builder][1] for its build system.

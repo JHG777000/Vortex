@@ -178,7 +178,6 @@ VORTEX_GRAPH_DEFINE_ACTION(eval_node) {
      }
      vortex_int action = vortex_get(vortex_int,val_ptr);
      VortexGraph_InvokeNode(node,action);
-     atom_data atom = get_atom_data(node);
   }
   puts("NODE: eval_node, done.");
 }
@@ -638,8 +637,8 @@ void Vortex_ParserExample(void) {
   VortexLexer_SetEndOfLineCharacter(lexer,';');
   VortexParser parser = VortexParser_New(lexer);
   VortexToken token = VortexToken_New();
-  VortexToken_SetTokenString(token,vortex_str("."));
-   VortexToken_SetTokenID(token,EOL);
+  VortexToken_SetTokenString(token,vortex_str(";"));
+  VortexToken_SetTokenID(token,EOL);
   VortexParser_SetDefaultToken(parser,token);
   VortexParser_SetMainProcessor(parser,main_processor);
   VortexLexer_SetParser(lexer,parser);

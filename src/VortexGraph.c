@@ -82,7 +82,7 @@ VortexGraphNode VortexGraph_NewNode(VortexGraph graph, vortex_ulong type_id, Vor
 
 VortexGraphNode VortexGraph_NewNodeNoElements(VortexGraph graph, vortex_ulong type_id) {
     VortexGraphType type = VortexArrayStore_GetItem(graph->types,type_id);
-    if (type == NULL) return 0;
+    if (type == NULL) return NULL;
     VortexGraphNode node = vortex_new_mem_of_type(struct VortexGraphNode_s);
     node->flag = VortexGraphNodeFlag;
     node->graph = graph;
@@ -469,66 +469,3 @@ void VortexGraph_SetElementIndex(VortexGraphNode node, vortex_ulong index) {
 vortex_ulong VortexGraph_GetElementIndex(VortexGraphNode node) {
     return node->element_index;
 }
-
-/*
-
-@type Expression; //VortexGraph_AddType(graph,"Expression");
-@type Literal(@value) : (Expression); //VortexGraph_AddType(graph,"Literal","@value",":Expression");
-@type Addition(Expression,Expression) : (Expression); //VortexGraph_AddType(graph,"Addition","Expression","Expression",":Expression");
-@evaluator Addition : @add(Expression,Expression);    //VortexGraph_AddEvaluator(graph,"Addition","@add","Expression","Expression");
-@evaluator Addition : @print("{@index(0)} + {@index(1)} = {Addition}"); //VortexGraph_AddEvaluator(graph,"Addition","@print","@index(0)","@index(1)","Addition");
-@evaluator Literal : @print("{Literal}"); //VortexGraph_AddEvaluator(graph,"Literal","@print","Literal");
-
-@var e : Addition(
- Addition(
-  Literal(1),
-  Literal(2)
- )
- Literal(3)
-);
-
-@print(e);
-
-enum {
- Expression,
- Literal,
- Addition
-};
-
-VortexGraph_AddType(graph,Expression);
-VortexGraph_AddType(graph,Literal);
-VortexGraph_TypeExtends(graph,Literal,(Expression));
-VortexGraph_TypeInput(graph,Literal,(VORTEX_GRAPH_VALUE_TYPE));
-VortexGraph_AddType(graph,Addition);
-VortexGraph_TypeExtends(graph,Addition,(Expression));
-VortexGraph_TypeInput(graph,Addition,(Expression,Expression));
-
-VortexGraph_AddAction(graph,Expression,Print,expr_print);
-VortexGraph_AddAction(graph,Literal,Print,literal_print);
-VortexGraph_AddAction(graph,Addition,Print,add_print);
-
-
-VortexGraph_AddAction(graph,Expression,Eval,eval_expr);
-VortexGraph_AddAction(graph,Literal,Eval,eval_literal);
-VortexGraph_AddAction(graph,Addition,Eval,eval_add);
-
-VortexGraph graph = VortexGraph_New();
-VortexGraph_SetRoot(graph,
-vortex_new_node(Addition,(
- vortex_new_node(Addition,
-   vortex_new_node(Literal,(1)),
-   vortex_new_node(Literal,(2)),
- ),vortex_new_node(Literal,(3))
-))
-);
-
-VortexGraph_ApplyAction(graph,Print);
-VortexGraph_ApplyAction(graph,Eval);
-
-VortexGraph_NewNode(GRAPH,ID,ELEMENTS);
-VortexGraph_NewNodeNoElements(GRAPH,ID);
-VortexGraph_NodeAddElements(GRAPH,NODE,ELEMENTS);
-
-VortexGraph_AddNodeToGraph(GRAPH,NODE);
-VortexGraph_AddNodeToNode(NODE,NODE);
-*/
