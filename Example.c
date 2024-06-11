@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2014-2023 Jacob Gordon. All rights reserved.
+ Copyright (c) 2014-2024 Jacob Gordon. All rights reserved.
 
  Permission to redistribution and use this software in source and binary forms, with or without modification is hereby granted.
 
