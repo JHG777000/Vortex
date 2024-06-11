@@ -32,11 +32,11 @@ Uses:
 
  -TinyCThread https://github.com/tinycthread/tinycthread
 
--VortexGraph-
+—VortexGraph—
 
 A libary that is designed to make working with graph based data structures easier.
 
--VortexParser-
+—VortexParser—
 
 A lexer and parser libary, including a parse tree implementation.
 
