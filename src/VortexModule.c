@@ -16,11 +16,11 @@
 #include <stdlib.h>
 
 #if  !_WIN32
-#include <dlfcn.h>
+ #include <dlfcn.h>
 #endif
 
 #include <Vortex/VortexMem.h>
-#include <Vortex/VortexFile.h>
+#include <Vortex/VortexModule.h>
 
  #ifdef _WIN32
   #include <windows.h>
