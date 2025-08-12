@@ -513,7 +513,7 @@ vortex_int* VortexLexer_GetCharacterArray(VortexLexer lexer) {
 }
 
 vortex_ulong VortexLexer_GetCharacterArrayIndex(VortexLexer lexer) {
-  return lexer->character_array - 1;
+  return lexer->num_of_characters - 1;
 }
 
 void VortexLexer_SetTokenizer(VortexLexer lexer,VortexLexerTokenizer tokenizer) {

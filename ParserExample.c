@@ -139,7 +139,7 @@ VORTEX_GRAPH_DEFINE_ACTION(print_atom) {
 VORTEX_GRAPH_DEFINE_ACTION(eval_node) {  
   puts("NODE: eval_node");
   VortexGraph_InvokeAllSubNodes(node,action_id);
-     atom_data atom = get_atom_data(node);
+  atom_data atom = get_atom_data(node);
   if (VortexGraph_GetNodeTypeId(node) == DoubleAtom) {
      VortexGraph_SetElementIndex(node,0);
      VortexAny val_ptr = VortexGraph_GetElement(node);

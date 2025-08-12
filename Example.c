@@ -219,17 +219,17 @@ int main(int argc, const char *argv[]) {
     VortexArray_Destroy(array);
     vortex_ulong numbers[] = {1,2,3,4,5};
     VortexArray Numbers = VortexArray_New();
-    VortexArray_AddArray(Numbers,numbers,sizeof(numbers));
+    VortexArray_AddArray(Numbers,(VortexAny)numbers,sizeof(numbers));
     printf("%d\n",VortexArray_GetItem(Numbers,0));
     VortexArray_Destroy(Numbers);
-    VortexArray Numbers2 = vortex_new_array(numbers);
-    VortexArray_AddArray(Numbers2,numbers,sizeof(numbers));
+    VortexArray Numbers2 = vortex_new_array((VortexAny)numbers);
+    VortexArray_AddArray(Numbers2,(VortexAny)numbers,sizeof(numbers));
     printf("%d\n",VortexArray_GetItem(Numbers2,0));
     VortexArray_Destroy(Numbers2);
     VortexArgs args = vortex_args_example1();
     vortex_args_example3(args);
     VortexArgs_DestroyClonedArgs(args);
-    int offset = 0;
+    vortex_ulong offset = 0;
     VortexString string = vortex_str("Hello Earth!!!!\n"
                             "Hi!\n");
     vortex_strprint(string);
@@ -237,9 +237,9 @@ int main(int argc, const char *argv[]) {
                                "Hi😀!\n"
                                "😀, and 😀?!!!!\n");
 
-    VortexString string3 = VortexString_NewFromUTF32(L"😀and,😀\n",7);
+    VortexString string3 = VortexString_NewFromUTF32(U"😀and,😀\n",7);
 
-    if ( VortexString_GetCharacter(string2, 11, &offset) == L'😀' ) {
+    if ( VortexString_GetCharacter(string2, 11, &offset) == U'😀') {
         printf("Hello:😀, and %lu\n",VortexString_GetLength(string2));
         printf("Hello2:😀, and %lu\n",VortexString_GetLength(string3));
         vortex_strprint(string3);

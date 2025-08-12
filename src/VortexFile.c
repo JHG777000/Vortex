@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017-2023 Jacob Gordon. All rights reserved.
+ Copyright (c) 2017-2025 Jacob Gordon. All rights reserved.
 
  Permission to redistribution and use this software in source and binary forms, with or without modification is hereby granted.
 
@@ -26,29 +26,6 @@ struct VortexFile_s {
  FILE* file;
  VortexFileMode mode; 
 };
-
- #ifdef _WIN32
-  #include <windows.h>
-  #define vortex_dlopen(file) LoadLibrary(file)
-  #define vortex_dlclose(library) FreeLibrary((HMODULE)library)
-  #define vortex_dlsym(library, name) GetProcAddress((HMODULE)library,name)
- #else
-  #define vortex_dlopen(file) dlopen(file, RTLD_LAZY | RTLD_LOCAL)
-  #define vortex_dlclose(library) dlclose(library)
-  #define vortex_dlsym(library, name) dlsym(library, name)
- #endif
-
-VortexAny VortexFile_LoadLibraryFromFile(const char* filepath) {
-    return vortex_dlopen(filepath);
-}
-
-vortex_int VortexFile_FreeLibrary(VortexAny library) {
-    return vortex_dlclose(library) ;
-}
-
-VortexAny VortexFile_GetFunction(VortexAny library, const char* name) {
-     return vortex_dlsym(library, name);
-}
 
 VortexFile VortexFile_OpenFile(const char* filepath, VortexFileMode mode) {
     VortexFile file = vortex_new_mem_of_type(struct VortexFile_s);

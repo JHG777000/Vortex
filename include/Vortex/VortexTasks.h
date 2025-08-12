@@ -14,7 +14,7 @@
 //Header file for VortexTasks.
 
 #ifndef Vortex_VortexTasks_h
-#define VortexLib_VortexTasks_h
+#define Vortex_VortexTasks_h
 
 #include <Vortex/VortexMem.h>
 

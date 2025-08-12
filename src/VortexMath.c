@@ -18,7 +18,6 @@
 #include <string.h>
 
 #include <time.h>
-#include <math.h>
 #include <Vortex/VortexMem.h>
 #include <Vortex/VortexMath.h>
 

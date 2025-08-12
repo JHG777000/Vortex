@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2017-2023 Jacob Gordon. All rights reserved.
+ Copyright (c) 2017-2025 Jacob Gordon. All rights reserved.
 
  Permission to redistribution and use this software in source and binary forms, with or without modification is hereby granted.
 
@@ -23,9 +23,6 @@ typedef enum {
  vortex_write_mode 
 } VortexFileMode;
 
-VortexAny VortexFile_LoadLibraryFromFile(const char* filepath);
-vortex_int VortexFile_FreeLibrary(VortexAny library);
-VortexAny VortexFile_GetFunction(VortexAny library, const char* name);
 VortexFile VortexFile_OpenFile(const char* filepath, VortexFileMode mode);
 void VortexFile_CloseFile(VortexFile file);
 FILE* VortexFile_GetPtrToFile(VortexFile file);
