@@ -206,6 +206,7 @@ void graph_test(void) {
 }
 
 int main(int argc, const char *argv[]) {
+    printf("Vortex Example.\n");
     VortexArray array = VortexArray_New();
     VortexArray_AddItem(array,vortex_str("Hello World!!! 1\n"));
     VortexArray_AddItem(array,vortex_str("Hello World!!! 2\n"));
