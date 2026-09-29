@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <Vortex/VortexMem.h>
 #include <Vortex/VortexFile.h>
@@ -40,75 +41,293 @@ FILE* VortexFile_GetPtrToFile(VortexFile file) {
     return file->file;
 }
 
-static vortex_uint Get32BitInt(FILE* file, vortex_int* error) {
-    static vortex_uint table[] = {1,256,65536,16777216};
-    vortex_int i = 0;
-    vortex_int input = 0;
-    vortex_int errorval = 0;
-    vortex_uint numsum = 0;
-    while (i < 4) {
-        input = getc(file);
-        if (input == EOF){
-            errorval++;
-            break;
-        }
-        numsum += (input * table[i]);
+static vortex_int Vortex_IsLittleEndian(void) {
+    vortex_ushort n = 0x1;
+    return *((vortex_byte*)&n) == 1;
+}
+
+static void Vortex_SwapBytes(vortex_byte* ptr, vortex_ulong size) {
+    vortex_ulong i = 0;
+    while (i < size / 2) {
+        vortex_byte t = ptr[i];
+        ptr[i] = ptr[size - 1 - i];
+        ptr[size - 1 - i] = t;
         i++;
     }
-    *error = errorval;
-    return numsum;
-
 }
 
-static vortex_int Set32BitInt(FILE* file, vortex_uint num) {
-    static vortex_uint table[] = {1,256,65536,16777216};
-    vortex_byte array[4];
-    vortex_int i = 0;
-    vortex_int j = 3;
-    vortex_int error = 0;
-    vortex_uint output = 0;
-    while (j >= 0) {
-        if ( num < table[j] ) {
-         array[j] = 0;
-        } else {
-         output = num / table[j];
-         array[j] = output;
-         num -= (output * table[j]);
-        }
-        j-- ;
+static vortex_int Vortex_WriteBytes(VortexFile file, void* data, vortex_ulong size) {
+    vortex_byte buffer[16];
+    memcpy(buffer, data, size);
+    if (Vortex_IsLittleEndian()) {
+        Vortex_SwapBytes(buffer, size);
     }
-    while ( i < 4 ) {
-        error = putc(array[i],file);
-        if (error == EOF) break;
-        i++ ;
+    if (fwrite(buffer, size, 1, file->file) != 1) {
+        return -1;
     }
-    return (error < 0) ? 1 : 0;
+    return 0;
 }
 
-static float Get32BitFloat( FILE* file, vortex_int* error) {
-    vortex_uint i = Get32BitInt(file, error);
-    return *((float*)&i);
+static vortex_int Vortex_ReadBytes(VortexFile file, void* data, vortex_ulong size) {
+    vortex_byte buffer[16];
+    if (fread(buffer, size, 1, file->file) != 1) {
+        return -1;
+    }
+    if (Vortex_IsLittleEndian()) {
+        Vortex_SwapBytes(buffer, size);
+    }
+    memcpy(data, buffer, size);
+    return 0;
 }
 
-static vortex_int Set32BitFloat(FILE* file, vortex_float num) {
-    vortex_uint i = *((vortex_uint*)&num);
-    return Set32BitInt(file, i);
+static vortex_byte Vortex_GetBinaryByte(VortexFile file, vortex_int* error) {
+    vortex_byte value;
+    if (Vortex_ReadBytes(file, &value, sizeof(vortex_byte)) == -1) {
+        *error = 1;
+        return 0;
+    }
+    return value;
 }
 
+static vortex_sbyte Vortex_GetBinarySByte(VortexFile file, vortex_int* error) {
+    vortex_sbyte value;
+    if (Vortex_ReadBytes(file, &value, sizeof(vortex_sbyte)) == -1) {
+        *error = 1;
+        return 0;
+    }
+    return value;
+}
 
-vortex_uint VortexFile_Read32BitInt(VortexFile file, vortex_int* error) {
+static vortex_short Vortex_GetBinaryShort(VortexFile file, vortex_int* error) {
+    vortex_short value;
+    if (Vortex_ReadBytes(file, &value, sizeof(vortex_short)) == -1) {
+        *error = 1;
+        return 0;
+    }
+    return value;
+}
+
+static vortex_ushort Vortex_GetBinaryUShort(VortexFile file, vortex_int* error) {
+    vortex_ushort value;
+    if (Vortex_ReadBytes(file, &value, sizeof(vortex_ushort)) == -1) {
+        *error = 1;
+        return 0;
+    }
+    return value;
+}
+
+static vortex_int Vortex_GetBinaryInt(VortexFile file, vortex_int* error) {
+    vortex_int value;
+    if (Vortex_ReadBytes(file, &value, sizeof(vortex_int)) == -1) {
+        *error = 1;
+        return 0;
+    }
+    return value;
+}
+
+static vortex_uint Vortex_GetBinaryUInt(VortexFile file, vortex_int* error) {
+    vortex_uint value;
+    if (Vortex_ReadBytes(file, &value, sizeof(vortex_uint)) == -1) {
+        *error = 1;
+        return 0;
+    }
+    return value;
+}
+
+static vortex_long Vortex_GetBinaryLong(VortexFile file, vortex_int* error) {
+    vortex_long value;
+    if (Vortex_ReadBytes(file, &value, sizeof(vortex_long)) == -1) {
+        *error = 1;
+        return 0;
+    }
+    return value;
+}
+
+static vortex_ulong Vortex_GetBinaryULong(VortexFile file, vortex_int* error) {
+    vortex_ulong value;
+    if (Vortex_ReadBytes(file, &value, sizeof(vortex_ulong)) == -1) {
+        *error = 1;
+        return 0;
+    }
+    return value;
+}
+
+static vortex_float Vortex_GetBinaryFloat(VortexFile file, vortex_int* error) {
+    vortex_float value;
+    if (Vortex_ReadBytes(file, &value, sizeof(vortex_float)) == -1) {
+        *error = 1;
+        return 0.0f;
+    }
+    return value;
+}
+
+static vortex_double Vortex_GetBinaryDouble(VortexFile file, vortex_int* error) {
+    vortex_double value;
+    if (Vortex_ReadBytes(file, &value, sizeof(vortex_double)) == -1) {
+        *error = 1;
+        return 0.0;
+    }
+    return value;
+}
+
+static vortex_int Vortex_SetBinaryByte(VortexFile file, vortex_byte value) {
+   return Vortex_WriteBytes(file, &value, sizeof(vortex_byte));
+}
+
+static vortex_int Vortex_SetBinarySByte(VortexFile file, vortex_sbyte value) {
+    return Vortex_WriteBytes(file, &value, sizeof(vortex_sbyte));
+}
+
+static vortex_int Vortex_SetBinaryShort(VortexFile file,  vortex_short value) {
+    return Vortex_WriteBytes(file, &value, sizeof(vortex_short));
+}
+
+static vortex_int Vortex_SetBinaryUShort(VortexFile file, vortex_ushort value) {
+    return Vortex_WriteBytes(file, &value, sizeof(vortex_ushort));
+}
+
+static vortex_int Vortex_SetBinaryInt(VortexFile file, vortex_int value) {
+    return Vortex_WriteBytes(file, &value, sizeof(vortex_int));
+}
+
+static vortex_int Vortex_SetBinaryUInt(VortexFile file, vortex_uint value) {
+    return Vortex_WriteBytes(file, &value, sizeof(vortex_uint));
+}
+
+static vortex_int Vortex_SetBinaryLong(VortexFile file, vortex_long value) {
+    return Vortex_WriteBytes(file, &value, sizeof(vortex_long));
+}
+
+static vortex_int Vortex_SetBinaryULong(VortexFile file, vortex_ulong value) {
+    return Vortex_WriteBytes(file, &value, sizeof(vortex_ulong));
+}
+
+static vortex_int Vortex_SetBinaryFloat(VortexFile file, vortex_float value) {
+    return Vortex_WriteBytes(file, &value, sizeof(vortex_float));
+}
+
+static vortex_int Vortex_SetBinaryDouble(VortexFile file, vortex_double value) {
+    return Vortex_WriteBytes(file, &value, sizeof(vortex_double));
+}
+
+vortex_sbyte VortexFile_Read8BitInt(VortexFile file, vortex_int* error) {
     if ( file->mode != vortex_read_mode ) {
         *error = -1;
         return 0;
     }
-    return Get32BitInt(file->file, error);
+    return Vortex_GetBinarySByte(file, error);
 }
 
-vortex_int VortexFile_Write32BitInt(VortexFile file, vortex_int num) {
+vortex_int VortexFile_Write8BitInt(VortexFile file, vortex_sbyte value) {
     if ( file->mode != vortex_write_mode ) {
         return -1;
     }
-   return Set32BitInt(file->file, num);
+    return Vortex_SetBinarySByte(file, value);
+}
+
+vortex_byte VortexFile_Read8BitUInt(VortexFile file, vortex_int* error) {
+    if ( file->mode != vortex_read_mode ) {
+        *error = -1;
+        return 0;
+    }
+    return Vortex_GetBinaryByte(file, error);
+}
+
+vortex_int VortexFile_Write8BitUInt(VortexFile file, vortex_byte value) {
+    if ( file->mode != vortex_write_mode ) {
+        return -1;
+    }
+    return Vortex_SetBinaryByte(file, value);
+}
+
+vortex_short VortexFile_Read16BitInt(VortexFile file, vortex_int* error) {
+    if ( file->mode != vortex_read_mode ) {
+        *error = -1;
+        return 0;
+    }
+    return Vortex_GetBinaryShort(file, error);
+}
+
+vortex_int VortexFile_Write16BitInt(VortexFile file, vortex_short value) {
+    if ( file->mode != vortex_write_mode ) {
+        return -1;
+    }
+    return Vortex_SetBinaryShort(file, value);
+}
+
+vortex_ushort VortexFile_Read16BitUInt(VortexFile file, vortex_int* error) {
+    if ( file->mode != vortex_read_mode ) {
+        *error = -1;
+        return 0;
+    }
+    return Vortex_GetBinaryUShort(file, error);
+}
+
+vortex_int VortexFile_Write16BitUInt(VortexFile file, vortex_ushort value) {
+    if ( file->mode != vortex_write_mode ) {
+        return -1;
+    }
+    return Vortex_SetBinaryUShort(file, value);
+}
+
+vortex_int VortexFile_Read32BitInt(VortexFile file, vortex_int* error) {
+    if ( file->mode != vortex_read_mode ) {
+        *error = -1;
+        return 0;
+    }
+    return Vortex_GetBinaryInt(file, error);
+}
+
+vortex_int VortexFile_Write32BitInt(VortexFile file, vortex_int value) {
+    if ( file->mode != vortex_write_mode ) {
+        return -1;
+    }
+    return Vortex_SetBinaryInt(file, value);
+}
+
+vortex_uint VortexFile_Read32BitUInt(VortexFile file, vortex_int* error) {
+    if ( file->mode != vortex_read_mode ) {
+        *error = -1;
+        return 0;
+    }
+    return Vortex_GetBinaryUInt(file, error);
+}
+
+vortex_int VortexFile_Write32BitUInt(VortexFile file, vortex_uint value) {
+    if ( file->mode != vortex_write_mode ) {
+        return -1;
+    }
+    return Vortex_SetBinaryUInt(file, value);
+}
+
+vortex_long VortexFile_Read64BitInt(VortexFile file, vortex_int* error) {
+    if ( file->mode != vortex_read_mode ) {
+        *error = -1;
+        return 0;
+    }
+    return Vortex_GetBinaryLong(file, error);
+}
+
+vortex_int VortexFile_Write64BitInt(VortexFile file, vortex_long value) {
+    if ( file->mode != vortex_write_mode ) {
+        return -1;
+    }
+    return Vortex_SetBinaryLong(file, value);
+}
+
+vortex_ulong VortexFile_Read64BitUInt(VortexFile file, vortex_int* error) {
+    if ( file->mode != vortex_read_mode ) {
+        *error = -1;
+        return 0;
+    }
+    return Vortex_GetBinaryULong(file, error);
+}
+
+vortex_int VortexFile_Write64BitUInt(VortexFile file, vortex_ulong value) {
+    if ( file->mode != vortex_write_mode ) {
+        return -1;
+    }
+    return Vortex_SetBinaryULong(file, value);
 }
 
 vortex_float VortexFile_Read32BitFloat(VortexFile file, vortex_int* error) {
@@ -116,14 +335,29 @@ vortex_float VortexFile_Read32BitFloat(VortexFile file, vortex_int* error) {
         *error = -1;
         return 0;
     }
-    return Get32BitFloat(file->file, error);
+    return Vortex_GetBinaryFloat(file, error);
 }
 
-vortex_int VortexFileFile_Write32BitFloat(VortexFile file, vortex_float num) {
+vortex_int VortexFile_Write32BitFloat(VortexFile file, vortex_float value) {
     if ( file->mode != vortex_write_mode ) {
         return -1;
     }
-    return Set32BitFloat(file->file, num) ;
+    return Vortex_SetBinaryFloat(file, value);
+}
+
+vortex_double VortexFile_Read64BitFloat(VortexFile file, vortex_int* error) {
+    if ( file->mode != vortex_read_mode ) {
+        *error = -1;
+        return 0;
+    }
+    return Vortex_GetBinaryDouble(file, error);
+}
+
+vortex_int VortexFile_Write64BitFloat(VortexFile file, vortex_double value) {
+    if ( file->mode != vortex_write_mode ) {
+        return -1;
+    }
+    return Vortex_SetBinaryDouble(file, value);
 }
 
 vortex_int VortexFile_GetUTF32Character(VortexFile file) {
